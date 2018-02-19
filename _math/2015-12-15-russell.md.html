@@ -1,0 +1,53 @@
+---
+title: Russell Paradox
+layout: dep
+---
+
+# Russell Paradox
+
+think that there is;
+
+$ R = $ { $ x \text{ | } x \notin x $ }
+
+now consider 2 cases
+
+1. $ R \in R $
+2. $ R \notin R $
+
+$ 1 $ $ \Rightarrow $ R is an element of set R .<br>
+so $ R \notin R $ but $ \bot $ 1.
+
+$ 2 $ $ \Rightarrow $ R satisfies the condition of R .<br>
+so $ R \in R $ but $ \bot $ 2.
+
+<br>
+
+Both 1 & 2 is $ \bot $ , this is inconsequence .
+
+<br><br>
+
+
+# Predicate
+
+We prepare "Predicate" for all Sets, <br>
+so that $ A = $ { $ x \  | \  P(x) $ } <br>
+where $ P(x) $ is defined as `if x is the element of Set A then True else False`.
+
+think the same case <br>
+$ R = $ { $ x \ | \ x \notin x \wedge P(x) $ }
+
+consider 2 cases
+
+1. $ R \in R $
+2. $ R \notin R $
+
+$ 1 $ $ \Rightarrow $ R is an element of set R.<br>
+so $ R \notin R $ but $ \bot $ 1.
+
+$ 2 $ $ \Rightarrow \ \lnot P(x) $ . <br>
+so $ R \notin R \wedge \lnot P(x) $ <br>
+this R is not the element of R .
+
+<br>
+
+So $ 2 $ ," R is not the element of R ", is True.

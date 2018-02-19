@@ -1,0 +1,144 @@
+---
+layout: dep
+title: module on Ring
+date: 2015-04-08
+---
+
+
+
+R-加群 :  環R上の加群 (Module on Ring R) のこと
+
+<br>
+<br>
+
+
+# Introduction
+
+3次元ユークリッド空間におけるベクトルを考えましょう。
+
+例えば、3次元の格子点上だけに限定して、距離やベクトルのようなものを考えたりすることもできます。
+これは、「"整数"を係数とする加群」となります。ベクトルは「"実数"を係数とする加群」です。
+
+あるいはトーラス面上でベクトルのようなものを考えることができます。
+これは、「"剰余環"を係数とする加群」となります。
+
+<br>
+
+# wikipediaより
+
+環上の加群は
+
+- ベクトル空間の一般化
+- アーベル群（有理整数環上の加群）の一般化
+- 環のイデアルの一般化でもある。
+
+環上の加群はベクトル空間・アーベル群・イデアルを包括する概念であるので、
+さまざまな議論を「加群の言葉」によって統一的に扱うことができるようになる。
+
+加群は群の表現論に非常に近しい関連を持つ。
+また、加群は可換環論やホモロジー代数における中心概念の一つであり、ひろく代数幾何学や代数的位相幾何学において用いられる。
+　　
+
+
+<br>
+<br>
+<br>
+
+# definition
+
+$R$ を環とする<br>
+$R$ を「係数環」という<br>
+<br>
+
+## Left Module on $R$
+
+<br>
+
+ $ \quad M $ is left module on $ R $
+
+===================[def]
+
+$ \quad R \times M \rightarrow M $
+
+$ \quad\ (a,x) \mapsto ax $
+
+satisfies ;
+
+1. $ 1 x = x $
+2. $ a(bx) = (ab)x $
+3. $ ax + bx = (a+b)x $
+4. $ ax + ay = a(x+y) $
+
+
+  　
+<br>
+<br>
+
+## Right Module
+
+<br>
+
+satisfies
+
+(2').  $ \quad (xa)b = x(ab) $
+
+<br>
+
+
+## e.g.
+
+- $ R $ : field
+- $ M $ : vector space
+- $ Hom(M,N) $ : matrix : linear transformation
+
+- $ R $ : ring
+- $ M $ : Affine space
+- $ Hom(M,N) $ : Affine Transformation
+
+- $ R $ : matrix
+- $ M $ : big vector
+- $ Hom(M,N) $ : big Matrix
+
+
+
+
+# known facts about modules
+
+
+~~~
+Z is initial object
+Z is projective module
+
+
+Euclidean space is initial object
+Euclidean space is projective space
+
+
+non-Euclidean space
+球面幾何の著しい特徴の一つに，「相似」という概念がないことがあります。
+球面上の三角形は，三つの角の大きさが等しければすべて合同です。
+実際，三つの角が決まれば，球面三角形の面積も決まってしまう
+平面上の三角形は，三つの角の大きさが同じでも，合同とはならず、無数の相似三角形が存在します。
+
+
+simply connected
+iff
+fundamental group is trivial
+
+~~~
+
+# not the facts but the way of thinking
+
+~~~
+ユークリッド平面から相似を除くということは、
+拡大縮小の変形に関して同値ということです。
+
+3次元で言えば、
+ユークリッド空間を
+
+        { 1 0 0 }
+kE =  k { 0 1 0 }
+        { 0 0 1 }
+
+で除したイデアルが、3次元球面と同型だという考えに至ります。
+~~~

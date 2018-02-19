@@ -1,0 +1,22 @@
+---
+layout: default
+title: Math
+categories: /math
+permalink: /math/
+---
+
+<div class="home">
+
+    <br><h1 class="post-title"> Math </h1><br>
+
+    Under Construction. <br><br>
+
+    <div class="grid post-list">
+        <br>
+        {% for post in site.math %}
+        <div class="unit half">
+            <li><a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li></div>
+        {% endfor %}
+    </div>
+
+</div>

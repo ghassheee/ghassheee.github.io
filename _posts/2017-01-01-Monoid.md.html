@@ -1,0 +1,929 @@
+---
+title : Monoid
+layout : dep
+date : 2017-04-21
+---
+
+- from [Haskell for All](http://www.haskellforall.com/2014/07/equational-reasoning-at-scale.html)
+- Reorginizing sentence with assuming we know 1-Category
+- The category 'Hask', consists of ;
+    - objects : types
+    - morphisms : functions
+- type class defines a particulr set of categories such as 'Mons' / 'Sets'
+- An instance of a 'type class' is like a subcategory of Hask
+
+
+# Monoids
+
+Haskell's Prelude provides the following Monoid type class:
+
+~~~
+class Monoid m where
+    mempty  :: m
+    mappend :: m -> m -> m
+
+-- mappend infix operator
+(<>) :: Monoid m => m -> m -> m
+x <> y = mappend x y
+~~~
+
+
+Monoid 3 Laws
+~~~
+mempty <> x = x                -- Left Identity
+x <> mempty = x                -- Right Identity
+(x <> y) <> z = x <> (y <> z)  -- Associativity
+~~~
+
+e.g.
+~~~
+instance Monoid Int where
+    mempty  =  0
+    mappend = (+)
+
+> -- Now we can use (<>) and mempty instead of (+) and 0:
+> 4 <> 2                // 6
+> 5 <> mempty <> 5      // 10
+~~~
+
+
+Extending Monoids
+~~~
+instance Monoid (Int,Int) where
+    mempty = (0,0)
+    mappend (x,y)(a,b) = (x+a, y+b)
+
+> (1, 2) <> (3, 4)                      // (4, 6)
+> (1, 2) <> (3, mempty) <> (mempty, 4)  // (4, 6)
+> (1, 2) <> mempty <> (3, 4)            // (4, 6)
+~~~
+
+Generalizing proofs
+~~~
+-- Defined in GHC.Base
+instance (Monoid a, Monoid b) => Monoid (a, b) where
+    mempty = (mempty, mempty)
+    mappend (x1, y1) (x2, y2) = (mappend x1 x2, mappend y1 y2)
+~~~
+
+~~~
+-- Exercise: Prove the monoid laws for lists
+instance Monoid [a] where
+    mempty = []
+    mappend = (++)
+~~~
+
+e.g.
+~~~
+> (1, [2, 3]) <> (4, [5, 6])                            // (5, [2, 3, 5, 6])
+> (1, [2, 3]) <> (4, mempty) <> (mempty, [5, 6])        // (5, [2, 3, 5, 6])
+> (1, [2, 3]) <> mempty <> (4, [5, 6])                  // (5, [2, 3, 5, 6])
+> (1, (2, 3)) <> (4, (5, 6))                            // (5, (7, 9))
+> ((1,[2,3]), ([4,5],6)) <> ((7,[8,9]), ([10,11),12)    // ((8,[2,3,8,9]), ([4,5,10,11],18))
+~~~
+
+
+
+# IO
+
+We're so used to thinking of Monoids as data, so let's define a new Monoid instance for something entirely un-data-like:
+
+~~~
+{-- Defined in GHC.Base --}
+instance Monoid b => Monoid (IO b) where
+    mempty = return mempty
+    mappend io1 io2 = do
+        a1 <- io1
+        a2 <- io2
+        return (mappend a1 a2)
+>
+~~~
+
+
+-- Read one line of input from stdin
+getLine :: IO String
+
+~~~
+> a <> b = mappend a b
+>
+> getLine  -- Reads one line of input
+Hello<Enter>
+"Hello"
+> getLine <> getLine
+ABC<Enter>
+DEF<Enter>
+"ABCDEF"
+> getLine <> getLine <> getLine
+1<Enter>
+23<Enter>
+456<Enter>
+"123456"
+~~~
+
+
+Neat! When we combine multiple commands we combine their effects and their results.
+
+Of course, we don't have to limit ourselves to reading strings. We can use readLn from the Prelude to read in anything that implements the Read type class:
+
+~~~
+-- Parse a `Read`able value from one line of stdin
+readLn :: Read a => IO a
+All we have to do is tell the compiler which type a we intend to Read by providing a type signature:
+
+>>> readLn :: IO (Int, Int)
+(1, 2)<Enter>
+(1 ,2)
+>>> readLn <> readLn :: IO (Int, Int)
+(1,2)<Enter>
+(3,4)<Enter>
+(4,6)
+>>> readLn <> readLn <> readLn :: IO (Int, Int)
+(1,2)<Enter>
+(3,4)<Enter>
+(5,6)<Enter>
+(9,12)
+~~~
+
+
+This works because:
+~~~
+Int is a Monoid
+Therefore, (Int, Int) is a Monoid
+Therefore, IO (Int, Int) is a Monoid
+Or let's flip things around and nest IO actions inside of a tuple:
+~~~
+
+~~~
+> let ios = (getLine, readLn) :: (IO String, IO (Int, Int))
+> let (getLines, readLns) = ios <> ios <> ios
+> getLines
+1<Enter>
+23<Enter>
+456<Enter>
+123456
+> readLns
+(1,2)<Enter>
+(3,4)<Enter>
+(5,6)<Enter>
+(9,12)
+~~~
+
+We can very easily reason that the type (IO String, IO (Int, Int)) obeys the Monoid laws because:
+
+~~~
+String is a Monoid
+If String is a Monoid then IO String is also a Monoid
+Int is a Monoid
+If Int is a Monoid, then (Int, Int) is also a `Monoid
+If (Int, Int) is a Monoid, then IO (Int, Int) is also a Monoid
+If IO String is a Monoid and IO (Int, Int) is a Monoid, then (IO String, IO (Int, Int)) is also a Monoid
+~~~
+
+However, we don't really have to reason about this at all. The compiler will automatically assemble the correct Monoid instance for us. The only thing we need to verify is that the primitive Monoid instances obey the Monoid laws, and then we can trust that any larger Monoid instance the compiler derives will also obey the Monoid laws.
+
+# The Unit Monoid
+
+Haskell Prelude also provides the putStrLn function, which echoes a String to standard output with a newline:
+
+~~~
+putStrLn :: String -> IO ()
+
+> putStrLn "Hello" <> putStrLn "World"
+Hello
+World
+
+putStrLn "Hello" :: IO ()
+putStrLn "World" :: IO ()
+~~~
+
+~~~
+-- Exercise: Prove the monoid laws for `()`
+instance Monoid () where
+    mempty = ()
+    mappend () () = ()
+~~~
+
+This says that empty tuples form a trivial Monoid, since there's only one possible value (ignoring bottom) for an empty tuple: (). Therefore, we can derive that IO () is a Monoid because () is a Monoid.
+
+
+
+# Functions
+
+Alright, so we can combine putStrLn "Hello" with putStrLn "World", but can we combine naked putStrLn functions?
+
+~~~
+> (putStrLn <> putStrLn) "Hello"
+Hello
+Hello
+~~~
+
+Woah, how does that work?
+
+~~~
+instance Monoid b => Monoid (a -> b) where
+    mempty      = \_ -> mempty
+    mappend f g = \a -> mappend (f a) (g a)
+~~~
+
+
+The compiler then deduced that:
+~~~
+() is a Monoid
+If () is a Monoid, then IO () is also a Monoid
+If IO () is a Monoid then String -> IO () is also a Monoid
+The compiler is a trusted friend, deducing Monoid instances we never knew existed.
+~~~
+
+
+# Monoid plugins
+
+Now we have enough building blocks to assemble a non-trivial example. Let's build a key logger with a Monoid-based plugin system.
+
+The central scaffold of our program is a simple main loop that echoes characters from standard input to standard output:
+~~~
+main = do
+    hSetEcho stdin False
+    forever $ do
+        c <- getChar
+        putChar c
+~~~
+
+However, we would like to intercept key strokes for nefarious purposes, so we will slightly modify this program to install a handler at the beginning of the program that we will invoke on every incoming character:
+
+~~~
+install :: IO (Char -> IO ())
+install = ???
+
+main = do
+    hSetEcho stdin False
+    handleChar <- install
+    forever $ do
+        c <- getChar
+        handleChar c
+        putChar c
+>
+~~~
+
+Notice that the type of install is exactly the correct type to be a Monoid:
+
+~~~
+() is a Monoid
+Therefore, IO () is also a Monoid
+Therefore Char -> IO () is also a Monoid
+Therefore IO (Char -> IO ()) is also a Monoid
+~~~
+
+Therefore, we can combine key logging plugins together using Monoid operations. Here is one such example:
+
+~~~
+type Plugin = IO (Char -> IO ())
+
+logTo :: FilePath -> Plugin
+logTo filePath = do
+    handle <- openFile filePath WriteMode
+    hSetBuffering handle NoBuffering
+    return (hPutChar handle)
+
+main = do
+    hSetEcho stdin False
+    handleChar <- logTo "file1.txt" <> logTo "file2.txt"
+    forever $ do
+        c <- getChar
+        handleChar c
+        putChar c
+>
+~~~
+
+Now, every key stroke will be recorded to both file1.txt and file2.txt. Let's confirm that this works as expected:
+
+~~~
+$ ./logger
+Test<Enter>
+ABC<Enter>
+42<Enter>
+<Ctrl-C>
+$ cat file1.txt
+Test
+ABC
+42
+$ cat file2.txt
+Test
+ABC
+42
+~~~
+
+Try writing your own Plugins and mixing them in with (<>) to see what happens. "Appendix C" contains the complete code for this section so you can experiment with your own Plugins.
+
+
+
+
+# Applicatives
+
+Notice that I never actually proved the Monoid laws for the following two Monoid instances:
+
+~~~
+instance Monoid b => Monoid (a -> b) where
+    mempty = \_ -> mempty
+    mappend f g = \a -> mappend (f a) (g a)
+
+instance Monoid a => Monoid (IO a) where
+    mempty = return mempty
+    mappend io1 io2 = do
+        a1 <- io1
+        a2 <- io2
+        return (mappend a1 a2)
+>
+~~~
+
+The reason why is that they are both special cases of a more general pattern. We can detect the pattern if we rewrite both of them to use the pure and liftA2 functions from Control.Applicative:
+
+~~~
+import Control.Applicative (pure, liftA2)
+
+instance Monoid b => Monoid (a -> b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+
+instance Monoid b => Monoid (IO b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+~~~
+
+
+This works because both IO and functions implement the following Applicative interface:
+~~~
+class Functor f => Applicative f where
+    pure  :: a -> f a
+    (<*>) :: f (a -> b) -> f a -> f b
+
+-- Lift a binary function over the functor `f`
+liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
+liftA2 f x y = (pure f <*> x) <*> y
+~~~
+
+Applicative laws:
+~~~
+pure id <*> v                   = v
+((pure (.) <*> u) <*> v) <*> w  = u <*> (v <*> w)
+pure f  <*> pure x              = pure (f x)
+u       <*> pure x              = pure (\f -> f y) <*> u
+~~~
+
+
+These laws may seem a bit adhoc, but this paper explains that you can reorganize the Applicative class to this equivalent type class:
+~~~
+class Functor f => Monoidal f where
+    unit  :: f ()
+    (#) :: f a -> f b -> f (a, b)
+~~~
+
+Then the corresponding laws become much more symmetric:
+~~~
+fmap snd (unit # x) = x                         -- Left identity
+fmap fst (x # unit) = x                         -- Right identity
+fmap assoc ((x # y) # z) = x # (y # z)          -- Associativity
+  where
+    assoc ((a, b), c) = (a, (b, c))
+
+fmap (f *** g) (x # y) = fmap f x # fmap g y    -- Naturality
+  where
+    (f *** g) (a, b) = (f a, g b)
+~~~
+
+I personally prefer the Monoidal formulation, but you go to war with the army you have, so we will use the Applicative type class for this post.
+
+All Applicatives possess a very powerful property: they can all automatically lift Monoid operations using the following instance:
+
+
+~~~
+instance (Applicative f, Monoid b) => Monoid (f b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+~~~
+
+
+This says: "If f is an Applicative and b is a Monoid, then f b is also a Monoid." In other words, we can automatically extend any existing Monoid with some new feature f and get back a new Monoid.
+
+Note: The above instance is bad Haskell because it overlaps with other type class instances. In practice we have to duplicate the above code once for each Applicative. Also, for some Applicatives we may want a different Monoid instance.
+
+We can prove that the above instance obeys the Monoid laws without knowing anything about f and b, other than the fact that f obeys the Applicative laws and b obeys the Applicative laws. These proofs are a little long, so I've included them in Appendix B.
+
+Both IO and functions implement the Applicative type class:
+~~~
+instance Applicative IO where
+    pure = return
+    iof <*> iox = do
+        f <- iof
+        x <- iox
+        return (f x)
+
+instance Applicative ((->) a) where
+    pure x = \_ -> x
+    kf <*> kx = \a ->
+        let f = kf a
+            x = kx a
+        in  f x
+~~~
+
+we can kill two birds with one stone. Every time we prove the Applicative laws for some functor F:
+~~~
+instance Applicative F where ...
+... we automatically prove that the following Monoid instance is correct for free:
+
+instance Monoid b => Monoid (F b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+~~~
+
+In the interest of brevity, I will skip the proofs of the Applicative laws, but I may cover them in a subsequent post.
+
+The beauty of Applicative Functors is that every new Applicative instance we discover adds a new building block to our Monoid toolbox, and Haskell programmers have already discovered lots of Applicative Functors.
+
+# Revisiting tuples
+
+One of the very first Monoid instances we wrote was:
+~~~
+instance (Monoid a, Monoid b) => Monoid (a, b) where
+    mempty = (mempty, mempty)
+    mappend (x1, y1) (x2, y2) = (mappend x1 x2, mappend y1 y2)
+~~~
+
+Check this out:
+~~~
+instance (Monoid a, Monoid b) => Monoid (a, b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+~~~
+
+This Monoid instance is yet another special case of the Applicative pattern we just covered!
+
+This works because of the following Applicative instance in Control.Applicative:
+~~~
+instance Monoid a => Applicative ((,) a) where
+    pure b = (mempty, b)
+    (a1, f) <*> (a2, x) = (mappend a1 a2, f x)
+~~~
+
+
+This instance obeys the Applicative laws (proof omitted), so our Monoid instance for tuples is automatically correct, too.
+
+Composing applicatives
+In the very first section I wrote:
+
+Haskell programmers prove large-scale properties exactly the same way we build large-scale programs:
+
+We build small proofs that we can verify correct in isolation
+We compose smaller proofs into larger proofs
+I don't like to use the word compose lightly. In the context of category theory, compose has a very rigorous meaning, indicating composition of morphisms in some category. This final section will show that we can actually compose Monoid proofs in a very rigorous sense of the word.
+
+We can define a category of Monoid proofs:
+
+Objects are types and their associated Monoid proofs
+Morphisms are Applicative Functors
+The identity morphism is the Identity applicative
+The composition operation is composition of Applicative Functors
+The category laws are isomorphisms instead of equalities
+So in our Plugin example, we began on the proof that () was a Monoid and then composed three Applicative morphisms to prove that Plugin was a Monoid. I will use the following diagram to illustrate this:
+
+~~~
++-----------------------+
+|                       |
+| Legend:  * = Object   |
+|                       |
+|          v            |
+|          | = Morphism |
+|          v            |
+|                       |
++-----------------------+
+
+* `()` is a `Monoid`
+
+v
+| IO
+v
+
+* `IO ()` is a `Monoid`
+
+v
+| ((->) String)
+v
+
+* `String -> IO ()` is a `Monoid`
+
+v
+| IO
+v
+
+* `IO (String -> IO ())` (i.e. `Plugin`) is a `Monoid`
+~~~
+
+Therefore, we were literally composing proofs together.
+
+# Conclusion
+
+You can equationally reason at scale by decomposing larger proofs into smaller reusable proofs, the same way we decompose programs into smaller and more reusable components. There is no limit to how many proofs you can compose together, and therefore there is no limit to how complex of a program you can tame using equational reasoning.
+
+This post only gave one example of composing proofs within Haskell. The more you learn the language, the more examples of composable proofs you will encounter. Another common example is automatically deriving Monad proofs by composing monad transformers.
+
+As you learn Haskell, you will discover that the hard part is not proving things. Rather, the challenge is learning how to decompose proofs into smaller proofs and you can cultivate this skill by studying category theory and abstract algebra. These mathematical disciplines teach you how to extract common and reusable proofs and patterns from what appears to be disposable and idiosyncratic code.
+
+# Appendix A - Missing Monoid instances
+
+These Monoid instance from this post do not actually appear in the Haskell standard library:
+~~~
+instance Monoid b => Monoid (IO b)
+~~~
+
+~~~
+instance Monoid Int
+The first instance was recently proposed here on the Glasgow Haskell Users mailing list. However, in the short term you can work around it by writing your own Monoid instances by hand just by inserting a sufficient number of pures and liftA2s.
+
+For example, suppose we wanted to provide a Monoid instance for Plugin. We would just newtype Plugin and write:
+
+newtype Plugin = Plugin { install :: IO (String -> IO ()) }
+
+instance Monoid Plugin where
+    mempty = Plugin (pure (pure (pure mempty)))
+    mappend (Plugin p1) (Plugin p2) =
+        Plugin (liftA2 (liftA2 (liftA2 mappend)) p1 p2)
+This is what the compiler would have derived by hand.
+
+Alternatively, you could define an orphan Monoid instance for IO, but this is generally frowned upon.
+
+There is no default Monoid instance for Int because there are actually two possible instances to choose from:
+
+-- Alternative #1
+instance Monoid Int where
+    mempty = 0
+
+    mappend = (+)
+
+-- Alternative #2
+instance Monoid Int where
+    mempty = 1
+
+    mappend = (*)
+So instead, Data.Monoid sidesteps the issue by providing two newtypes to distinguish which instance we prefer:
+
+newtype Sum a = Sum { getSum :: a }
+
+instance Num a => Monoid (Sum a)
+
+newtype Product a = Product { getProduct :: a}
+
+instance Num a => Monoid (Product a)
+An even better solution is to use a semiring, which allows two Monoid instances to coexist for the same type. You can think of Haskell's Num class as an approximation of the semiring class:
+~~~
+
+~~~
+class Num a where
+    fromInteger :: Integer -> a
+    (+) :: a -> a -> a
+    (*) :: a -> a -> a
+    -- ... and other operations unrelated to semirings
+~~~
+
+Note that we can also lift the Num class over the Applicative class, exactly the same way we lifted the Monoid class. Here's the code:
+
+~~~
+instance (Applicative f, Num a) => Num (f a) where
+    fromInteger n = pure (fromInteger n)
+    (+) = liftA2 (+)
+    (*) = liftA2 (*)
+    (-) = liftA2 (-)
+    negate = fmap negate
+    abs = fmap abs
+    signum = fmap signum
+~~~
+
+
+This lifting guarantees that if a obeys the semiring laws then so will f a. Of course, you will have to specialize the above instance to every concrete Applicative because otherwise you will get overlapping instances.
+
+# Appendix B
+These are the proofs to establish that the following Monoid instance obeys the Monoid laws:
+
+~~~
+instance (Applicative f, Monoid b) => Monoid (f b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+~~~
+
+... meaning that if f obeys the Applicative laws and b obeys the Monoid laws, then f b also obeys the Monoid laws.
+
+~~~
+Proof of the left identity law:
+
+mempty <> x
+
+-- x <> y = mappend x y
+= mappend mempty x
+
+-- mappend = liftA2 mappend
+= liftA2 mappend mempty x
+
+-- mempty = pure mempty
+= liftA2 mappend (pure mempty) x
+
+-- liftA2 f x y = (pure f <*> x) <*> y
+= (pure mappend <*> pure mempty) <*> x
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= pure (mappend mempty) <*> x
+
+-- Eta conversion
+= pure (\a -> mappend mempty a) <*> x
+
+-- mappend mempty x = x
+= pure (\a -> a) <*> x
+
+-- id = \x -> x
+= pure id <*> x
+
+-- Applicative law: pure id <*> v = v
+= x
+Proof of the right identity law:
+
+x <> mempty = x
+
+-- x <> y = mappend x y
+= mappend x mempty
+
+-- mappend = liftA2 mappend
+= liftA2 mappend x mempty
+
+-- mempty = pure mempty
+= liftA2 mappend x (pure mempty)
+
+-- liftA2 f x y = (pure f <*> x) <*> y
+= (pure mappend <*> x) <*> pure mempty
+
+-- Applicative law: u <*> pure y = pure (\f -> f y) <*> u
+= pure (\f -> f mempty) <*> (pure mappend <*> x)
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= ((pure (.) <*> pure (\f -> f mempty)) <*> pure mappend) <*> x
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= (pure ((.) (\f -> f mempty)) <*> pure mappend) <*> x
+
+-- Applicative law : pure f <*> pure x = pure (f x)
+= pure ((.) (\f -> f mempty) mappend) <*> x
+
+-- `(.) f g` is just prefix notation for `f . g`
+= pure ((\f -> f mempty) . mappend) <*> x
+
+-- f . g = \x -> f (g x)
+= pure (\x -> (\f -> f mempty) (mappend x)) <*> x
+
+-- Apply the lambda
+= pure (\x -> mappend x mempty) <*> x
+
+-- Monoid law: mappend x mempty = x
+= pure (\x -> x) <*> x
+
+-- id = \x -> x
+= pure id <*> x
+
+-- Applicative law: pure id <*> v = v
+= x
+Proof of the associativity law:
+
+(x <> y) <> z
+
+-- x <> y = mappend x y
+= mappend (mappend x y) z
+
+-- mappend = liftA2 mappend
+= liftA2 mappend (liftA2 mappend x y) z
+
+-- liftA2 f x y = (pure f <*> x) <*> y
+= (pure mappend <*> ((pure mappend <*> x) <*> y)) <*> z
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= (((pure (.) <*> pure mappend) <*> (pure mappend <*> x)) <*> y) <*> z
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= ((pure f <*> (pure mappend <*> x)) <*> y) <*> z
+  where
+    f = (.) mappend
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= ((((pure (.) <*> pure f) <*> pure mappend) <*> x) <*> y) <*> z
+  where
+    f = (.) mappend
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= (((pure f <*> pure mappend) <*> x) <*> y) <*> z
+  where
+    f = (.) ((.) mappend)
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f = (.) ((.) mappend) mappend
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f = ((.) mappend) . mappend
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (((.) mappend) . mappend) x
+
+-- (f . g) x = f (g x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (.) mappend (mappend x)
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = mappend . (mappend x)
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = (mappend . (mappend x)) y
+
+-- (f . g) x = f (g x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = mappend (mappend x y)
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y z = mappend (mappend x y) z
+
+-- Monoid law: mappend (mappend x y) z = mappend x (mappend y z)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y z = mappend x (mappend y z)
+
+-- (f . g) x = f (g x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y z = (mappend x . mappend y) z
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = mappend x . mappend y
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = (.) (mappend x) (mappend y)
+
+-- (f . g) x = f
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = (((.) . mappend) x) (mappend y)
+
+-- (f . g) x = f (g x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x y = ((((.) . mappend) x) . mappend) y
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (((.) . mappend) x) . mappend
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (.) (((.) . mappend) x) mappend
+
+-- Lambda abstraction
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (\k -> k mappend) ((.) (((.) . mappend) x))
+
+-- (f . g) x = f (g x)
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f x = (\k -> k mappend) (((.) . ((.) . mappend)) x)
+
+-- Eta conversion
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f = (\k -> k mappend) . ((.) . ((.) . mappend))
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> y) <*> z
+  where
+    f = (.) (\k -> k mappend) ((.) . ((.) . mappend))
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= (((pure g <*> pure f) <*> x) <*> y) <*> z
+  where
+    g = (.) (\k -> k mappend)
+    f = (.) . ((.) . mappend)
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= ((((pure (.) <*> pure (\k -> k mappend)) <*> pure f) <*> x) <*> y) <*> z
+  where
+    f = (.) . ((.) . mappend)
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= ((pure (\k -> k mappend) <*> (pure f <*> x)) <*> y) <*> z
+  where
+    f = (.) . ((.) . mappend)
+
+-- u <*> pure y = pure (\k -> k y) <*> u
+= (((pure f <*> x) <*> pure mappend) <*> y) <*> z
+  where
+    f = (.) . ((.) . mappend)
+
+
+-- (.) f g = f . g
+= (((pure f <*> x) <*> pure mappend) <*> y) <*> z
+  where
+    f = (.) (.) ((.) . mappend)
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= ((((pure g <*> pure f) <*> x) <*> pure mappend) <*> y) <*> z
+  where
+    g = (.) (.)
+    f = (.) . mappend
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= (((((pure (.) <*> pure (.)) <*> pure f) <*> x) <*> pure mappend) <*> y) <*> z
+  where
+    f = (.) . mappend
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= (((pure (.) <*> (pure f <*> x)) <*> pure mappend) <*> y) <*> z
+  where
+    f = (.) . mappend
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= ((pure f <*> x) <*> (pure mappend <*> y)) <*> z
+  where
+    f = (.) . mappend
+
+-- (.) f g = f . g
+= ((pure f <*> x) <*> (pure mappend <*> y)) <*> z
+  where
+    f = (.) (.) mappend
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= (((pure f <*> pure mappend) <*> x) <*> (pure mappend <*> y)) <*> z
+  where
+    f = (.) (.)
+
+-- Applicative law: pure f <*> pure x = pure (f x)
+= ((((pure (.) <*> pure (.)) <*> pure mappend) <*> x) <*> (pure mappend <*> y)) <*> z
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= ((pure (.) <*> (pure mappend <*> x)) <*> (pure mappend <*> y)) <*> z
+
+-- Applicative law: ((pure (.) <*> u) <*> v) <*> w = u <*> (v <*> w)
+= (pure mappend <*> x) <*> ((pure mappend <*> y) <*> z)
+
+-- liftA2 f x y = (pure f <*> x) <*> y
+= liftA2 mappend x (liftA2 mappend y z)
+
+-- mappend = liftA2 mappend
+= mappend x (mappend y z)
+
+-- x <> y = mappend x y
+= x <> (y <> z)
+~~~
+
+# Appendix C: Monoid key logging
+
+Here is the complete program for a key logger with a Monoid-based plugin system:
+
+
+~~~
+import Control.Applicative (pure, liftA2)
+import Control.Monad (forever)
+import Data.Monoid
+import System.IO
+
+instance Monoid b => Monoid (IO b) where
+    mempty = pure mempty
+    mappend = liftA2 mappend
+
+type Plugin = IO (Char -> IO ())
+
+logTo :: FilePath -> Plugin
+logTo filePath = do
+    handle <- openFile filePath WriteMode
+    hSetBuffering handle NoBuffering
+    return (hPutChar handle)
+
+main = do
+
+    hSetEcho stdin False
+    handleChar <- logTo "file1.txt" <> logTo "file2.txt"
+    forever $ do
+        c <- getChar
+        handleChar c
+        putChar c
+
+~~~

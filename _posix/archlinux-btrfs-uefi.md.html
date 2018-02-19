@@ -1,0 +1,304 @@
+---
+title: ArchLinux uefi
+layout: dep
+date: 2017-05-24
+---
+
+
+
+# Internet Connetction
+
+wifi
+~~~
+wifi-menu
+~~~
+
+LAN cable
+~~~
+ip link show
+ip link set enxxxxx up      ## connect to internet with lan cable
+~~~
+
+
+~~~
+ping google.com     // comfirm that there is no packet loss
+~~~
+
+
+
+
+# Minimal Installation
+~~~
+DISK=sda
+
+
+gdisk /dev/$DISK              ## here sdx denotes sda
+    #> Command : o (create partition table)
+    #> Command : n    >>> 1      >>>         >>> +512M   >>> ef00 (UEFI System Partition)
+    #> Command : n    >>> 2      >>>         >>> +16G    >>> 8200 (swap用は8200)
+    #> Command : n    >>> 3      >>>         >>>         >>>      (Default: 8300)
+    #> Command : w (write)
+
+
+
+mkfs.fat -F32   /dev/${DISK}1
+mkswap          /dev/${DISK}2 && swapon /dev/${DISK}2
+mkfs.btrfs      /dev/${DISK}3
+
+mount /dev/${DISK}3 /mnt
+mkdir /mnt/boot && mount /dev/${DISK}1 /mnt/boot
+
+pacstrap /mnt base base-devel
+
+genfstab -U -p /mnt >> /mnt/etc/fstab       ## generate 'File System Table'
+
+arch-chroot /mnt /bin/bash                  ## change root directory to /mnt
+
+
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+echo "ja_JP.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+
+
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+export LANG=en_US.UTF-8
+
+
+ln -s /usr/share/zoneinfo/Asia/Tokyo /etc/localtime     ## set 'Your Local Time Zone'
+hwclock --systohc --utc                                 ## Hardware Clock
+
+
+## set host
+echo "# IP      hostname.domain.org=""          hostname "      >> /etc/hosts
+echo "127.0.0.1 localhost.localdomain localhost yourhostname "  >> /etc/hosts
+echo "::1       localhost.localdomain localhost youthostname "  >> /etc/hosts
+
+
+pacman -S vim zsh curl wget git     ## install useful tools
+
+mkinitcpio -p linux                 ## make initail memory table
+
+passwd                              ## set root password
+
+
+## GRUB
+pacman -S grub dosfstools efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=arch_grub --recheck --debug
+grub-mkconfig -o /boot/grub/grub.cfg
+
+
+## optional
+## in case your machine can run with a specified efi file
+## mkdir /boot/EFI/boot
+## cp /boot/EFI/arch_grub/grubx64.efi  /boot/EFI/boot/bootx64.efi
+
+exit
+reboot
+
+## remove install media
+~~~
+
+
+
+# X and GUI Installation
+~~~
+## networks
+systemctl enable dhcpcd.service && systemctl start dhcpcd.service
+systemctl enable netctl && systemctl start netctl
+
+## create user and login
+useradd -m -g wheel ghasshee
+pacman -S sudo
+visudo
+# decomment Defaults env_keep += "HOME"   //set $HOME
+# decomment %wheel ALL=(ALL) all
+# :wq!
+passwd ghasshee     ## set password for ghasshee
+su ghasshee
+
+
+# GUI
+sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-xclock xterm
+sudo pacman -S xfce4 xfce4-goodies gamin
+
+#yaourt
+sudo echo "[archlinuxfr]" >> /etc/pacman.conf
+sudo echo "SigLevel = Never" >> /etc/pacman.conf
+sudo echo "Server = http://repo.archlinux.fr/\$arch" >> /etc/pacman.conf
+sudo pacman -Sy yaourt
+yaourt -Syua
+
+## install Graphic Driver
+lspci | grep VGA
+sudo pacman -Ss xf86-video    ## find your driver
+sudo pacman -S xf86-video-intel
+
+
+yaourt -S ttf-ricty ttf-mona otf-takao otf-ipaexfont
+
+
+## Display Manager (Login Manager)
+sudo pacman -S slim archlinux-themes-slim slim-themes
+sudo vim /etc/slim.conf
+# login_cmd exec /usr/bin/zsh -l ~/.xinitrc %session
+# daemon yes
+# current_theme archlinux-simplyblack
+sudo systemctl enable slim.service
+
+
+sudo pacman -S fcitx-im fcitx-anthy fcitx-configtool
+vim $HOME/.xinitrc
+---
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@imi-fcitx"
+---
+
+## Apperrance
+yaourt -S numix-themes-green numix-circle-icon-theme-git
+
+
+
+
+sudo pacman -S git openssh
+
+
+## Sound
+sudo pacman -S alsa-utils
+sudo alsactl store
+
+## when Sound not work
+## $ aplay -l           ## see which card you want to use
+## $ vim ~/.asoundrc    ## or $ vim /etc/asound.conf
+## pcm.!default {
+## 	    type hw
+##  	card 1
+## }
+## ctl.!default {
+##  	type hw
+##  	card 1
+## }
+
+
+
+## Mouse Driver
+sudo pacman -S xf86-input-synaptics
+sudo pacman -S xf86-input-mouse
+
+## supplement Thunar FileManager
+sudo pacman -S thunar-volman thunar-media-tags-plugin thunar-archive-plugin file-roller
+exo-preffered-application
+
+
+## Dropbox
+yaourt -S dropbox thunar-dropbox
+
+
+## Install Dotfiles
+
+## browser
+
+yaourt -S vivaldi pepper-flash
+sudo pacman -S chromium firefox
+yaourt -S vivaldi-ffmpeg-codecs --noconfirm  ## this takes much compile time
+
+yaourt -S xcalib
+
+sudo pacman -S okular tmux ffmpeg
+sudo pacman -S atom
+
+yaourt -S pacaur
+
+sudo gem install jekyll
+
+sudo pacman -S sshfs
+sudo pacman -S expect
+
+# Russian & Japanese Input2ch
+sudo pacman -S ibus ibus-anthy ibus-m17n
+
+
+## Bluetooth
+sudo pacman -S bluez bluez-utils
+modprobe btusb
+sudo systemctl enable bluetooth && sudo systemctl start bluetooth
+## conect bluetooth mouse
+## $ bluetoothctl
+## [bluetooth] list
+## Controller <controller mac> ...
+## [bluetooth] select <controller mac>
+## [bluetooth] power on
+## [bluetooth] scan on
+## [bluetooth] agent on
+## [bluetooth] devices          ## push connect button on mouse
+## Device <mouse mac> ...
+## [bluetooth] pair <mouse mac>
+## [bluetooth] trust <mouse mac>
+## [bluetooth] connect <mouse mac>
+
+
+## network time protocol
+sudo pacman -S ntp
+systemctl enable ntpd
+
+sudo pacman -S opam
+opam init && opam install utop
+sudo pacman -S stack
+stack install ghci --install-ghc
+
+sudo gem install jekyll
+
+yaourt -S tty-clock talking-clock-git festival festival-english festival-us espeak
+espeak --stdout "this is a test" | paplay
+
+
+sudo pacman -S sox
+sudo pacman -S libid3tag libmad         ## optional library for mp3
+
+
+curl https://sh.rustup.rs -sSf | sh
+
+git clone http://www.github.com/paritytech/parity
+cd parity && cargo build --release
+
+
+sudo pacman -S bc cowsay sl
+
+sudo gem install mechanize
+
+sudo pacman -S youtube-dl
+
+## geth console
+sudo pacman -S geth
+
+## HFS / HFS+ (Apple File System)
+sudo pacman -S hfsprogs
+
+## DVD / mplayer
+sudo pacman -S dvdauthor
+sudo pacman -S dvd+rw-tools
+sudo pacman -S mplayer
+
+
+sudo pacman -S tree mlocate
+sudo updatedb
+
+
+yaourt -S vokoscreen --noconfirm
+
+sudo pacman -S sdcv
+
+sudo pacman -S xsel
+
+sudo pacman -S gnuplot
+
+~~~
+
+
+
+speed up Yaourt
+~~~
+vim /etc/makepkg.conf
+#MAKE_FLAGS="-j2"
+MAKE_FLAGS="-j8"
+~~~

@@ -1,0 +1,58 @@
+---
+title: linux kernel
+layout: dep
+---
+
+reading "Linux Kernel 2.6 decode"
+
+
+<br>
+<hr>
+<br>
+
+## Kernel Src
+
+| directory | abstract |
+| --- | --- |
+| mm | memory control |
+| fs | vfs  (subdir:fs) |
+| net | network protocol |
+| ipc | System V ipc (ipc : inter-processor communication) |
+| init | programs in kernel initializing |
+| crypto | crypto functions |
+| block | controls block type device |
+| drivers | device drivers |
+| sound | sound driver |
+| arch | cpu architecture interface |
+| include | header files used in compiling kernel |
+
+
+<br>
+<hr>
+<br>
+
+## Interupt 割り込み
+
+kernel is dealing with many computations ,such as loop.
+External Input signal by keyboards or networks reach kernel .
+How kernel deal with this kind of signals is called "Interruption".
+
+kernel はループ処理をはじめとして、さまざまな計算処理を処理している
+そこに、キーボードやネットワークからの入力がある。
+これを割り込みという。
+
+
+# Linux と Unix の違い
+
+Linux :
+「ソフト割り込み」
+システム全体の負荷を軽減
+
+Unix :
+「割り込みレベル」と言う概念をもちいて
+応答性を確保
+
+
+
+
+-p21

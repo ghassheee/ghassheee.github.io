@@ -1,0 +1,25 @@
+Arch Linux で日本語フォントをきれいに表示
+
+/etc/fonts/conf.avail/71-no-embedded-bitmaps.confを作り、以下を記入。
+
+`````
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <match target="font">
+    <edit mode="assign" name="embeddedbitmap">
+      <bool>false</bool>
+    </edit>
+    <edit mode="assign" name="hintstyle">
+       <const>hintnone</const>
+    </edit>
+  </match>
+</fontconfig>
+`````
+
+
+次に、/etc/fonts/conf.d/にリンクを貼る。
+
+```sh
+$ sudo ln -s /etc/fonts/conf.avail/71-no-embedded-bitmaps.conf /etc/font
+```

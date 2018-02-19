@@ -1,0 +1,591 @@
+---
+title: archiso
+layout: dep
+date: 2016-01-13
+---
+
+
+
+archiso に
+-archzfs-linux
+-ipw2200-fw
+
+
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br>
+
+* on 64bit PC with EFI
+* ArchLinux のインストールの手順です。
+* OSX のようにデザイン性が高く、また軽い UI を構築します。
+* `/home` パーティションを切り離すことで移植性を高めます。
+
+
+<br><br>
+# make install media
+
+
+// @ osx
+
+```sh
+$ hdiutil convert -format UDRW -o archlinux.img archlinux.iso
+```
+
+```sh
+$ mv archlinux.img.dmg archlinux.img
+```
+
+```sh
+$ diskutil list
+```
+
+// see the destination usb device
+
+```sh
+$ dd if=archlinux.img of=/dev/disk2 bs=1m
+```
+
+
+<br><br><br><br><br><br>
+# boot usb
+
+1. insert usb
+2. join BIOS setting
+3. turn off UEFI mode
+4. reboot
+5. choose `64 bit` Boot Arch Linux
+
+<br><br><br><br><br><br>
+# connect to Internet !
+
+```sh
+wifi-menu
+```
+
+Here I named the interface `wlo0`
+
+
+<br><br><br><br><br><br>
+# partitioning !
+
+<br>
+
+***************************************
+*                                     *
+*                                     *
+*   .---+------.            +-----+   *
+*  |sda1| /boot |           |/boot|   *
+*  +----+-------+           |sda1 |   *
+*  |sda2| swap  |           +-----+   *
+*  +----+-------+   +-----+/          *
+*  |sda3| /home |   |  /  +           *
+*  +----+-------+   |sda4 |\          *
+*  |sda4| /     |   +-----+ +-----+   *
+*   '---+------'            |/home|   *
+*                           |sda3 |   *
+*                           '-----+   *
+*                                     *
+***************************************
+
+<br>
+
+```sh
+lsblk
+gdisk /dev/sda
+---
+Command (? for help): o (新しいパーティションテーブルを作る。現在のパーティションは削除される)
+_
+Command (? for help): n
+Partition number : 1
+First sector: (何も入力せずにリターン)
+Last sector: +512M
+Hex code or GUID: ef00 (EFI system partition)
+_
+Command (? for help): n
+Partition number: 2
+First sector:
+Last sector: +8G
+Hex code or GUID: 8200 (swap用は8200)
+_
+Command (? for help): n
+Partition number: 3
+First sector:
+Last sector: +64G
+Hex code or GUID: (デフォルトが8300)
+_
+Command (? for help): n
+Partition number: 4
+First sector:
+Last sector:
+Hex code or GUID: (デフォルトが8300)
+_
+Command (? for help): w
+Do you want to proceed?: Y
+---
+gdisk -l /dev/sda
+```
+
+alternative way : `parted`
+
+
+
+
+<br><br><br><br><br><br>
+# init fs
+
+```sh
+mkfs.vfat -F32 /dev/sda1
+mkfs.ext4 /dev/sda3
+mkfs.ext4 /dev/sda4
+mkswap /dev/sda2
+```
+
+```sh
+swapon /dev/sda2
+```
+
+
+<br><br><br><br><br><br>
+# mount
+
+```sh
+mount /dev/sda4 /mnt
+mkdir /mnt/home
+mount /dev/sda3 /mnt/home
+```
+
+if you use GRUB on bios/gpt ,
+Do not mount /dev/sda1 !!!
+
+
+
+
+
+<br><br><br><br><br><br>
+# update hardwareclock
+
+```sh
+# timedatectl
+```
+
+
+<br><br><br><br><br><br>
+# choose mirror
+
+```sh
+# vim /etc/pacman.d/mirrorlist
+```
+
+
+<br><br><br><br><br><br>
+
+
+```sh
+# pacstrap /mnt base base-devel
+```
+
+```sh
+# genfstab -p /mnt >> /mnt/etc/fstab
+```
+
+
+<br><br><br><br><br><br>
+# login /mnt
+
+```sh
+# arch-chroot /mnt
+```
+
+
+<br><br><br><br><br><br>
+# install tools
+
+```sh
+# pacman -S vim zsh curl wget
+```
+
+
+<br><br><br><br><br><br>
+# set hostname
+
+```sh
+# echo ghasshee > /etc/hostname
+```
+
+
+<br><br><br><br><br><br>
+# choose timezone
+
+```sh
+# ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+```
+
+
+<br><br><br><br><br><br>
+# set locale
+
+```sh
+# vim /etc/locale.gen
+_
+decomment en_US.UTF-8
+decomment ja_JP.UTF-8
+:wq!
+_
+locale-gen
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+```
+
+
+
+<br><br><br><br><br><br>
+# make memory table loader
+
+```sh
+mkinitcpio -p linux
+```
+
+
+<br><br><br><br><br><br>
+#set root password
+
+```sh
+passwd
+```
+
+
+
+
+<br><br><br><br><br><br>
+# install network tools
+
+```sh
+# pacman -S iw wpa_supplicant  //wireless network interface
+# pacman -S dialog             //wifi-menu is depending on
+# pacman -S wpa_actiond        //automate wireless connection
+```
+
+
+
+<br><br><br><br><br><br>
+# install GRUB !
+
+```sh
+# pacman -S grub dosfstools efibootmgr
+# grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=arch_grub --recheck --debug
+# grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+# optional
+
+in case your machine can run with a specified efi file
+
+```sh
+# mkdir /boot/EFI/boot
+# cp /boot/EFI/arch_grub/grubx64.efi  /boot/EFI/boot/bootx64.efi
+```
+
+
+# OK, reboot it !
+
+```sh
+# exit
+# reboot
+```
+
+<br><br><br><hr><br><br><br><br><br><br><br>
+
+
+
+
+
+<br><br><br><br><br><br>
+# configure networks
+
+```
+# systemctl enable dhcpcd.service
+# systemctl start dhcpcd.service
+```
+
+```
+# systemctl enable netctl
+# systemctl start netctl
+```
+
+
+<br><br><br><br><br><br>
+# create user and login
+
+```
+# useradd -m -g wheel ghasshee
+# pacman -S sudo
+# visudo
+decomment Defaults env_keep += "HOME"   //set $HOME
+decomment %wheel ALL=(ALL) all
+:wq!
+# su ghasshee
+```
+
+
+
+
+<br><br><br><br><br><br>
+# install Yaourt package manager !!
+
+```sh
+$ sudo vim /etc/pacman.conf
+--add below last
+[archlinuxfr]
+SigLevel = Never
+Server = http://repo.archlinux.fr/$arch
+--
+:wq!
+```
+
+```
+$ sudo pacman -Sy yaourt
+```
+
+
+<br><br><br><br><br><br>
+# install Xwindow
+
+```sh
+$ sudo pacman -S xorg-server xorg-server-utils xorg-xinit xorg-xclock xterm
+```
+
+
+<br><br>
+# install xfce4
+
+```sh
+$ sudo pacman -S xfce4 xfce4-goodies gamin
+```
+
+
+<br><br>
+# automate xfce startup
+
+```sh
+$ echo "exec startxfce4" >> ~/.xinitrc
+```
+
+
+
+
+<br><br><br><br><br><br>
+# install Graphic Driver
+
+```sh
+$ lspci | grep VGA
+```
+
+```sh
+$ sudo pacman -Ss nvidia    //find your driver
+```
+
+```sh
+$ sudo pacman -S nvidia
+```
+
+
+
+<br><br><br><br><br><br>
+# install Fonts
+
+```sh
+$ yaourt -S ttf-ricty
+```
+
+```sh
+$ yaourt -S otf-takao oft-ipaexfont ttf-ipa-mona
+```
+
+
+<br><br><br><br><br><br>
+# install Display Manager (Login Manager)
+
+```sh
+$ sudo pacman -S slim archlinux-themes-slim slim-themes
+```
+
+```sh
+$ sudo vim /etc/slim.conf
+--
+login_cmd exec /usr/bin/zsh -l ~/.xinitrc
+%session
+daemon yes
+current_theme archlinux-simplyblack
+--
+:wq!
+```
+
+```sh
+$ sudo systemctl enable slim.service
+```
+
+
+<br><br><br><br><br><br>
+# install Japanese
+
+```sh
+$ sudo pacman -S fcitx-im fcitx-mozc fcitx-configtool
+```
+
+```sh
+$ vim .xinitrc
+--
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@imi-fcitx"
+--
+:wq!
+```
+
+
+
+<br><br><br><br><br><br>
+# Apperrance
+
+```sh
+$ sudo yaourt -S numix-themes numix-circle-icon-theme-git
+```
+
+```sh
+$ reboot
+```
+
+login ghasshee and
+
+Application menu > setting > Apperrance
+
+* style tab : Numix
+* icon tab : Numix Circle
+* font tab : Ricty
+
+Application menu > setting > windowManager
+
+* style tab's theme : Numix
+* style tab's title's font : Ricty
+
+
+<br><br><br><br><br><br>
+# Sound
+
+```sh
+$ sudo pacman -S alsa-utils
+```
+
+```sh
+$ sudo alsactl store
+```
+
+
+usage : open mixer
+
+```
+$ alsamixer
+```
+
+
+note : in case alsactl crash , type:
+
+```
+$ sudo alsactl init
+```
+
+
+GUI for `alsamixer` (optional)
+
+
+```
+$ sudo pacman -S pulseaudio
+```
+
+```
+$ sudo reboot
+```
+
+
+
+
+<br><br><br><br><br><br>
+# Mouse Driver
+
+```sh
+$ sudo pacman -S xf86-input-synaptics
+```
+
+```sh
+$ sudo pacman -S xf86-input-mouse
+```
+
+
+<br><br><br><br><br><br>
+# supplement Thunar FileManager
+
+```sh
+$ sudo pacman -S thunar-volman thunar-media-tags-plugin thunar-archive-plugin file-roller
+```
+
+```sh
+$ exo-preffered-application
+```
+
+if you are using dropbox
+
+```sh
+$ yaourt -S thunar-dropbox dropbox
+```
+
+
+<br><br><br><br><br><br>
+# 外部メディアやディスクの自動マウント
+
+SMBやFTPをnemo上でダブルクリックすると自動的にマウントしてくるツール
+
+```sh
+$ sudo pacman -S gvfs gvfs-afc gvfs-smb gvfs-afp gvfs-gphoto2 gvfs-mtp gvfs-goa
+```
+
+SMBやFTPに接続する際に入力するユーザー名やパスワードを管理するツール
+
+```sh
+$ sudo pacman -S seahorse gnome-keyring
+```
+
+
+
+
+<br><br><br><br><br><br>
+# zshの設定が面倒な人は、oh my zsh をいれておく
+
+```sh
+$ curl -L http://install.ohmyz.sh | sh
+```
+
+```sh
+$ chsh -s /usr/bin/zsh
+```
+
+
+<br><br><br><br><br><br>
+# etc
+
+
+* chromium
+* atom-editor
+* ocular
+* tmux
+* guake (install & press F12 )
+* vlc (play movies)
+* ffmpeg
+* launchy (command lancher)
+* gfeedline (twitter client)
+* plank (App Dock like OSX)
+* python-pip
+* htop
+* screenfetch (echo "screenfetch" >> .zshrc)

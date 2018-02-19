@@ -1,0 +1,27 @@
+---
+layout: default
+title: AVM
+categories: /avm
+permalink: /avm/
+---
+
+<div class="home">
+
+    <img src="../image/ghasshee.png" style="position: relative; width: 800px; overflow: hidden;"></img><br>
+    <h1 class="post-title"> AVM </h1><br>
+
+    Architecture be an instance of AVM which is integrated into Architectural Grobal Virtual Machine.<br>
+    Under Construction.<br><br><br>
+
+    <div class="grid">
+        <ul class="post-list">
+        {% for post in site.avm %}
+        <li>
+            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+</div>

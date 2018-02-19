@@ -1,0 +1,99 @@
+---
+layout: dep
+title: Lebesgue
+---
+
+
+
+
+
+# History
+
+## Frontier
+
+- ニュートン : 古典力学を創る。微積分の礎を築く。
+- リーマン : リーマン積分。リーマン和を定式化。
+- コーシー : 収束を定式化
+- ダルノー :
+
+## リーマン積分への問題提起
+
+- ジョルダン
+- ボレル
+- ルベーグ
+    - 「極限と積分の順序交換が可能か」
+    - 「微分と積分の順序交換が可能か」
+    - を判定したい！ $ \to $ ルベーグ積分
+
+
+# ルベーグ積分
+
+- 「長方形(Box)で埋め尽す」
+- 「面積が図れる集合（可測集合）でうめつくしていく」
+
+
+## Definitions
+
+### [外測度] $ \Gamma $
+
+$ \iff $
+
+- $ 0 \le \Gamma(A) \le \infty , \Gamma(\emptyset) = 0 $
+- $ A \subset B \Rightarrow \Gamma(A) \subset \Gamma(B) $
+- $ \Gamma(\bigcup ^ {\infty} _ {n=1} An ) \le \sum ^ {\infty} _ {n=1} ( A _ n ) $
+
+### [measurable]
+
+$ E $ ( $ \subset X $ ) is $ \Gamma $ - measurable $ \iff $
+
+- $ \forall A \subset X . \quad \Gamma(A \cap E) + \Gamma(A \cap E^c) $
+
+### [probability]
+
+$ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
+
+- $ P $ is  $ \Gamma $
+- $ P(\Omega) = 1 $
+
+
+
+
+### [有限加法族]
+
+- $ \emptyset \in \mathfrak{F} $
+- $ A \in \mathfrak{F} \Rightarrow A^{c} \in \mathfrak{F} $
+- $ A , B  \in \mathfrak{F}  \Rightarrow A \cup B \in \mathfrak{F} $
+
+
+
+### [$ \sigma $ 加法族]
+
+- $ \emptyset \in \mathfrak{B} $
+- $ E \in \mathfrak{B} \Rightarrow E^{c} \in \mathfrak{B} $
+- $ E _ n \in \mathfrak{B} \  ( \ n = 1,2,.... ) \Rightarrow \bigcup ^ {\infty} _ {n=1} E _ n \in \mathfrak{B} $
+
+
+
+### ルベーグ積分は 完全加法性 を満たす
+
+$$ A = \bigcup\ A_i = \sum A_i $$
+
+
+### [ indicator function of $ A $ ]
+
+$ \chi _ A (x) = \begin{cases}
+1 \ ( \ x \in A ) \\
+0 \ ( \ x \notin A ) \\
+\end{cases} $
+
+
+### $ L^p $ 関数
+
+
+# 三大定理
+
+- 単調収束定理
+- 優収束定理
+- フビニ : 積分の順序交換の際に用いられる
+
+# 積測度

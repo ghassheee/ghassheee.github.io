@@ -1,0 +1,291 @@
+---
+title: Arch Linux 32bit
+layout: dep
+date: 2015-12-13
+---
+
+
+
+
+* UEFI は使用していません。
+* `/home` パーティションを切り離し、移植性を高めます。
+
+
+
+# make install media
+
+
+@OSX
+
+~~~
+$ hdiutil convert -format UDRW -o archlinux.img archlinux.iso  ## not needed always
+$ mv archlinux.img.dmg archlinux.img
+$ diskutil list                                     ## see the destination usb device
+$ sudo dd if=archlinux.img of=/dev/diskXXX bs=1m
+~~~
+
+
+# boot usb
+
+1. insert usb
+2. join BIOS setting
+3. turn off UEFI mode
+4. reboot
+5. if you are installing on 4G memory laptop ,
+  * choose `i686 bit` Boot Arch Linux
+
+# design partitioning !
+
+
+  ***************************************
+  *                                     *
+  *                                     *
+  *   .---+------.            +-----+   *
+  *  |sda1| /boot |           |/boot|   *
+  *  +----+-------+           |sda1 |   *
+  *  |sda2| swap  |           +-----+   *
+  *  +----+-------+   +-----+/          *
+  *  |sda3| /     |   |  /  +           *
+  *  +----+-------+   |sda3 |\          *
+  *  |sda4| /home |   +-----+ +-----+   *
+  *   '---+------'            |/home|   *
+  *                           |sda4 |   *
+  *                           '-----+   *
+  *                                     *
+  ***************************************
+
+
+
+# installation
+
+~~~
+## connect to Internet !
+wifi-menu
+
+
+## see your deviece
+lsblk
+
+
+## do partitioning
+gdisk /dev/sda
+# Command : o (make new partition table)
+#
+# Command : n     >>>     1 >>>       >>>     +1M >>>    ef02
+# Command : n     >>>     2 >>>       >>>     +4G >>>    8200 (swap)
+# Command : n     >>>     3 >>>       >>>    +20G >>>         (default: 8300)
+# Command : n     >>>     4 >>>       >>>         >>>         (default: 8300)
+# Command : w
+gdisk -l /dev/sda
+
+###### alternative way for gdisk : parted ######
+#### parted /dev/sda
+#### (parted) mklabel gpt
+#### (parted) mkpart primary ext2 1 2
+#### (parted) set 1 bio_grub on
+#### (parted) mkpart primary linux-swap 2 1%
+#### (parted) mkpart primary ext4 1% 100%
+#### (parted) quit
+#################
+
+## determine filesystem
+mkfs.ext2 /dev/sda1
+mkfs.ext4 /dev/sda3
+mkfs.ext4 /dev/sda4
+mkswap /dev/sda2 && swapon /dev/sda2
+
+
+## mount them to proceed to installation on it
+mount /dev/sda3 /mnt
+mount /dev/sda4 /mnt/home
+
+
+## if you use GRUB on bios/gpt ,
+##      Do not mount /dev/sda1 !!!
+
+
+## update hardwareclock
+timedatectl
+
+
+## choose mirror
+vim /etc/pacman.d/mirrolist
+
+
+## install base
+pacstrap /mnt base base-devel
+
+
+## generate fstab ( how to mount disks, structuring)
+genfstab -p /mnt >> /mnt/etc/fstab
+
+
+## chroot
+arch-chroot /mnt
+
+
+## install tools
+pacman -S vim zsh curl wget
+
+
+## set hostname
+echo ghasshee > /etc/hostname
+
+
+## choose timezone
+ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+
+## set locale
+vim /etc/locale.gen
+# decomment en_US.UTF-8
+# decomment ja_JP.UTF-8
+# :wq!
+locale-gen
+echo LANG=en.UTF-8 > /etc/locale.conf
+
+
+## make memory table loader
+mkinitcpio -p linux
+
+
+## set root password
+passwd
+
+
+## install network tools
+pacman -S iw wpa_supplicant  //wireless network interface
+pacman -S dialog             //wifi-menu is depending on
+pacman -S wpa_actiond        //automate wireless connection
+
+
+## install GRUB !
+pacman -S grub-bios
+lsblk /dev/sda
+grub-install --recheck /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+
+
+## OK, reboot it !
+exit
+reboot
+~~~
+
+
+
+## gui && additionals
+
+~~~
+## configure networks
+# systemctl enable dhcpd.service && systemctl start dhcpd.service
+# systemctl enable netctl && systemctl start netctl
+~~~
+
+~~~
+make_user(){
+    useradd -m -g wheel $USERNAME
+    pacman -S --noconfirm sudo
+    visudo
+    ## decomment Defaults env_keep += "HOME"
+    ## decomment %wheel ALL=(ALL) all
+    su $USERNAME << EOF
+}
+
+install_base(){
+    ## yaourt
+    sudo echo "[archlinuxfr]" >> /etc/pacman.conf
+    sudo echo "SigLevel = Never" >> /etc/pacman.conf
+    sudo echo 'Server = http://repo.archlinux.rf/$arch' >> /etc/pacman.conf
+    sudo pacman -Sy --noconfirm yaourt
+    ## X
+    sudo pacman -S --noconfirm xorg-server xorg-server-utils xorg-xinit xorg-xclock xterm
+    ## xfce4
+    sudo pacman -S --noconfirm xfce4 xfce4-goodies gamin
+    ## Graphic Driver
+    lspci | grep VGA
+    sudo pacman -S xf86-video-intel     ## find driver with $ sudo pacman -Ss xf86-video
+    ## Fonts
+    yaourt -S --noconfirm ttf-ricty otf-takao oft-ipaexfont ttf-ipa-mona
+    ## slim
+    sudo pacman -S --noconfirm slim archlinux-themes-slim slim-themes
+    sudo echo 'login_cmd exec /usr/bin/zsh -l ~/.xinitrc %session' >> /etc/slim.conf
+    sudo echo 'daemon yes' >> /etc/slim.conf
+    sudo echo 'current_theme archlinux-simplyblack' >> /etc/slim.conf
+    sudo systemctl enable slim.service
+    ## Japanese
+    sudo pacman -S --noconfirm fcitx-im fcitx-mozc fcitx-configtool
+    ## theme & icon
+    yaourt -S --noconfirm numix-themes numix-circle-icon-theme-git menda-circle-icon-theme-git
+    ## Sound
+    sudo pacman -S alsa-utils && sudo alsactl store
+    ## Mouse Driver
+    sudo pacman -S --noconfirm xf86-input-synaptics xf86-input-mouse
+}
+
+dotfiles(){
+    ## dotfiles
+    mkdir $HOME/ghasshee && cd $HOME/ghasshee
+    git clone https://www.github.com/ghassheee/dotfiles && cd dotfiles
+    chmod 777 * .*
+    ./make_links.zsh
+    ## write xinitrc
+    echo 'source $HOME/.Xmodmap' > $HOME/.xinitrc
+    echo "export GTK_IM_MODULE=fcitx" > $HOME/.xinitrc
+    echo "export QT_IM_MODULE=fcitx" > $HOME/.xinitrc
+    echo "export XMODIFIERS="@imi-fcitx"" > $HOME/.xinitrc
+    echo "exec startxfce4" > $HOME/.xinitrc
+}
+
+install_etc(){
+    ## Dropbox with Thunar
+    yaourt -S --noconfirm thunar-dropbox dropbox
+    ## etc
+    yaourt -S --noconfirm chromium vivaldi tmux ocular ffmpeg atom-editor-git python-pip vlc
+    ## opam
+    yaourt -S --noconfirm opam
+    ## multirust
+    curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-install.sh | sh
+}
+
+make_ghasshee(){
+    USERNAME=ghasshee
+    make_user
+}
+installation(){
+    install_base
+    dotfiles
+    install_etc
+}
+
+
+
+~~~
+
+~~~
+
+
+supplement(){
+    ## supplement Thunar FileManager
+    sudo pacman -S --noconfirm thunar-volman thunar-media-tags-plugin thunar-archive-plugin file-roller
+    # exo-preffered-application ## choose preffered App
+    ## AutoMount tools
+    sudo pacman -S --noconfirm gvfs gvfs-afc gvfs-smb gvfs-afp gvfs-gphoto2 gvfs-mtp gvfs-goa
+    ## password managing tools
+    sudo pacman -S --noconfirm seahorse gnome-keyring
+}
+
+
+
+~~~
+
+
+~~~
+## reboot and login as ghasshee and go
+## 1. Application menu > setting > Apperrance
+## * style tab : Numix
+## * icon tab : Numix Circle
+## * font tab : Ritchy
+## 2. Application menu > setting > windowManager
+## * style tab's theme : Numix
+## * style tab's title's font : Ritchy
+~~~

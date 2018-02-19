@@ -1,0 +1,230 @@
+---
+title: Arch Linux XFS
+layout: dep
+date: 2016-01-13
+---
+
+# UEFI
+
+- Turn off SECURE MODE
+- UEFIモードで起動している場合は、/sys/firmware/にefiというディレクトリがある。
+- UEFIモードで起動していない時は、UEFI BIOSの設定などを見直す。
+
+~~~
+# ls /sys/firmware/
+apci dmi efi memmap
+~~~
+
+# Basic Install
+
+~~~
+for i in functions
+    do the inner command of $i, step by step downwords
+~~~
+
+installation.sh
+~~~
+configure_env(){
+    wifi-menu
+    ## see DISK MOUNT LIST
+    lsblk
+    ## set Variables
+    DISK_LOCATION="sdXXX"
+    WIFINAME=""
+    WIFIPASSWORD=""
+    YOURHOSTNAME="ghasshee"
+}
+
+delete_mbr(){
+    sgdisk --zap-all /dev/$DISK_LOCATION       ## only delete MBR & GTP tables
+}
+
+partitioning(){
+    gdisk /dev/$DISK_LOCATION
+    #> Command : o (create partition table)
+    #> Command : n    >>> 1      >>>         >>> +512M   >>> ef00 (UEFI System Partition)
+    #> Command : n    >>> 2      >>>         >>> +32G    >>> 8200 (swap用は8200)
+    #> Command : n    >>> 3      >>>         >>> +64G    >>>      (Default: 8300)
+    #> Command : n    >>> 4      >>>         >>>         >>>
+    #> Command : w (write)
+}
+
+determine_filesystems(){
+    mkfs.fat -F32 /dev/${DISK_LOCATION}1
+    mkswap /dev/${DISK_LOCATION}2 && swapon /dev/${DISK_LOCATION}2
+    mkfs.xfs -m crc=1 /dev/${DISK_LOCATION}3
+    mkfs.xfs -m crc=1 /dev/${DISK_LOCATION}4
+}
+
+mount_partitions(){
+    mount /dev/${DISK_LOCATION}3 /mnt
+    mkdir /mnt/home && mount /dev/${DISK_LOCATION}4 /mnt/home
+    mkdir /mnt/boot && mount /dev/${DISK_LOCATION}1 /mnt/boot
+}
+
+install_base(){
+    pacstrap /mnt base base-devel
+}
+
+generate_fstab(){
+    genfstab -U -p /mnt >> /mnt/etc/fstab
+}
+
+do_chroot(){
+    arch-chroot /mnt /bin/bash
+}
+
+generate_locale(){
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "ja_JP.UTF-8 UTF-8" >> /etc/locale.gen
+    locale-gen
+}
+
+export_language(){
+    echo LANG=en_US.UTF-8 > /etc/locale.conf
+    export LANG=en_US.UTF-8
+}
+
+set_time(){
+    ln -s /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+    hwclock --systohc --utc
+}
+
+set_hosts(){
+    echo "# /etc/hosts: static lookup table for host names" > /etc/hosts
+    echo "#<ip-address> <hostname .domain.org=""> <hostname>" >> /etc/hosts
+    echo "127.0.0.1 localhost.localdomain localhost $YOURHOSTNAME" >> /etc/hosts
+    echo "::1  localhost.localdomain localhost $YOURHOSTNAME" >> /etc/hosts
+}
+
+install_wifi_manager(){
+    pacman -S iw wpa_supplicant  ## wireless network interface
+    pacman -S dialog             ## wifi-menu is depending on
+    pacman -S wpa_actiond        ## automate wireless connection
+}
+
+install_network_manager(){
+    pacman -S networkmanager xfce4-notifyd gnome-keyring
+    systemctl enable NetworkManager
+}
+
+###### KERNEL UPGRADE
+#### if ( you are upgrading kernel )
+####       pacman -S linux        // this command also creates kernel img in /boot/
+#### fi
+
+init_memory_table(){
+    mkinitcpio -p linux
+}
+
+install_boot_manager(){
+    pacman -S intel-ucode
+    pacman -S dosfstools efibootmgr
+}
+
+install_grub_efi(){
+    pacman -S grub
+    grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=arch_grub --recheck
+    mkdir /boot/EFI/boot && cp /boot/EFI/arch_grub/grubx64.efi /boot/EFI/boot/bootx64.efi
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+do_exit(){
+    exit
+}
+
+## REBOOT
+
+wifi_connect(){
+    nmcli dev wifi connect $WIFINAME password $WIFIPASSWORD
+}
+~~~
+
+
+
+
+# GUI
+
+~~~
+
+
+settings(){
+    useradd -m -g wheel $HOSTNAME
+    pacman -S sudo
+    visudo
+    ## decomment Defaults env_keep += "HOME"   //set $HOME
+    ## decomment %wheel ALL=(ALL) all
+    passwd $HOSTNAME    ## set password for ghasshee
+    su $HOSTNAME
+}
+
+package_manager(){
+    sudo echo "[archlinuxfr]" >> /etc/pacman.conf
+    sudo echo "SigLevel = Never" >> /etc/pacman.conf
+    sudo echo "Server = http://repo.archlinux.fr/\$arch" >> /etc/pacman.conf
+    sudo pacman -Sy yaourt
+    yaourt -Syua
+}
+
+#### if CA is not valid error
+## sudo trust extract-compat         ## instead of $ update-ca-certificates
+
+xwindow_system(){
+    sudo pacman -S xorg-server xorg-server-utils xorg-xinit xorg-xclock xterm
+    sudo pacman -S xfce4 xfce4-goodies gamin
+    echo "exec startxfce4" >> ~/.xinitrc
+}
+
+
+VIDEOCARD="xf86-video-intel"
+video_driver(){
+    lspci | grep VGA                ## show video-card information
+    sudo pacman -Ss xf86-video      ## find your driver
+    sudo pacman -S $VIDEOCARD
+}
+
+ttf_install(){
+    yaourt -S ttf-sazanami ttf-ubuntu-font-family ttf-inconsolata
+}
+
+slim_install(){
+    sudo pacman -S slim archlinux-themes-slim slim-themes
+    sudo vim /etc/slim.conf
+    ##> login_cmd exec /usr/bin/zsh -l ~/.xinitrc
+    ##> daemon yes
+    ##> current_theme archlinux-simplyblack
+    ##> default_user ghasshee
+    sudo systemctl enable slim.service
+}
+
+install_Japanese(){
+    sudo pacman -S fcitx-im fcitx-anthy fcitx-configtool
+    echo "export GTK_IM_MODULE=fcitx" >> $HOME/.xinitrc
+    echo "export QT_IM_MODULE=fcitx" >> $HOME/.xinitrc
+    echo "export XMODIFIERS="@im=fcitx"" >> $HOME/.xinitrc
+}
+
+yaourt -S numix-themes
+
+## REBOOT
+
+install_lts_kernel(){
+    #?? yaourt -S linux-xps13 linux-xps13-headers
+    #?? pgp --keyserver keys.gnupg.net --recv-keys <key>
+    sudo pacman -S linux-lts
+    sudo pacman -R linux
+    sudo rename 's/linux-lts/linux/' /boot/*
+    sudo mkinitcpio -p linux
+}
+~~~
+
+
+
+
+~~~
+yaourtlog() {
+yaourt -S $1 | tee /var/log/yaourt.log
+}
+
+alias yaourt=yaourtlog
+~~~
