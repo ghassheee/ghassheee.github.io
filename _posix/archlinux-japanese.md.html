@@ -4,22 +4,23 @@ layout: dep
 date: 2018-02-18
 ---
 
-[Japanese] ArchLinux インストール日本語資料
+[Jpn] ArchLinux インストール日本語資料 <br>
+[Eng] Archlinux Installation Guide <br>
 
 # Internet Connection
 
-[Japanese] wifi の場合
+[Jpn] wifi の場合
 ~~~
 wifi-menu
 ~~~
 
-[Japanese] LAN cable の場合
+[Jpn] LAN cable の場合
 ~~~
 ip link show
 ip link set enxxxxx up      ## connect to internet with lan cable
 ~~~
 
-[Japanese] 接続確認
+[Jpn] 接続確認
 ~~~
 ping google.com     // comfirm that there is no packet loss
 ~~~
@@ -27,18 +28,18 @@ ping google.com     // comfirm that there is no packet loss
 
 # Minimal Installation
 
-[Japanese] OS をどの HardDisk (`/dev/sd?`) に入れるかを確認
+[Jpn] OS をどの HardDisk (`/dev/sd?`) に入れるかを確認
 ~~~
 lsblk
 ~~~
 
-[Japanese] `DISK` 変数に文字列 `'sda'` を格納<br>
-[Japanese] `$DISK` とすると中身の値を指します
+[Jpn] `DISK` 変数に文字列 `'sda'` を格納<br>
+[Jpn] `$DISK` とすると中身の値を指します
 ~~~
 DISK=sda
 ~~~
 
-[Japanese] Partition 仕切りの作成
+[Jpn] Partition 仕切りの作成
 ~~~
 gdisk /dev/$DISK
     #> Command : o (create partition table)
@@ -48,30 +49,30 @@ gdisk /dev/$DISK
     #> Command : w (write)
 ~~~
 
-[Japanese] 区切られた領域内に File System を構築
+[Jpn] 区切られた領域内に File System を構築
 ~~~
 mkfs.fat -F32   /dev/${DISK}1
 mkswap          /dev/${DISK}2 && swapon /dev/${DISK}2
-mkfs.ext4       /dev/${DISK}3
+mkfs.ext4       /dev/${DISK}3                           ## mkfs.xfs mkfs.btrfs
 ~~~
 
-[Japanese] そのファイルシステムを mount する
+[Jpn] そのファイルシステムを mount する
 ~~~
 mount /dev/${DISK}3 /mnt
 mkdir /mnt/boot && mount /dev/${DISK}1 /mnt/boot
 ~~~
 
-[Japanese] OS に必要な基礎的ソフトのダウンロード
+[Jpn] OS に必要な基礎的ソフトのダウンロード
 ~~~
 pacstrap /mnt base base-devel
 ~~~
 
-[Japanese] マウントテーブル を作成
+[Jpn] マウントテーブル を作成
 ~~~
 genfstab -U -p /mnt >> /mnt/etc/fstab       ## generate 'File System Table'
 ~~~
 
-[Japanese] Root Directory を /mnt に変更
+[Jpn] Root Directory を /mnt に変更
 ~~~
 arch-chroot /mnt /bin/bash                  ## change root directory to /mnt
 ~~~
@@ -109,7 +110,6 @@ mkinitcpio -p linux                 ## make initial memory table
 ~~~
 passwd                              ## set root password
 ~~~
-
 
 ~~~
 pacman -S grub dosfstools efibootmgr
