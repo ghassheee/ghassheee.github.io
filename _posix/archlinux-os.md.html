@@ -17,12 +17,12 @@ sudo dd if=archlinux.img of=/dev/rdiskx bs=100m
 # PRECONDITION
 
 ~~~sh
-## loadkeys jp106                       ## IF JP Keyboard
+## loadkeys jp106                               ## IF JP Keyboard
 
-wifi-menu                               ## connect Wifi
+wifi-menu                                       ## connect Wifi
 
-ls /sys/firmware/efi/efivars            ## see if efi-variables exist
-# ls /sys/firmware/                     ## see if efi exists
+ls /sys/firmware/efi/efivars                    ## see if efi-variables exist
+# ls /sys/firmware/                             ## see if efi exists
 ~~~
 
 # Minimal Installation
@@ -32,10 +32,10 @@ DISK="/dev/sdx"
 
 
 gdisk /dev/$DISK
-##      o => y =>                           ## '=>' denotes 'Enter key'
-##      n => => => +512M => ef00 =>         ## UEFI: ef00
-##      n => => => +16G  => 8200 =>         ## SWAP: 8200
-##      n => => =>       =>      =>         ## Default: 8300
+##      o => y =>                               ## '=>' denotes 'Enter key'
+##      n => => => +512M => ef00 =>             ## UEFI: ef00
+##      n => => => +16G  => 8200 =>             ## SWAP: 8200
+##      n => => =>       =>      =>             ## Default: 8300
 ##      w => y =>
 
 
