@@ -5,16 +5,25 @@ date: 2000-01-02
 ---
 
 
-# Make an Install USB Media
+
+
+
+
+# Make an Installation USB Media
 
 ~~~sh
-sudo diskutil list                                                  ## lsblk @Linux
-sudo dd if=archlinux.img of=/dev/rdiskx bs=100m
+sudo diskutil list                              ## lsblk @Linux
+sudo dd if=arch.img of=/dev/rdiskx bs=100m      ## change 'x' of /dev/rdiskx
 ~~~
 
 
+# Boot the Installation USB Media
 
-# PRECONDITION
+1. Insert USB and POWER ON.
+2. PRESS F2 (or other keys) to enter BIOS.
+3. confirm UEFI mode and Boot Order, then SAVE&EXIT (F10).
+
+# Precondition
 
 ~~~sh
 ## loadkeys jp106                               ## IF JP Keyboard
@@ -28,10 +37,11 @@ ls /sys/firmware/efi/efivars                    ## see if efi-variables exist
 # Minimal Installation
 
 ~~~sh
-DISK="/dev/sdx"
+lsblk                                           ## Find Install Destination Device
+DISK="/dev/sdx"                                 ## Maybe /dev/sda or /dev/sdb
 
 
-gdisk /dev/$DISK
+gdisk /dev/$DISK                                ## Partitioning
 ##      o => y =>                               ## '=>' denotes 'Enter key'
 ##      n => => => +512M => ef00 =>             ## UEFI: ef00
 ##      n => => => +16G  => 8200 =>             ## SWAP: 8200
@@ -88,12 +98,10 @@ hwclock --systohc --utc
 echo $YOURHOSTNAME > /etc/hostname
 
 
-echo "# IP      hostname.domain.org=""          hostname "      >> /etc/hosts
-echo "127.0.0.1 localhost.localdomain localhost $YOURHOSTNAME"  >> /etc/hosts
-echo "::1       localhost.localdomain localhost $YOURHOSTNAME"  >> /etc/hosts
+echo "127.0.0.1 localhost"  >> /etc/hosts
 
 
-pacman -S btrfs-progs                           ## IF(BTRFS)
+pacman -S btrfs-progs                           ## IF(BTRFS(a file system))
 
 
 mkinitcpio -p linux

@@ -53,8 +53,10 @@ sudo pacman -S xf86-video-intel ## sudo pacman -S nvidia
 
 yaourt -S ttf-ricty ttf-mona otf-takao otf-ipaexfont --noconfirm
 ## yaourt -S ttf-sazanami --noconfirm
+~~~
 
 
+~~~sh
 ## Display Manager (Login Manager)
 sudo pacman -S slim archlinux-themes-slim slim-themes
 sudo vim /etc/slim.conf
@@ -180,8 +182,8 @@ sudo gem install jekyll mechanize
 sudo pacman -S okular ffmpeg atom sshfs expect bc cowsay sl sdcv xsel tree arp-scan perl-rename mlocate bc cowsay sl gnuplot
 sudo updatedb
 yaourt -S xcalib talking-clock-git festival festival-english festival-us espeak vokoscreen cheese --noconfirm
-espeak --stdout "this is a test" | paplay
-
+espeak --stdout "This is a test." | paplay
+echo "This is a test." | festival --tts
 
 yaourt -S pacaur
 
@@ -196,6 +198,10 @@ curl https://sh.rustup.rs -sSf | sh
 sudo pacman -S sox
 sudo pacman -S libid3tag libmad         ## optional library for mp3
 sudo pacman -S youtube-dl
+
+
+## Video Editor (with GUI)
+sudo pacman -S openshot
 
 
 ## Ethereum

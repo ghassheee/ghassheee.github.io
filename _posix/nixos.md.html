@@ -1,0 +1,32 @@
+---
+title: nixos
+layout: dep
+---
+
+
+
+# Installation
+
+
+## wifi
+
+Assume your wifi rooter is
+
+* ESSID: YOUR_ESSID
+* KEY: ABCDE12345
+
+wpa_supplicant
+~~~sh
+wpa_passphrase YOUR_ESSID >/etc/wpa_supplicant.conf     ## Then type password
+systemctl restart wpa_supplicant
+~~~
+
+~~~sh
+sudo ifconfig wlan0 up
+## Now scan for a list of WiFi networks in range:
+sudo iwlist wlan0 scan
+## This will show you a list of wireless networks, pick yours from the list:
+sudo iwconfig wlan0 essid YOUR_ESSID key s:ABCDE12345
+## To obtain the IP address, now request it with the Dynamic Host Client:
+sudo dhclient wlan0
+~~~
