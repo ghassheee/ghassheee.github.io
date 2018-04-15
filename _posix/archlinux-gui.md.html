@@ -53,8 +53,24 @@ sudo pacman -S xf86-video-intel ## sudo pacman -S nvidia
 
 yaourt -S ttf-ricty ttf-mona otf-takao otf-ipaexfont --noconfirm
 ## yaourt -S ttf-sazanami --noconfirm
+
+
+
+## X11キーボードレイアウトの日本語化
+$ sudo echo 'LANG=ja_JP.UTF-8' >> /etc/locale.conf
+$ sudo vim /etc/X11/xorg.conf.d/10-keyboard.conf
+----
+Section "InputClass"
+Identifier "Keyboard Defaults"
+MatchIsKeyboard "yes"
+Option "XkbLayout" "jp"
+EndSection
+----
+
 ~~~
 
+
+<br>
 
 ~~~sh
 ## Display Manager (Login Manager)
@@ -179,9 +195,11 @@ yaourt -S pepper-flash --noconfirm
 sudo gem install jekyll mechanize
 
 ## Tools
-sudo pacman -S okular ffmpeg atom sshfs expect bc cowsay sl sdcv xsel tree arp-scan perl-rename mlocate bc cowsay sl gnuplot
+sudo pacman -S okular ffmpeg atom sshfs expect bc cowsay sl sdcv xsel tree \
+                arp-scan perl-rename mlocate bc cowsay sl gnuplot
 sudo updatedb
-yaourt -S xcalib talking-clock-git festival festival-english festival-us espeak vokoscreen cheese --noconfirm
+yaourt -S xcalib talking-clock-git festival festival-english festival-us espeak \
+                vokoscreen cheese --noconfirm
 espeak --stdout "This is a test." | paplay
 echo "This is a test." | festival --tts
 
