@@ -14,7 +14,14 @@ To dispel puzzlement, we will have a second look at an example from way back in 
 ~~~hs
 > map ($ 2) [(2*), (4*), (8*)]
 [4,8,16]
+
+> :t ($ 2)
+($ 2) :: Num a => (a -> b) -> b
 ~~~
+
+
+
+
 
 There is nothing out of ordinary about the expression above, except that it is a little quaint to write that instead of `map (*2) [2, 4, 8]`. The `($)` section makes the code appear backwards, as if we are applying a value to the functions rather than the other way around. And now, the catch: such an innocent-looking reversal is at heart of continuation passing style!
 

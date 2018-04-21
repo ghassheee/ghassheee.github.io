@@ -12,12 +12,13 @@ layout: dep
 
 Assume your wifi rooter is
 
-* ESSID: YOUR_ESSID
-* KEY: ABCDE12345
+* ESSID: 12345678
+* PASSWORD: ABCDEFGH
 
 wpa_supplicant
+
 ~~~sh
-wpa_passphrase YOUR_ESSID >/etc/wpa_supplicant.conf     ## Then type password
+wpa_passphrase 12345678 >/etc/wpa_supplicant.conf     ## Then type password
 systemctl restart wpa_supplicant
 ~~~
 
@@ -26,7 +27,7 @@ sudo ifconfig wlan0 up
 ## Now scan for a list of WiFi networks in range:
 sudo iwlist wlan0 scan
 ## This will show you a list of wireless networks, pick yours from the list:
-sudo iwconfig wlan0 essid YOUR_ESSID key s:ABCDE12345
+sudo iwconfig wlan0 essid 12345678 key s:ABCDEFGH
 ## To obtain the IP address, now request it with the Dynamic Host Client:
 sudo dhclient wlan0
 ~~~
