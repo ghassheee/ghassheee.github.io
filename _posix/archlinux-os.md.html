@@ -103,6 +103,7 @@ echo "127.0.0.1 localhost"  >> /etc/hosts
 
 pacman -S btrfs-progs                           ## IF(BTRFS(a file system))
 
+##
 
 mkinitcpio -p linux
 
@@ -131,4 +132,110 @@ nmcli dev wifi connect $WIFINAME password $WIFIPASSWORD
 ## IF(LAN cable)
 ## systemctl enable dhcpcd.service && systemctl start dhcpcd.service
 ## systemctl enable netctl && systemctl start netctl
+~~~
+
+
+# Hibernate / Deep Sleep
+
+Hibernate is a shutdown before which stores memory state into some swap region and shutdown.
+The next wakeup will resume the machine state precisely.
+
+~~~sh
+## add this to kernel parameter `resume=/dev/sda2` thruough grub
+sudo vim /etc/default/grub
+#--vim
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash resume=/dev/sda2"
+#--vim :wq!
+grub-mkconfig -o /boot/grub/grub.cfg    ## Regenerate grub
+
+## then edit /etc/mkinitcpio.conf to add 'resume'
+sudo vim /etc/mkinitcpio.conf
+#--vim
+HOOKS=(base udev autodetect keyboard modconf block filesystems resume fsck)
+#--vim :wq
+mkinitcpio -p linux
+~~~
+
+
+
+# Kernel Compilation
+
+
+## Prerequisity
+
+~~~sh
+sudo pacman -S base-devel
+sudo pacman -S xmlto docbook-xsl  ## recommend
+~~~
+
+## Download Kernel Src
+
+~~~sh
+mkdir ~/kernelbuild
+cd ~/kernelbuild
+wget https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.8.6.tar.xz
+tar -xvJf linux-4.8.6.tar.xz
+cd linux-4.8.6/
+make clean && make mrproper
+~~~
+
+
+## Configuration
+
+~~~sh
+pwd                 ## ~/kernelbuild/linux-4.8.6
+zcat /proc/config.gz > .config
+## ensure that all devices are connected
+make localmodconfig
+
+## Advanced Configuration
+# make menuconfig   ## commandLine ncurses interface
+# make nconfig      ## Newer ncurses interface
+# make xconfig      ## User-friendly graphical interface that requires packageki-qt4
+# make gconfig      ## Graphical configuration similar to xconfig using gtk
+# lspci -k            ## (from LiveCD) lists names of kernel modules in use
+~~~
+
+## Compile the kernel
+
+~~~sh
+make
+~~~
+
+
+## Compile Modules
+
+~~~sh
+sudo make modules_install
+~~~
+
+
+## Copy the kernel to /boot dir
+
+~~~sh
+## 32 bit (i686) kernel
+sudo cp -v arch/x86/boot/bzImage /boot/vmlinux-linux48
+
+## 64 bit (x86_64) kernel
+sudo cp -v arch/x86_64/boot/bzImage /boot/vmlinux-linux48
+~~~
+
+
+## Make Initial RAM disk
+
+~~~sh
+sudo cp /etc/mkinitcpio.d/linux.preset /etc/mkinitcpio.d/linux48.preset
+sudo vim /etc/mkinitcpio.d/linux48.preset
+---
+ALL_kver="/boot/vmlinuz-linux48"
+default_image="/boot/initramfs-linux48.img"
+fallback_image="/boot/initramfs-linux48-fallback.img"
+--- :wq!
+mkinitcpio -p linux48
+~~~
+
+
+or
+~~~sh
+mkinitcpio -k linux-4.8.6 -g /boot/initramfs-linux48.img
 ~~~

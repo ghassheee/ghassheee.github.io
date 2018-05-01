@@ -1,0 +1,11 @@
+~~~
+brew cask install simplesynth
+open -a SimpleSynth
+stack install Euterpea
+ghci
+λ> :m Euterpea
+λ> f l = mapM (\x -> play $ x (1/12)) l
+λ> r f l = do; f l; r f l
+λ> do; f [g 3];r f [g 4,a 4,b 4,d 5,c 5,c 5,e 5,d 5,d 5,g 5,fs 5,g 5,d 5,b 4,g 4,a 4,b 4,c 5,d 5,e 5,d 5,c 5,b 4,a 4,b 4,g 4,fs 4,g 4,a 4,d 4,fs 4,a 4,c 5,b 4,a 4,b 4,
+ 4,a 4,b 4,d 5,c 5,c 5,e 5,d 5,d 5,g 5,fs 5,g 5,d 5,b 4,g 4,a 4,b 4,c 5,d 5,e 5,d 5,c 5,b 4,a 4,b 4,g 4,fs 4,g 4,a 4,d 4,fs 4,a 4,c 5,b 4,a 4,b 4]
+ ~~~

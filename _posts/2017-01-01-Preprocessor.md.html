@@ -1,0 +1,81 @@
+---
+title: C Preprocessor
+layout: dep
+---
+
+
+
+cpp : The C preprocessor
+
+~~~c
+#include <stdio.h>
+
+int main(void)
+{
+    printf("Hello, world!\n");
+}
+~~~
+
+The preprocessor $ replace $ the line `#include <stdio.h>` with the text of the file 'stdio.h'.
+Double quotes `#include "stdio.h"` denotes the search path for the file is expand to include the current directory.
+
+
+if statement
+
+~~~
+#if
+#ifdef
+#ifndef
+#else
+#elif
+#endif
+~~~
+
+~~~
+#define PI 3.14159
+#define RADTODEG(x) ((x) * 57.29578)
+#undef PI
+~~~
+
+
+Debug feature
+~~~
+__FILE__            ## filename
+__LINE__            ## current line
+__STDC__            ## 1 if the implementation confirms ISO standard
+__STDC_VERSION__
+__DATE__
+__TIME__
+~~~
+
+
+Token stringification `#` operator
+~~~
+#define xstr(s) str(s)
+#define str(s) #s
+#define foo 4
+
+str (foo)   // "foo"
+xstr (foo)  // "4"
+~~~
+
+`##` operator denotes "concatenation"
+
+
+
+
+
+
+
+
+~~~
+#pragma     ## compiler-specific derective
+~~~
+
+
+A compiler with support for the OpenMP parallelization can parallelize a for loop automoatically
+~~~
+#pragma omp parallel for
+~~~
+
+~~~

@@ -4,6 +4,29 @@ layout: dep
 date: 2016-11-27
 ---
 
+
+# Crypto
+
+
+cryptohash-0.11.9 
+
+~~~
+stack install cryptohash-0.11.9
+stack install bytestring
+ghci --package bytestring --package-hiding cryptonite
+
+λ> :m Crypto.Hash Data.ByteString Data.ByteString.Char8
+λ> sha1 :: Data.ByteString.ByteString -> Digest SHA1; sha1 = hash
+λ> sha1 $ Data.ByteString.Char8.pack "hello"
+aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+λ> show ( hash $ Data.ByteString.Char8.pack "hello" :: Digest SHA3_512)
+"75d527c368f2efe848ecf6b073a36767800805e9eef2b1857d5f984f036eb6df891d75f72d9b154518c1cd58835286d1da9a38deba3de98b5a53e5ed78a84976"
+~~~
+
+
+
+
+
 # continuation
 
 What are continuations?
