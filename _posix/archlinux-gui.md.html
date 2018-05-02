@@ -56,16 +56,14 @@ yaourt -S ttf-ricty ttf-mona otf-takao otf-ipaexfont --noconfirm
 
 
 
-## X11キーボードレイアウトの日本語化
-$ sudo echo 'LANG=ja_JP.UTF-8' >> /etc/locale.conf
-$ sudo vim /etc/X11/xorg.conf.d/10-keyboard.conf
-----
-Section "InputClass"
-Identifier "Keyboard Defaults"
-MatchIsKeyboard "yes"
-Option "XkbLayout" "jp"
-EndSection
-----
+## X11 Keyboard Layout
+~~~
+localctl list-x11-keymap-models         ## list models
+localctl list-x11-keymap-layouts        ## list layouts
+localctl list-x11-keymap-
+setxkbmap -print -verbose 10
+sudo echo 'LANG=ja_JP.UTF-8' >> /etc/locale.conf
+
 
 ~~~
 
@@ -161,7 +159,7 @@ sudo systemctl enable bluetooth && sudo systemctl start bluetooth
 
 
 ## Thunar Supplements
-sudo pacman -S thunar-volman thunar-media-tags-plugin thunar-archive-plugin file-roller
+sudo pacman -S thunar thunar-volman thunar-media-tags-plugin thunar-archive-plugin file-roller
 exo-preffered-application
 
 
