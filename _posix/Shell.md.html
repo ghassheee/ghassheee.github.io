@@ -4,6 +4,33 @@ title: Shell
 date: 2015-12-06
 ---
 
+# nc (netcat)
+
+~~~
+     On ‘server’ side:
+
+           $ rm -f /tmp/f; mkfifo /tmp/f
+           $ cat /tmp/f | /bin/sh -i 2>&1 | nc -l 127.0.0.1 1234 > /tmp/f
+
+     On ‘client’ side:
+
+           $ nc host.example.com 1234
+           $ (shell prompt from host.example.com)
+
+     By doing this, you create a fifo at /tmp/f and make nc listen at port 1234 of
+     address 127.0.0.1 on ‘server’ side, when a ‘client’ establishes a connection
+     successfully to that port, /bin/sh gets executed on ‘server’ side and the shell
+     prompt is given to ‘client’ side.
+
+     When connection is terminated, nc quits as well. Use -k if you want it keep
+     listening, but if the command quits this option won't restart it or keep nc
+     running. Also don't forget to remove the file descriptor once you don't need it
+     anymore:
+
+           $ rm -f /tmp/f
+~~~
+
+
 
 # bc
 
