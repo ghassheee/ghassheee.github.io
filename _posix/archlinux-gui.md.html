@@ -264,3 +264,27 @@ alias yaourt=yaourtlog
 * vlc (play movies)
 * launchy (command lancher)
 * python-pip
+
+
+
+
+# XDG
+
+https://wiki.archlinux.org/index.php/XDG_Autostart
+
+The XDG Autostart specification defines a method for autostarting ordinary desktop entries on desktop environment startup and removable medium mounting, by placing them in specific #Directories.
+Prerequisites
+
+You need to use either a desktop environment that supports it, or a dedicated implementation, like dex, dapperAUR, or fbautostartAUR.
+Directories
+
+The Autostart directories in order of preference are:
+
+- user-specific: $XDG_CONFIG_HOME/autostart (~/.config/autostart by default)
+- system-wide: $XDG_CONFIG_DIRS/autostart (/etc/xdg/autostart by default)[1]
+
+System-wide desktop entries can be overridden by user-specific entries with the same filename.
+
+To disable a system-wide entry, create an overriding entry containing Hidden=true.
+
+For more details, read the specification.
