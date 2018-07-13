@@ -1,11 +1,38 @@
 ---
-title: nixos
+title: NixOS
 layout: dep
 ---
 
-
-
 # Installation
+
+## Basic Installation
+
+~~~sh
+lsblk               ## find your device
+DISK="sda"          ## change sda as your device
+gdisk /dev/$DISK
+
+gdisk /dev/$DISK                                ## Partitioning
+##      o => y =>                               ## '=>' denotes 'Enter key'
+##      n => => => +16G  => 8200 =>             ## SWAP: 8200
+##      n => => =>       =>      =>             ## Default: 8300
+##      w => y =>
+
+
+mkswap          ${DISK}1 && swapon ${DISK}1
+mkfs.ext4 -f    ${DISK}2
+
+
+mount /dev/${DISK}2 /mnt
+
+nixos-generate-config --root /mnt
+
+vim /mnt/etc/nixos/conifiguration.nix
+
+nixos-install
+
+reboot
+~~~
 
 
 ## wifi
@@ -15,13 +42,13 @@ Assume your wifi rooter is
 * ESSID: 12345678
 * PASSWORD: ABCDEFGH
 
-wpa_supplicant
-
+wpa_supplicant (success)
 ~~~sh
 wpa_passphrase 12345678 >/etc/wpa_supplicant.conf     ## Then type password
 systemctl restart wpa_supplicant
 ~~~
 
+manual operation (not yet succeed)
 ~~~sh
 sudo ifconfig wlan0 up
 ## Now scan for a list of WiFi networks in range:
@@ -30,4 +57,23 @@ sudo iwlist wlan0 scan
 sudo iwconfig wlan0 essid 12345678 key s:ABCDEFGH
 ## To obtain the IP address, now request it with the Dynamic Host Client:
 sudo dhclient wlan0
+~~~
+
+
+## etc
+
+~~~
+useradd -m -g wheel ghasshee
+passwd ghasshee
+
+nix-env -i packagename
+~~~
+
+
+
+# configure
+
+~~~
+vim /etc/nixos/configure.nix
+nixos-rebuild switch
 ~~~
