@@ -6,7 +6,12 @@ layout: dep
 # Installation
 
 
-1. Download NixOS image, Write it into USB, and boot it.
+1. Download "MINIMAL INSTALLATION CD 64 bit" NixOS image, Write it into USB, and boot it.
+
+    * From https://nixos.org/nixos/download.html
+
+<br>
+
 2. Connect Network via WIFI
 ~~~sh
 INTERFACE=wlp4s0
@@ -144,3 +149,9 @@ nixos-rebuild switch
 ~~~
 nix-env -p /nix/var/nix/profiles/system --list-generations
 ~~~
+
+
+# What to see
+
+    * Nix Storage using Hash enables rich features;
+        * https://nixos.org/nix/manual/#ch-about-nix
