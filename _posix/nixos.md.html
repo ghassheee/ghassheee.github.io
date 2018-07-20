@@ -5,34 +5,34 @@ layout: dep
 
 # Installation
 
-## Basic Installation
 
 1. Download NixOS image, Write it into USB, and boot it.
 2. Connect Network via WIFI
 ~~~sh
 INTERFACE=wlp4s0
-systemctl stop wpa_supplicant.service
 wpa_supplicant -B -i $INTERFACE -c <(wpa_passphrase 'SSID' 'key')
-systemctl start wpa_supplicant
+systemctl restart wpa_supplicant
 ~~~
 
 
-3. Partitioning
+3. Partitioning :
 
-Let's say you do;
+    Let's say you do;
 
-* make GRUB install and enable HIBERNATE
-* encrypt your storage
-
+    - make GRUB install and enable HIBERNATE
+    - encrypt your storage
 
 ~~~sh
 lsblk                       ## find your device
 DISK="/dev/xxx"             ## set xxx as your device
 ~~~
 
+    Use `fdisk`;
 
-At NixOS grub can be installed on MBR.
-To build MBR partitioning, use `fdisk`
+    - At NixOS, GRUB can be installed on MBR.
+    - To build MBR partitioning, use `fdisk`
+    - if you use `system-boot` on GPT then use `gdisk` 
+
 ~~~sh
 fdisk $DISK                                     ## fdisk do partitioning over MBR
 ##      o =>                                    ## '=>' denotes 'Enter key'
@@ -41,91 +41,97 @@ fdisk $DISK                                     ## fdisk do partitioning over MB
 ##      w =>
 ~~~
 
-Then encrypt the volume `${DISK}2` and open the volume with naming it `enc-pv`
-~~~
+4. encrypt the volume `${DISK}2` and open the volume with naming it `enc-pv`
+~~~sh
 cryptsetup luksFormat ${DISK}2  #type YES then set PASSWORD
 cryptsetup luksOpen ${DISK}2 enc-pv
 ~~~
 
 
-The following command will create `root` and `swap` lvm on `vg`
-~~~
+5. LVM: The following command will create `root` and `swap` lvm on `vg`
+~~~sh
 pvcreate /dev/mapper/enc-pv
 vgcreate vg /dev/mapper/enc-pv
 lvcreate -n swap vg -L 16G
 lvcreate -n root vg -l 100%FREE
 ~~~
 
-( In case you reboot, you may want to re-mount these volumes with; )
-~~~
+    ( In case you reboot, you may want to re-mount these volumes with; )
+~~~sh
 ## vgchange -a y vg      ## In case This activate vg in case you reboot
 ~~~
 
 
-Then make file system over these partitions;
-~~~
+6. Make File system over these partitions;
+~~~sh
 mkfs.ext4 -L boot ${DISK}1
 mkfs.ext4 -L root /dev/vg/root
 mkswap -L swap /dev/vg/swap
 ~~~
 
-And mount them;
-~~~
+7. Mount;
+~~~sh
 mount /dev/vg/root /mnt
 mkdir /mnt/boot
 mount ${DISK}1 /mnt/boot
 ~~~
 
-Turn on the swap partition;
-~~~
+8. Turn on Swap
+~~~sh
 swapon /dev/vg/swap
 ~~~
 
-Generate an initial configuration;
-~~~
+9. Generate an initial configuration;
+~~~sh
 nixos-generate-config --root /mnt
 ~~~
 
-Edit `/mnt/etc/nixos/configuration.nix` as you want or use my particular configuration;
-~~~
+10. Edit Config `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
+~~~sh
 ## curl http://raw.githubusercontent.com/ghassheee/nixos/master/configuration.nix > /mnt/etc/nixos/configuration.nix
 ~~~
 
 
-Install with;
-~~~
+11. Install NixOS;
+~~~sh
 nixos-install
 ~~~
 
-reboot
-~~~
+12. reboot
+~~~sh
 reboot
 ~~~
 
-That's all .. but ..<br>
-After reboot, Do not forget to
-~~~
+13. Do not forget to set PASSWORD for users
+~~~sh
 passwd ghasshee             ## i.e. set password of your username for login
 ~~~
 
+That's all!
+
+<br>
+<br>
+<br>
+
+# Nix Commands to know
 
 ## Search Packages which we can install
 
-~~~
+~~~sh
 nix-env -qaP '.*pkgname.*'          ## `-P` shows where the pkg locates
 nix-env -qa  '.*pkgname.*'          ## '.*' denotes for arbitrary characters
 nix-env -i    pkgname               ## install (use )
 ~~~
 
 
-# configure
+## configure
 
 ~~~
 vim /etc/nixos/configure.nix
 nixos-rebuild switch
 ~~~
 
-# delete old genarations
+## delete old genarations
 
 ~~~
 sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old
