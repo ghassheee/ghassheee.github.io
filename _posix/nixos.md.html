@@ -7,68 +7,115 @@ layout: dep
 
 ## Basic Installation
 
+1. Download NixOS image, Write it into USB, and boot it.
+2. Connect Network via WIFI
 ~~~sh
-lsblk               ## find your device
-DISK="sda"          ## change sda as your device
-gdisk /dev/$DISK
-
-gdisk /dev/$DISK                                ## Partitioning
-##      o => y =>                               ## '=>' denotes 'Enter key'
-##      n => => => +16G  => 8200 =>             ## SWAP: 8200
-##      n => => =>       =>      =>             ## Default: 8300
-##      w => y =>
+INTERFACE=wlp4s0
+systemctl stop wpa_supplicant.service
+wpa_supplicant -B -i $INTERFACE -c <(wpa_passphrase 'SSID' 'key')
+systemctl start wpa_supplicant
+~~~
 
 
-mkswap          ${DISK}1 && swapon ${DISK}1
-mkfs.ext4 -f    ${DISK}2
+3. Partitioning
+
+Let's say you do;
+
+* make GRUB install and enable HIBERNATE
+* encrypt your storage
 
 
-mount /dev/${DISK}2 /mnt
+~~~sh
+lsblk                       ## find your device
+DISK="/dev/xxx"             ## set xxx as your device
+~~~
 
+
+At NixOS grub can be installed on MBR.
+To build MBR partitioning, use `fdisk`
+~~~sh
+fdisk $DISK                                     ## fdisk do partitioning over MBR
+##      o =>                                    ## '=>' denotes 'Enter key'
+##      n => p => => +512M =>                   ## create MBR dir
+##      n => p => => => =>                      ##
+##      w =>
+~~~
+
+Then encrypt the volume `${DISK}2` and open the volume with naming it `enc-pv`
+~~~
+cryptsetup luksFormat ${DISK}2  #type YES then set PASSWORD
+cryptsetup luksOpen ${DISK}2 enc-pv
+~~~
+
+
+The following command will create `root` and `swap` lvm on `vg`
+~~~
+pvcreate /dev/mapper/enc-pv
+vgcreate vg /dev/mapper/enc-pv
+lvcreate -n swap vg -L 16G
+lvcreate -n root vg -l 100%FREE
+~~~
+
+( In case you reboot, you may want to re-mount these volumes with; )
+~~~
+## vgchange -a y vg      ## In case This activate vg in case you reboot
+~~~
+
+
+Then make file system over these partitions;
+~~~
+mkfs.ext4 -L boot ${DISK}1
+mkfs.ext4 -L root /dev/vg/root
+mkswap -L swap /dev/vg/swap
+~~~
+
+And mount them;
+~~~
+mount /dev/vg/root /mnt
+mkdir /mnt/boot
+mount ${DISK}1 /mnt/boot
+~~~
+
+Turn on the swap partition;
+~~~
+swapon /dev/vg/swap
+~~~
+
+Generate an initial configuration;
+~~~
 nixos-generate-config --root /mnt
+~~~
 
-vim /mnt/etc/nixos/conifiguration.nix
+Edit `/mnt/etc/nixos/configuration.nix` as you want or use my particular configuration;
+~~~
+## curl http://raw.githubusercontent.com/ghassheee/nixos/master/configuration.nix > /mnt/etc/nixos/configuration.nix
+~~~
 
+
+Install with;
+~~~
 nixos-install
+~~~
 
 reboot
 ~~~
-
-
-## wifi
-
-Assume your wifi rooter is
-
-* ESSID: 12345678
-* PASSWORD: ABCDEFGH
-
-wpa_supplicant (success)
-~~~sh
-wpa_passphrase 12345678 >/etc/wpa_supplicant.conf     ## Then type password
-systemctl restart wpa_supplicant
+reboot
 ~~~
 
-manual operation (not yet succeed)
-~~~sh
-sudo ifconfig wlan0 up
-## Now scan for a list of WiFi networks in range:
-sudo iwlist wlan0 scan
-## This will show you a list of wireless networks, pick yours from the list:
-sudo iwconfig wlan0 essid 12345678 key s:ABCDEFGH
-## To obtain the IP address, now request it with the Dynamic Host Client:
-sudo dhclient wlan0
+That's all .. but ..<br>
+After reboot, Do not forget to
+~~~
+passwd ghasshee             ## i.e. set password of your username for login
 ~~~
 
 
-## etc
+## Search Packages which we can install
 
 ~~~
-useradd -m -g wheel ghasshee
-passwd ghasshee
-
-nix-env -i packagename
+nix-env -qaP '.*pkgname.*'          ## `-P` shows where the pkg locates
+nix-env -qa  '.*pkgname.*'          ## '.*' denotes for arbitrary characters
+nix-env -i    pkgname               ## install (use )
 ~~~
-
 
 
 # configure
@@ -76,4 +123,18 @@ nix-env -i packagename
 ~~~
 vim /etc/nixos/configure.nix
 nixos-rebuild switch
+~~~
+
+# delete old genarations
+
+~~~
+sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old
+nix-collect-garbage -d
+nixos-rebuild switch
+~~~
+
+## see the remaining generations
+
+~~~
+nix-env -p /nix/var/nix/profiles/system --list-generations
 ~~~
