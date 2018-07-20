@@ -27,11 +27,11 @@ lsblk                       ## find your device
 DISK="/dev/xxx"             ## set xxx as your device
 ~~~
 
-    Use `fdisk`;
+    * Use `fdisk`;
 
-    - At NixOS, GRUB can be installed on MBR.
-    - To build MBR partitioning, use `fdisk`
-    - if you use `system-boot` on GPT then use `gdisk` 
+        - At NixOS, GRUB can be installed on MBR.
+        - To build MBR partitioning, use `fdisk`
+        - if you use `system-boot` on GPT then use `gdisk`
 
 ~~~sh
 fdisk $DISK                                     ## fdisk do partitioning over MBR
@@ -56,7 +56,7 @@ lvcreate -n swap vg -L 16G
 lvcreate -n root vg -l 100%FREE
 ~~~
 
-    ( In case you reboot, you may want to re-mount these volumes with; )
+    * ( In case you reboot, you may want to re-mount these volumes with; )
 ~~~sh
 ## vgchange -a y vg      ## In case This activate vg in case you reboot
 ~~~
@@ -86,7 +86,7 @@ swapon /dev/vg/swap
 nixos-generate-config --root /mnt
 ~~~
 
-10. Edit Config `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
+10. Edit Config File `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
 ~~~sh
 ## curl http://raw.githubusercontent.com/ghassheee/nixos/master/configuration.nix > /mnt/etc/nixos/configuration.nix
 ~~~
