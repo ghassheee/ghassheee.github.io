@@ -19,7 +19,7 @@ collections:
     permalink: /avm/:path/
   ethereum:
     output: true
-    permalink: /ethererum/:path/
+    permalink: /ethereum/:path/
   math:
     output: true
     permalink: /math/:path/
