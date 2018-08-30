@@ -332,6 +332,7 @@ awk の出力は以下のようになります。
 
 <br><br><br><br><br>
 # いろいろな演算子
+
 `awk` のもう一つのすばらしい点は、通常の算術演算子がすべてそろっていることです。標準的な加算、減算、乗算、および除算に加え、先ほど紹介した指数演算子 `“^”`、剰余 (モジュロー) 演算子 `“%”`、そしてこのほかにも C 言語から取り入れた多くの便利な代入演算子を使用できます。
 代入演算子には、
 
@@ -376,7 +377,7 @@ FS="foo[0-9][0-9][0-9]"
 
 
 <br><br><br><br><br>
-# フィールド数 NF
+## フィールド数 NF
 
 現在の行（レコード）におけるフィールドの数のこと
 
@@ -401,7 +402,7 @@ or
 
 
 <br><br><br><br><br>
-# レコード番号 NR
+## レコード番号 NR
 
 (行番号)
 
@@ -429,7 +430,7 @@ NR と行番号が違ってくるので注意してください。
 
 
 <br><br><br><br><br>
-# 複数行のレコード
+## 複数行のレコード
 
 例として、連邦証人保護プログラム (Federal Witness Protection Program) の参加者の住所リストを処理する作業の扱い方について説明しましょう。
 
@@ -479,7 +480,7 @@ Big Tony, 200 Incognito Ave., Suburbia, WA 67890
 ```
 
 <br><br><br><br><br>
-# OFS ( Output Field Separator ) と ORS ( Output Record Separator )
+## OFS ( Output Field Separator ) と ORS ( Output Record Separator )
 
 
 * デフォルトでは、`OFS` は `" "` (単一のスペース) に設定
@@ -515,7 +516,7 @@ ORS=" "
 
 <br><br><br><br><br>
 
-# 複数行からタブ付き行への変換
+## 複数行からタブ付き行への変換
 
 今までのスクリプトでは
 `awk` が次の住所を見つけると、4 行目は破棄され、出力されません。
@@ -565,7 +566,7 @@ Cousin Vinnie   Vinnie's Auto Shop      300 City Alley  Sosueme, OR 76543
 
 
 
-# do...while
+## do...while
 
 ```js
 {
@@ -579,7 +580,7 @@ Cousin Vinnie   Vinnie's Auto Shop      300 City Alley  Sosueme, OR 76543
 
 
 
-# for ループ
+## for ループ
 
 ```js
 for ( initial assignment; comparison; increment ) {
@@ -606,7 +607,7 @@ iteration 4
 
 <br><br><br><br><br>
 
-# break と continue
+## break と continue
 
 ```js
 while (1) {
@@ -618,7 +619,7 @@ while (1) {
 
 
 
-# break
+## break
 
 ```js
 x=1
@@ -633,7 +634,7 @@ while(1) {
 
 
 
-# continue
+## continue
 
 ```js
 x=1
@@ -702,7 +703,7 @@ jim
 
 <br><br><br><br><br>
 
-# 配列指標のストリング指向性
+## 配列指標のストリング指向性
 
 ```js
 a="1"
@@ -731,7 +732,7 @@ print myarr["name"]
 
 <br><br><br><br><br>
 
-# 配列ツール
+## 配列ツール
 
 * 配列という話になると、`awk` は高い柔軟性を発揮します。
 * たとえば、`myarr[1]` と `myarr[1000]` を定義し、他の要素はすべて未定義で構わない。
@@ -815,7 +816,7 @@ awk: string.gawk:59: fatal: attempt to use scalar as array
 
 <br>
 
-# length()
+## length()
 
 ```js
 print length(mystring)
@@ -830,7 +831,7 @@ output :
 <br>
 
 
-# index()
+## index()
 
 サブストリングの位置を返します。
 サブストリングが見つからない場合は 0 を返します。
@@ -849,7 +850,7 @@ output :
 
 <br>
 
-# tolower() と toupper()
+## tolower() と toupper()
 
 ```js
 print tolower(mystring)
@@ -867,7 +868,7 @@ How are you doing today?
 
 <br>
 
-# substr()
+## substr()
 
 ```js
 mysub=substr(mystring,startpos,maxlen)
@@ -888,7 +889,7 @@ you
 
 <br>
 
-# match()
+## match()
 
 * `match(str , 正規表現)` : str 内の正規表現を検索
 * 戻り値 : 一致するものの先頭位置か、ない場合は 0
@@ -911,7 +912,7 @@ output :
 
 <br>
 
-# sub() と gsub()
+## sub() と gsub()
 
 
 sub() / gsub() は文字列を置換します。
@@ -942,7 +943,7 @@ HOw are yOu dOing tOday?
 
 <br>
 
-# split()
+## split()
 split() の仕事はストリングを「分割」して、各部分を整数索引付けされた配列に入れることです。以下に、split() 呼び出しの例を示します。
 
 
@@ -964,7 +965,7 @@ Jan Dec
 
 
 
-# 特殊なストリング・フォーム
+## 特殊なストリング・フォーム
 
 クイック・メモ -- length()、sub()、または gsub() を呼び出す場合には、最後の引数を省略できます。
 各行の長さをファイルに出力するには、以下の awk スクリプトを使用します。
@@ -1016,7 +1017,7 @@ income e.g.
 <br><br><br><br><br>
 
 
-# コード
+## コード
 次は、コードについての説明です。1 行目から見ていきましょう。BEGIN ブロックと関数定義です。
 
 balance、第 1 部
@@ -1048,7 +1049,7 @@ outputs :
 <br><br><br><br><br>
 
 
-# 会計用関数
+## 会計用関数
 
 取引には、基本的に 3 種類あります。
 
@@ -1104,7 +1105,7 @@ mybalance で参照された配列は「参照渡し」されることに注意�
 
 <br><br><br><br><br>
 
-# メイン・ブロック
+## メイン・ブロック
 次に、入力データの各行を解析するコードを含むメイン・コード・ブロックを示します。
 
 
@@ -1154,7 +1155,7 @@ balance、第 3 部
 
 <br><br><br><br><br>
 
-# レポートの生成
+## レポートの生成
 
 メイン・ブロックが各入力レコードを繰り返し処理した後、カテゴリー別と月別に分類されたかなり総合的な借方と貸方のレコードができあがります。後は、レポートを生成する END ブロック (この場合には、あまり大きくありません) を定義するだけです。
 
