@@ -33,6 +33,7 @@ SSL/TCP enables transparent "consinstency" and "integrity".
 
 * CRL : certificate revocation list : 証明書が失効する日付を書いたリスト
 
+# using STUNNEL to wrap HTTP Server into HTTP/SSL/TLS == HTTPS
 
 Private Key Generation
 ~~~sh
@@ -53,7 +54,8 @@ Certification Generation (with priv-key.pem)
 $ openssl req -new -x509 -key priv-key.pem -out selfcert.pem -days 366      ## This generates self certification
 ~~~
 
-Dowonload `stunnel` and `vim /etc/stunnel/stunnel.conf`
+Dowonload `stunnel` and `vim /etc/stunnel/stunnel.conf`<br>
+Do `mkdir /home/ghasshee/myopenssl && mkdir /home/ghasshee/myopenssl/stunnel`
 ~~~sh
 cert = /home/ghasshee/myopenssl/selfcert.pem
 key = /home/ghasshee/myopenssl/privkey_rsa2048.pem
