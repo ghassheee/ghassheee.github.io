@@ -79,6 +79,23 @@ connect = 4000
 TIMEOUTclose = 0
 ~~~
 
+see the ports
+~~~
+$ sudo lsof -i
+~~~
+
+then start stunnel
+~~~
+$ stunnel
+~~~
+
+see the ports
+~~~
+$ sudo lsof -i
+...
+stunnel   22540   nobody    7u  IPv4 1028319      0t0  TCP *:hfcs-manager (LISTEN)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~
 
 
 
