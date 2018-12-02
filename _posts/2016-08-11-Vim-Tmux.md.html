@@ -15,6 +15,153 @@ Hard space is '\u00A0' in html so type;
 :%s/\%u00a0/\~/g
 ~~~
 
+# Help 
+
+~~~
+:help yourQuestioningKeyWord
+:h 
+~~~
+
+
+
+
+Jump to the Link
+~~~
+Ctrl - ]   
+~~~
+
+Back to the previous page
+~~~
+Ctrl - T
+~~~
+
+
+
+# NERDTree
+
+~~~
+:NERDTreeToggle
+~~~
+
+
+You can toggle with `Ctrl + e` with `~/.vimrc`
+
+~~~
+nnoremap <silent><C-e> :NERDTreeToggle<CR>
+~~~
+
+# Variable Scope for Vim Script
+
+variables in Vim Script has scopes which its prefix determines. 
+
+
+    prefix  | scope
+    --------|---------
+    g:      | global
+    b:      | current buffer
+    w:      | current window
+    t:      | current tab 
+    s:      | current script file
+    l:      | current function ( == local ) 
+    v:      | system-embedded variable ( you cannot define v:yourvariable ) 
+
+
+`count` variable means `v:count`
+
+
+
+if you omit the prefix, 
+    
+    - `l:` if you are in functions
+    - `g:` otherwise 
+
+
+# vimrc 
+
+## what is <leader> ? 
+
+by default `<leader>' is set "\" (backslash)
+if you change it, 
+
+
+~~~
+let mapleader = "," 
+let g:mapleader = "," 
+~~~
+
+
+## what is <cr> ? 
+
+    notation| meaning           | alternative
+    --------|-------------------|---
+    <CR>    | carriage return   | Ctrl-M
+    <Return>| same as <CR>      | 
+    <Enter> | same as <CR>      | 
+
+
+# Tab / Window 
+
+
+## Window 
+
+close the window 
+~~~
+<C-w>c
+<C-w><C-c>
+:close
+~~~
+
+close other than current window
+~~~
+<C-w>o
+<C-w><C-o>
+:only
+:on
+~~~
+
+move to the next window
+~~~
+<C-w>w
+<C-w><C-w> 
+~~~
+
+move to the Left/Right
+~~~
+<C-w>l / <C-w>r
+<C-w><C-l> / <C-w><C-r>
+~~~
+
+
+horizonral split
+~~~
+<C-w>s
+<C-w><C-s>
+:sp
+:split 
+~~~
+
+
+vertical split
+~~~
+<C-w>v
+<C-w><C-w>
+:vs
+:vsplit
+~~~
+
+
+## tab
+
+~~~
+map <leader>tn :tabnew
+map <leader>to :tabonly
+map <leader>tc :tabclose
+map <leader>tm :tabmore
+map <leader>t<leader> :tabnext
+~~~
+
+
+
 # Multiple Commands
 
 
