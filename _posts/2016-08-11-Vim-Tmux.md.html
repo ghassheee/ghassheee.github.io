@@ -4,9 +4,37 @@ layout: dep
 date: 2017-01-01
 ---
 
+
+
+
 In vim, there is a concept of 'mode'
 
 there open ways if we get out of 'Insert mode'
+
+
+# Problems
+
+## autoReplace `$1` into `()` problem defined in extended.vimrc
+
+type
+
+~~~
+:verbose map $1
+:verbose nmap $1
+~~~
+
+If this is indeed the case, the first place to look for definitions is in your .vimrc:
+
+~~~
+:e $MYVIMRC
+~~~
+
+then search for $1 and/or map in the .vimrc
+
+Alternatively, you might have some plugin that does that.
+
+Edited with the helpful comment of Marth (using verbose to find out where the mapping was defined).
+
 
 # Replace Hard Space into Space
 
@@ -15,11 +43,11 @@ Hard space is '\u00A0' in html so type;
 :%s/\%u00a0/\~/g
 ~~~
 
-# Help 
+# Help
 
 ~~~
 :help yourQuestioningKeyWord
-:h 
+:h
 ~~~
 
 
@@ -27,7 +55,7 @@ Hard space is '\u00A0' in html so type;
 
 Jump to the Link
 ~~~
-Ctrl - ]   
+Ctrl - ]
 ~~~
 
 Back to the previous page
@@ -52,7 +80,7 @@ nnoremap <silent><C-e> :NERDTreeToggle<CR>
 
 # Variable Scope for Vim Script
 
-variables in Vim Script has scopes which its prefix determines. 
+variables in Vim Script has scopes which its prefix determines.
 
 
     prefix  | scope
@@ -60,51 +88,51 @@ variables in Vim Script has scopes which its prefix determines.
     g:      | global
     b:      | current buffer
     w:      | current window
-    t:      | current tab 
+    t:      | current tab
     s:      | current script file
-    l:      | current function ( == local ) 
-    v:      | system-embedded variable ( you cannot define v:yourvariable ) 
+    l:      | current function ( == local )
+    v:      | system-embedded variable ( you cannot define v:yourvariable )
 
 
 `count` variable means `v:count`
 
 
 
-if you omit the prefix, 
-    
+if you omit the prefix,
+
     - `l:` if you are in functions
-    - `g:` otherwise 
+    - `g:` otherwise
 
 
-# vimrc 
+# vimrc
 
-## what is <leader> ? 
+## what is <leader> ?
 
 by default `<leader>' is set "\" (backslash)
-if you change it, 
+if you change it,
 
 
 ~~~
-let mapleader = "," 
-let g:mapleader = "," 
+let mapleader = ","
+let g:mapleader = ","
 ~~~
 
 
-## what is <cr> ? 
+## what is <cr> ?
 
     notation| meaning           | alternative
     --------|-------------------|---
     <CR>    | carriage return   | Ctrl-M
-    <Return>| same as <CR>      | 
-    <Enter> | same as <CR>      | 
+    <Return>| same as <CR>      |
+    <Enter> | same as <CR>      |
 
 
-# Tab / Window 
+# Tab / Window
 
 
-## Window 
+## Window
 
-close the window 
+close the window
 ~~~
 <C-w>c
 <C-w><C-c>
@@ -122,7 +150,7 @@ close other than current window
 move to the next window
 ~~~
 <C-w>w
-<C-w><C-w> 
+<C-w><C-w>
 ~~~
 
 move to the Left/Right
@@ -137,7 +165,7 @@ horizonral split
 <C-w>s
 <C-w><C-s>
 :sp
-:split 
+:split
 ~~~
 
 
