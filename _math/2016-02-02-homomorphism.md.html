@@ -1,42 +1,24 @@
 ---
 date: 2016-02-02
-title: homomorphism
+title: Homomorphism
 layout: dep
 ---
 
 
-# homomorphism 
+# Group Homomorphisms
 
-suppose there is some product operator and some plus operator.
-<br>
-<br>
-<br>
-<br>
+They are obvious.
 
-$ \quad \phi $ is homomorphism
+# Ring Homomorphisms
 
-===================
+A ring homomorphism $ \phi $ must satisfy
 
-$ \quad \phi ( * (x y) ) = + ( \phi ( x y )) $
+- $ \phi (gh) = \phi (g) \phi (h) $
+- $ \phi (g+h) = \phi (g) + \phi (h) $
+- $ \phi (1) = 1 $
 
+The third condition make the homomorphism more strict.
 
-<br>
-<br>
-that is ,...
-**************************************
-*                                    *
-*                                    *
-*                phi                 *
-*         o -------------> o         *
-*         |                |         *
-*         |      .--.      |         *
-*     x   |     |    |     | plus    *
-*    prod |     |    v     |  +      *
-*         |      '--'      |         *
-*         v                v         *
-*         o -------------> o         *
-*                phi                 *
-*                                    *
-*                                    *
-*                                    *
-**************************************
+examples (Non trivial)
+
+- $ \mathbb{C} $ homomorphism ( $ z \mapsto z^n $ ) are ring homomorphisms.

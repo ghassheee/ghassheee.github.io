@@ -4,8 +4,23 @@ title: Lebesgue
 ---
 
 
+# ルベーグ積分
 
+f(x)を積分するにあたり、
+x を動かして積分するリーマン積分とは異なり、
+y ( = f(x) ) を動かして、積分しているのが、ルベーグ積分である。
 
+y の値をとる x はどれだけあるのかを求めることで、y*(積分区間におけるxの割合)を全てのyに対して、積分してやれば、我々の欲しいものが得られる。<br>
+例として、有理数で1、無理数で0といったようなリーマン積分が不可能な関数においても、この方法をとれば、積分することができ、
+結果０が得られる。濃度の違いにより、(f(x) が1をとるxの割合は0に収束する)<br>
+<br>
+
+以上の話を一般化して、ルベーグ積分は積分区間を
+
+- 「長方形(Box)で埋め尽す」
+- 「面積が図れる集合（可測集合）でうめつくしていく」
+
+ことにより、ある値Y をとるBox の体積の割合を計算し、それを積分すれば良い。というものである。<br>
 
 # History
 
@@ -23,18 +38,11 @@ title: Lebesgue
 - ルベーグ
     - 「極限と積分の順序交換が可能か」
     - 「微分と積分の順序交換が可能か」
-    - を判定したい！ $ \to $ ルベーグ積分
 
 
-# ルベーグ積分
+# The Definitions
 
-- 「長方形(Box)で埋め尽す」
-- 「面積が図れる集合（可測集合）でうめつくしていく」
-
-
-## Definitions
-
-### [外測度] $ \Gamma $
+## [外測度] $ \Gamma $
 
 $ \iff $
 
@@ -42,13 +50,13 @@ $ \iff $
 - $ A \subset B \Rightarrow \Gamma(A) \subset \Gamma(B) $
 - $ \Gamma(\bigcup ^ {\infty} _ {n=1} An ) \le \sum ^ {\infty} _ {n=1} ( A _ n ) $
 
-### [measurable]
+## [measurable]
 
 $ E $ ( $ \subset X $ ) is $ \Gamma $ - measurable $ \iff $
 
 - $ \forall A \subset X . \quad \Gamma(A \cap E) + \Gamma(A \cap E^c) $
 
-### [probability]
+## [probability]
 
 $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
@@ -58,7 +66,7 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-### [有限加法族]
+## [有限加法族]
 
 - $ \emptyset \in \mathfrak{F} $
 - $ A \in \mathfrak{F} \Rightarrow A^{c} \in \mathfrak{F} $
@@ -66,7 +74,7 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-### [$ \sigma $ 加法族]
+## [$ \sigma $ 加法族]
 
 - $ \emptyset \in \mathfrak{B} $
 - $ E \in \mathfrak{B} \Rightarrow E^{c} \in \mathfrak{B} $
@@ -74,12 +82,12 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-### ルベーグ積分は 完全加法性 を満たす
+## ルベーグ積分は 完全加法性 を満たす
 
 $$ A = \bigcup\ A_i = \sum A_i $$
 
 
-### [ indicator function of $ A $ ]
+## [ indicator function of $ A $ ]
 
 $ \chi _ A (x) = \begin{cases}
 1 \ ( \ x \in A ) \\
@@ -87,7 +95,7 @@ $ \chi _ A (x) = \begin{cases}
 \end{cases} $
 
 
-### $ L^p $ 関数
+## $ L^p $ 関数
 
 
 # 三大定理
