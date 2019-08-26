@@ -101,17 +101,18 @@ https://www.haskell.org/onlinereport/lexemes.html
 
 From the haskell report, this is the syntax for allowed symbols:
 
-~~~
+~~~hs
 special    ->   ( | ) | , | ; | [ | ] | `| { | }
 symbol     ->   ascSymbol | uniSymbol < special | _ | : | " | '>
 ascSymbol  ->   ! | # | $ | % | & | * | + | . | / | < | = | > | ? | @
                 \ | ^ | | | - | ~
 uniSymbol  ->   any Unicode symbol or punctuation
+
 ~~~
 
 So, symbols are ascii symbols or unicode symbols except from those in special | _ | : | " | ', which are reserved (here a | b means "it may be a or b", and a<b> means "may be everything in a except b"). A few paragraphs below, the report gives the complete definition for haskell operators:
 
-~~~
+~~~hs
 varsym     -> ( symbol {symbol | :})<reservedop | dashes>
 consym     -> (: {symbol | :})<reservedop>
 reservedop -> .. | : | :: | = | \ | | | <- | -> | @ | ~ | =>
@@ -134,7 +135,7 @@ error: Ambigous module packages : cryptohash & cryptonite
 λ> :set -hide-package cryptohash
 ~~~
 
-~~~
+~~~hs
 λ> :m Crypto.Hash Crypto.Hash.Algorithms Data.ByteString
 λ> hash (pack [61,32] ) :: Digest SHA3_512
 100c57a0f4b09fb0a579510d08eb435804a81fad20e1d8bed29e8cfcecf3abd851d63fc81958ee93ef84f0385bae68697d41e0b7d7e0c23acf57deb3826cd07f
@@ -148,7 +149,7 @@ HMatrix provides a functional interface to standard dense linear algebra (svd, e
 
 ## intro
 
-~~~
+~~~sh
 $ cabal(or stack) install hmatrix
 $ ghci
 > :m Numeric.LinearAlgebra.HMatrix
@@ -156,7 +157,7 @@ $ ghci
 
 ## Construct Matrix
 
-~~~
+~~~hs
 > ident 3
 (3 >< 3)
  [ 1.0, 0.0, 0.0
@@ -171,7 +172,7 @@ $ ghci
 
 ## Basic Operators
 
-~~~
+~~~hs
 > -- add
 > a + a
  (2 >< 2)
@@ -206,14 +207,14 @@ $ ghci
 sandbox
 :   make a box into `.cabal-sandbox` for independent cabal packages
 
-~~~
+~~~sh
 $ mkdir SOE
 $ cd SOE
 $ cabal sandbox init                                 # Create a new sandbox
 $ cabal install gtk2hs-buildtools                    # Install
 gtk2hs-buildtools inside sandbox
 $ export PATH=".cabal-sandbox/bin:$PATH"             # Add the binaries
-installed in (current directory's) sandbox to $PATH
+                    ## installed in (current directory's) sandbox to $PATH
 $ cabal install gtk                                  # linux Install gtk
 $ cabal install gtk -fhave-quartz-gtk                # OSX
 ~~~
@@ -229,7 +230,8 @@ Still, this might be a little difficult book for beginner, so I recommend type b
 ## I/O Monad
 
 let's start with see how monad works.
-~~~
+
+~~~sh
 $ cat baby.hs
 doubleMe x = x + x
 $
@@ -246,7 +248,7 @@ doubleMe x = x + x
 
 ### Basics
 
-~~~
+~~~hs
 Plelude>>> -- :set prompt
 Plelude>>> :set prompt "> "
 >
@@ -326,7 +328,7 @@ e.g.
 
 ### Believe the Type
 
-~~~
+~~~hs
 > :t 'a'                -- 'a' :: Char
 > :t True               -- True :: Bool
 > :t "Hello"            -- "Hello" :: [Char]
@@ -335,7 +337,7 @@ e.g.
 > :t 4 == 5             -- 4 == 5 :: Bool
 ~~~
 
-~~~
+~~~hs
 > factorial :: Integer -> Integer;
 > factorial n = product[1..n]
 >
@@ -348,7 +350,7 @@ e.g.
 >
 ~~~
 
-~~~
+~~~hs
 > :t head               -- head :: [a] -> a
 > :t tail               -- tail :: [a] -> [a]
 ~~~
