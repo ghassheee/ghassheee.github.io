@@ -4,6 +4,12 @@ layout: dep
 date : 2016-12-01
 ---
 
+Reference
+
+* [Pierce] Types and Programming Languages
+
+<br>
+
 # Introduction
 
 TaPL provides type safe programming language definitions.<br>
@@ -16,59 +22,46 @@ I recommend you to start with combinator theory .<br>
 <br>
 <br>
 
-Definition
-=============================================
+# Mathematical Prerequired Definitions
 
 
 
 
-- $ \mathcal{P} ( \mathcal{S} ) $ : `powerset` of $ S $
+* $ \mathcal{P} ( \mathcal{S} ) $ : `powerset` of $ S $
 
+* $ \mathcal{S} \ \backslash \ \mathcal{T} $ : `difference`
 
-- $ \mathcal{S} \ \backslash \ \mathcal{T} $ : `difference`
+* $ \mathbb{N} $ : `set of natural number`
 
-
-- $ \mathbb{N} $ : `set of natural number`
-
-
-- `n-placed relation`
+* `n-placed relation`
     - $ s_1 \in \mathcal{S_1} , ... , s_n \in \mathcal{S_n} $ are `related`
     - `if` $ (s_1, ... , s_2) \in R $
     - where $ R \subseteq \mathcal{S_1} \times ... \times \mathcal{S_n} $
 
+* $ P(s) := s \in P $ : `predicate ( 1-place relation )`
 
-- $ P(s) := s \in P $ : `predicate ( 1-place relation )`
+* $ s R t := ( s , t ) \in R $ : `Binary Relation`
+    * where $ s, t \in \mathcal{ U } $
 
+* $ s R t := ( s , t ) \in R $ : `2-place Relation`
+    * where $ s \in \mathcal{S} , t \in \mathcal{T} $
 
-- $ s R t := ( s , t ) \in R $ : `Binary Relation`
-    - where $ s, t \in \mathcal{ U } $
+* $ \Gamma \vdash s : T $ : `3-place Relation`
+    * this is Typing Relation (see Chapter 9)
 
+* $ R $ is `Partial Function` : $ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
+* $ R $ is `Total Function` : $ dom(R) = \mathcal{S} $
+    * where $ \mathcal{S} R \mathcal{T} $
 
-- $ s R t := ( s , t ) \in R $ : `2-place Relation`
-    - where $ s \in \mathcal{S} , t \in \mathcal{T} $
+* `Defined` / `Undefined`
+    * Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
+    * $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
+    * $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
 
-
-- $ \Gamma \vdash s : T $ : `3-place Relation`
-    - this is Typing Relation (see Chapter 9)
-
-
-- $ R $ is `Partial Function` : $ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
-
-
-- $ R $ is `Total Function` : $ dom(R) = \mathcal{S} $
-    - where $ \mathcal{S} R \mathcal{T} $
-
-
-- `Defined` / `Undefined`
-    - Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
-    - $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
-    - $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
-
-
-- Diverge / Failure
-    - `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
-    - fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
-    - Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
+* Diverge / Failure
+    * `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
+    * fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
+    * Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
 
 
 
@@ -84,7 +77,8 @@ e.g.
 - $ P := s \rightarrow $ { $ True , False $ }
 
 
-- 述語を持たせるのは [Russell's Paradox](../math/2015-12-15-russell.md/) を解消させるため
+
+述語を持たせるのは [Russell's Paradox](../math/2015-12-15-russell.md/) を解消させるため
 
 
 **********************************
@@ -107,13 +101,12 @@ e.g.
 
 ## term definition
 
-~~~
+~~~hs
 t ::=
         x               variable
         λx.t            abstraction
         t t             application
 ~~~
-
 
 ## evaluation definition
 
@@ -121,7 +114,7 @@ t ::=
 
 ## church booleans
 
-~~~
+~~~hs
 tru = \t.\f. t
 fls = \t.\f. f
 and = \x.\y. x y fls
@@ -146,25 +139,20 @@ if b s t = b s t
 
 ## church numerals
 
+### $ \mathbb{N} $
 
-### number
-
-~~~
-0 = \s.\z. z
+~~~hs
+0 = \s.\z. z        -- = \x.\y. y = fls
 1 = \s.\z. s z
 2 = \s.\z. s (s z)
 3 = \s.\z. s (s (s z))
 ...
 ~~~
 
-~~~
-0 = fls = \x.\y. y
-~~~
-
 
 
 Rewrite in `MockingBird Style`
-~~~
+~~~hs
         0xy = y
         1xy = xy
         2xy = x(xy)
@@ -174,7 +162,7 @@ Rewrite in `MockingBird Style`
 
 ### `succ`
 
-~~~
+~~~hs
         S0xy = xy
         S1xy = x(xy)
         S2xy = x(x(xy))
@@ -182,7 +170,7 @@ Rewrite in `MockingBird Style`
 ~~~
 
 solve S !
-~~~
+~~~hs
         x(x(xy)) = x(2xy) = S2xy
         x(xy) = x(1xy) = S1xy
         so, Snxy = x(nxy)
@@ -193,14 +181,14 @@ solve S !
 ~~~
 
 hence,
-~~~
+~~~hs
 suc = \n.\s.\z. s(nsz)
     = \n.\s.\z. ns(sz)
 ~~~
 
 ### `plus`
 
-~~~
+~~~hs
 plus = \m.\n.\x.\y. mx(nxy)
 plus m n x y = mx(nxy)
 
@@ -211,7 +199,7 @@ plus m n x y
 
 ### `times`
 
-~~~
+~~~hs
 times m n x y
 = x(x(x(x(x...(xy)))))    // x appears m * n
 = x(x(x(           )))    // now m = 3
@@ -758,21 +746,21 @@ extendTable =
 ~~~
 
 
-## Normalization of Simple TYpe
+## Normalization of Simple Type
 
 ### term t is normalizable ?
 
 answer. no
 
-- since application
--  $ t _ 1 t _ 2 $ ==> (assumption) ==> $ v _ 1 v _ 2 $ ==> (not normalize) ==> `(\x:T.t)` $ v _ 2 $
+* since application
+* $ t _ 1 t _ 2 $ ==> (assumption) ==> $ v _ 1 v _ 2 $ ==> (not normalize) ==> `(\x:T.t)` $ v _ 2 $
 
 <br>
 
 so, we define ;
 
-- $ R _ T $ : a set of closed terms of type T
-- $ R _ T (t) \iff t \in R _ T $
+* $ R _ T $ : a set of closed terms of type T
+* $ R _ T (t) \iff t \in R _ T $
 
 we regard $ R _ T $ as Predicates
 
@@ -1194,51 +1182,8 @@ $$
 
 ### Typing
 
-<br>
 
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-$$
-\begin{CD}
-\end{CD}
-$$
-
-<br>
-
-
+~~~
 e.x. 13.5.2
 Γ | Σ1 |- μ
 Γ | Σ2 |- μ
@@ -1253,7 +1198,7 @@ l |-> () -> ()
 l |-> \(). (!l) ()
 
 l |-> \(). (\().(!l)()) () = \(). (!l)() : which type is OK !
-
+~~~
 
 
 # Exceptions

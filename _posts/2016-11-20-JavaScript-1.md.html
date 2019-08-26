@@ -4,11 +4,17 @@ date: 2016-11-20
 layout: dep
 ---
 
+Reference
+
+* Javascript 6th Edition (O'Reilly)
+
+<br>
+
 # Introduction
 
 ## e.g. Draw circles
 
-~~~
+~~~js
 const CHANNELS_PER_PIXEL = 4; //rgba
 
 function drawCircle (x0, y0, radius, canvas) {
@@ -68,7 +74,7 @@ syntax
 
 ## Core Javascript
 
-~~~
+~~~js
 x = null;              // Null is a special value, meaning "no value".
  x = undefined;         // Undefined is like null.
 ~~~
@@ -77,14 +83,14 @@ object
 :   a collection of name/value pairs,
     or a string to value map
 
-~~~
+~~~js
 “two” = “three”
 ~~~
 
  `prototype` をかませると、
  instance method でなく class method を定義する
 
-~~~
+~~~js
 Point.prototype.r = function() {
 return Math.sqrt(
 this.x * this.x +
@@ -95,10 +101,11 @@ this.y * this.y
 
 
 
-### js in html
+### JS in html
 
 
-~~~~~~~
+
+~~~
 <!--
 <html> 
 <head> 
@@ -111,11 +118,12 @@ this.y * this.y
 </body> 
 </html>
 -->
-~~~~~~~
-
-
-
 ~~~
+
+
+
+
+~~~js
 function debug(msg) {
     var log = document.getElementById("debuglog");
 
@@ -235,7 +243,7 @@ html5 の新しい要素
 ## Javascript Loan Calculator
 
 * window.localStorage
-* xml : ajaxの事
+* xml 
   * ajax を使うとページの一部分だけを書き換える
 
 unicodes

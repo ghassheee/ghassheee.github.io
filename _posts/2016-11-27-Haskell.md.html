@@ -110,7 +110,7 @@ uniSymbol  ->   any Unicode symbol or punctuation
 
 ~~~
 
-So, symbols are ascii symbols or unicode symbols except from those in special | _ | : | " | ', which are reserved (here a | b means "it may be a or b", and a<b> means "may be everything in a except b"). A few paragraphs below, the report gives the complete definition for haskell operators:
+So, symbols are ascii symbols or unicode symbols except from those in special `| _ | : | " | '`, which are reserved (here `a | b` means "it may be a or b", and `a<b>` means "may be everything in a except b"). A few paragraphs below, the report gives the complete definition for haskell operators:
 
 ~~~hs
 varsym     -> ( symbol {symbol | :})<reservedop | dashes>
@@ -130,12 +130,17 @@ Other than the special syntax for prefix negation, all operators are infix, alth
 
 
 ## Ambigous module name error
-~~~
-error: Ambigous module packages : cryptohash & cryptonite
+
+
+When you encounter an error: Ambigous module packages : cryptohash & cryptonite;
+
+~~~hs
 λ> :set -hide-package cryptohash
 ~~~
 
-~~~hs
+then load the other;
+
+~~~
 λ> :m Crypto.Hash Crypto.Hash.Algorithms Data.ByteString
 λ> hash (pack [61,32] ) :: Digest SHA3_512
 100c57a0f4b09fb0a579510d08eb435804a81fad20e1d8bed29e8cfcecf3abd851d63fc81958ee93ef84f0385bae68697d41e0b7d7e0c23acf57deb3826cd07f
@@ -337,6 +342,8 @@ e.g.
 > :t 4 == 5             -- 4 == 5 :: Bool
 ~~~
 
+<br>
+
 ~~~hs
 > factorial :: Integer -> Integer;
 > factorial n = product[1..n]
@@ -359,7 +366,7 @@ e.g.
 
 ### Function Definition
 
-~~~
+~~~hs
 lucky :: Int -> String
 lucky 7 = "LUCKY NUMBER 7"          -- applied first
 lucky _ = "Sorry, not 7"            -- applied second
@@ -368,7 +375,8 @@ lucky _ = "Sorry, not 7"            -- applied second
 ~~~
 
 e.g.
-~~~
+
+~~~hs
 factorial :: Int -> Int
 factorial 0 = 1
 factorial n = n * factorial (n-1)
@@ -393,13 +401,15 @@ addVectors (x1,y1) (x2,y2) = (x1+x2 , y1+y2)
 ### `Eq`
 
 type of equal is;
-~~~
+
+~~~hs
 > :t (==)
 (==) :: Eq a => a -> a -> Bool     -- type a is an instance of Eq class
 ~~~
 
 see `Eq` class
-~~~
+
+~~~hs
 > :info Eq
 class Eq a where
   (==) :: a -> a -> Bool
@@ -407,7 +417,7 @@ class Eq a where
 ~~~
 
 Build `Eq` instance with `(==)` and `(/=)`;
-~~~
+~~~hs
 > data F_ck = Zero | NaN
 >
 > -- Write below declaration in a line using `;` operator !!
@@ -426,7 +436,7 @@ instance Eq F_ck where
 
 - `Eq a => Ord a` : To be an `Ord` instance, the type must first be an `Eq` instance.
 
-~~~
+~~~hs
 λ> :info Ord
 class Eq a => Ord a where
   compare :: a -> a -> Ordering

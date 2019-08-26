@@ -16,6 +16,7 @@ A relational database management system must manage its stored data using only i
 # The information rule:
 
 All information in a relational database (including table and column names) is represented in only one way, namely as a value in a table.
+
 # The guaranteed access rule:
 
 All data must be accessible. This rule is essentially a restatement of the fundamental requirement for primary keys. It says that every individual scalar value in the database must be logically addressable by specifying the name of the containing table, the name of the containing column and the primary key value of the containing row.
@@ -42,8 +43,9 @@ All views that are theoretically updatable must be updatable by the system.
 
 # High-level insert, update, and delete:
 
-The system must support set-at-a-time insert, update, and delete operators. This means that data can be retrieved from a relational database in sets constructed of data from multiple rows and/or multiple tables. This rule states that insert, update, and delete operations should be supported for any retrievable set rather than just for a single row in a single table.
-####Rule 8: Physical data independence:
+The system must support set-at-a-time insert, update, and delete operators. This means that data can be retrieved from a relational database in sets constructed of data from multiple rows and/or multiple tables. This rule states that insert, update, and delete operations should be supported for any retrievable set rather than just for a single row
+
+# Physical data independence:
 
 Changes to the physical level (how the data is stored, whether in arrays or linked lists etc.) must not require a change to an application based on the structure.
 
