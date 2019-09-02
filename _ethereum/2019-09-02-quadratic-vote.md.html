@@ -4,6 +4,10 @@
     date: 2019-09-02
 ---
 
+Original: https://ethresear.ch/t/quadratic-voting-with-sortition/6065
+
+This is the Japanese translation of the above site.
+
 
 # sortition
 
@@ -31,6 +35,9 @@ sortition により、代表者が選ばれれば、<br>
 例えば、$ C(w) = w^2 / 2 $ などで重みのある投票を行うことができる。<br>
 このコスト関数のモデルは、その微分が $ c(w) = w $ であるところから、<br>
 どれだけ、重み付けをしたいのか、という強い気持ちを自然に表すモデルと言える。<br>
+
+![quadratic vote 1](/image/QV1.png)
+
 
 # Strawman の方法 1
 
@@ -128,6 +135,8 @@ $ min(\frac{x}{p},\frac{M}{p}) * p + max (x-M, 0) = x $ <br>
 
 
 # 方法 3
+
+![quadratic vote 2](/image/QV2.png)
 
 $ e ^ {w/M} $ の曲線は縦方向にひろげることと、横にシフトすることが同じであるという美しい性質があるので、
 変数 $ q $ を乗じるのではなく、$ M * e ^ {w/M} $ を右にシフトすることで、小さい値をえることを考える。
