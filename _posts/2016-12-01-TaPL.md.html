@@ -1262,6 +1262,53 @@ Untyped Lambda-Calculus, Redux
 ## Implicit Type Annotations
 ## Let-Polymorphism
 
+### Let polymorphism
+
+
+
+### Impredicative Polymorphism
+
+let polymorphism (ML style) v.s. impredicative polymorphism (System F)
+
+* OCaml : let polymorphism can always halt.
+* Haskell : impredicative polymorphism cannot halt always.
+
+
+### Recursive Polymorphism
+
+Recursive Polymorphism allows polymorphisms of type in Recursive Type definitions;
+i.e.
+if we apply polymorphism to
+
+~~~
+Rec X. X -> A
+~~~
+
+, we can get the following types as its instances.
+
+~~~
+Int -> [Int] -> [[Int]] -> A
+Int -> Bool  -> Int     -> Bool -> ... -> A
+~~~
+
+
+Haskell has recursive polymorhism
+
+~~~
+λ>  data Nested a = a :<: (Nested [a]) | E deriving Show
+λ>  length :: Nested a -> Int;
+    length E = 0 ;
+    length (a :<: as) = 1 + length as
+~~~
+
+Then Type;
+
+~~~
+λ>  1 :<: ([1] :<: ([[2]] :<: E  ))
+~~~
+
+
+
 # Universal Types
 
 ## Motivation
@@ -1276,6 +1323,8 @@ Untyped Lambda-Calculus, Redux
 ## Impredicativity
 
 # Existential Types
+
+
 
 # An ML Implementation of System F
 
