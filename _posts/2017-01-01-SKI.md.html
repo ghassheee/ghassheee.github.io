@@ -4,12 +4,36 @@ layout: dep
 ---
 
 
-~~~
-s x y z := x z (y z)
-k x y := x
+Reference : [Raymond] Mock a mocking Bird
 
-s k x y = k y (y x) = y
-s k k x = x
-s k s x = x
-i := s k k := s k s
+
+# Definition
+
 ~~~
+S x y z := x z (y z)
+K x y   := x
+I x     := x
+~~~
+
+## I combinator
+
+~~~
+S K x y = K y (y x) = y
+S K K x = x
+S K S x = x
+I = ∀X. S K X
+~~~
+
+
+# Various Combinators (Birds)
+
+
+~~~
+M x         = x x           # Mocking Bird
+B x y z     = x ( y z )     # Blue Bird
+T x y       = y x
+~~~
+
+
+
+(to be countinued ...)

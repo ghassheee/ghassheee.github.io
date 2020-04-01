@@ -1,0 +1,97 @@
+---
+title: HoTT
+layout: dep
+date: 2020-03-10
+---
+
+
+UNDER CONSTRUCTION
+
+- just reading chapter 1,
+- if you have been motivated to read together, feel free to contact me on twitter or gmail.
+- we can share infomation, interpretation of various topics.
+
+
+# Homotopy Type Theory
+
+
+
+deduction
+
+- P → Q (conditional statement)
+- P (hypothesis stated)
+- Q (conclusion deduced)
+
+- a inhabitant of a type : a proposition
+
+
+
+- set theory : first order logic & an axiom on it
+- type theory : non
+
+- set theory : set & proposition
+- type theory : type
+
+_          | set theory                           | type theory
+-----------|--------------------------------------|-------------
+foundation | first order logic<br> an axiom on it | non
+_          | set & proposition                    | type
+_          | "a $ \in $ A" (proposition)          | "a:A" judgment
+ equality  | a proposition                        | a type
+
+
+### deductive type system
+
+- a deductive system : **rules** for deriving things **judgment**
+
+- a judgment "proposition A has a proof"
+- a rule "from A and B infer A $ \land $ B"
+
+### type theory
+
+- a judgment "a:A"    ("a" in proposition A is "a witness to the provability of A" or "an evidence that A is true")
+
+
+"let a:A" is a atomic statement in type theory
+
+- equality in set theory : a proposition
+- equality in type theory : a type
+
+"a,b : A" means we have a type "a =A b" called "a and b is propositionally equal"
+
+
+an equality judgment
+
+- "judgment equality" "a $ \equiv $ b : A"
+
+- "equality" is "a conclusion of the deductive system of a type theory "
+
+
+
+Group
+
+- judgements : elements of a Group
+- rules : operation
+- judgements equality : equality of elements of a Group
+
+context : generator
+
+
+
+
+### some note references
+
+- contextual categories
+- categories with families
+- comprehension categories [Lurie]
+- type-theoritic fibration categories [Shulman 2015]
+
+- categorical description of "logical relations" [Hermida, 1933]
+
+~~~
+A |- B : Type               fibration B -> A
+A |- \Sigma_B C : Type      composition C -> B -> A
+A |- \Pi
+~~~
+
+- free theorems [Wadler ,1989]
