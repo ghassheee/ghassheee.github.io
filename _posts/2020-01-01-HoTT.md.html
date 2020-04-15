@@ -12,6 +12,32 @@ UNDER CONSTRUCTION
 - we can share infomation, interpretation of various topics.
 
 
+
+# Coq / CIC
+
+Formal CIC specification : https://coq.inria.fr/refman/language/cic.html#calculusofinductiveconstructions
+
+
+
+# The Difference between Isabelle/HOL & Coq
+
+
+
+- https://stackoverflow.com/questions/30152139/what-are-the-strengths-and-weaknesses-of-the-isabelle-proof-assistant-compared-t
+
+
+Style of interaction
+
+Both Coq and Isabelle/HOL are interactive theorem provers. They are languages for writing definitions and proofs about them; these proofs are checked by a computer to ensure that they have no mistakes. In both systems, one writes down a proof by giving commands that explain how to prove something. The way this happens on each system, however, varies.
+
+Isabelle/HOL generally speaking has more mature support for "push-button" proof automation. For instance, it comes with the famous sledgehammer tactic, which invokes several external automatic theorem provers and solvers to try to prove a theorem. Coq also comes with many powerful proof automation procedures, such as omega or congruence, but they are not as generally applicable, and many theorems that can be solved with a single command in Isabelle/HOL require more explicit proofs in Coq.
+
+Of course, this convenience comes with a price. I've been told that it is harder to have control over one's proof in Isabelle/HOL because the system tries to do a lot by itself. This is not a problem when proving simple theorems, but it becomes an issue when proof automation is not powerful enough and you need to tell the theorem prover how to proceed in greater detail.
+
+The situation is a bit different when supporting user-defined, proof-automation procedures. Coq comes with a tactic language for writing proofs, known as Ltac, that is a programming language of its own right. Even though Ltac has some design problems, it does allow users to encode fairly complicated proof automation procedures in a lightweight manner. For heavier tasks, Coq also allows users to write plugins in Coq's implementation language, OCaml. In Isabelle/HOL, in contrast, there is no higher-level automation language like Ltac, and the only way the user can program custom proof automation procedures is with plugins.
+
+
+
 # Homotopy Type Theory
 
 
