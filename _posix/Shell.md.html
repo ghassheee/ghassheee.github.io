@@ -4,6 +4,75 @@ title: Shell
 date: 2015-12-06
 ---
 
+
+
+
+# Devices
+
+## list Devices
+
+~~~
+@ osx
+$ diskutil list @osx
+
+@ linux
+$ fdisk -l
+$ mount -l
+~~~
+
+
+# Network
+
+ program | obsoleted by
+ --------|---------------
+ arp	| ip neigh
+ ifconfig	| ip addr
+ ipmaddr	| ip maddr
+ iptunnel	| ip tunnel
+ route	| ip route
+ nameif	| ifrename
+ mii-tool	| ethtool
+
+
+## ipconfig
+
+~~~
+# ifconfig | grep flags
+...
+lo0:  flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
+en0:  flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+...
+~~~
+
+## ifconfig
+
+~~~
+# ipconfig getpacket lo0
+# ipconfig getpacket gif0
+# ipconfig getpacket en0
+...							## if en0 is connected some information is listed
+~~~
+
+
+## nmap
+
+nmap searches the state how an IP address serves in the Internet or Local Network.
+
+~~~
+> /& proxychains &/ nmap -A -p 1-22 (TARGET'S IP)
+~~~
+
+22/tcp open ssh
+
+hydra is said to be a brute force attacking tool. To prevent this you can ban the IPs which have attacked you, and before that you have to be sure that your ssh username is long enough to be unpredictable.
+
+~~~
+> hydra -l (USER TO LOG IN AS) -x 4:10:aA 192.168.8.101 ssh
+~~~
+
+
+
 # nc (netcat)
 
 ~~~

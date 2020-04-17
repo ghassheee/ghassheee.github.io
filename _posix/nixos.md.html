@@ -3,6 +3,9 @@ title: NixOS
 layout: dep
 ---
 
+
+
+
 # Installation
 
 
@@ -20,6 +23,60 @@ systemctl restart wpa_supplicant
 ~~~
 
 
+
+## gdisk (system-boot on GPT)
+
+3. Partitioning :
+
+~~~
+gdisk $DISK
+
+Number  Size        Code  Name
+  1     1000.0 KiB  EF02  BIOS boot partition   (boot)
+  2     500.0 MiB   EF00  EFI System Partition  (EFI)
+  3     <the rest>  8E00  Linux LVM
+~~~
+
+
+4. Make encrypted file system and open it.
+
+~~~
+cryptsetup luksFormat /dev/sda3
+cryptsetup luksOpen /dev/sda3 enc-pv
+~~~
+
+5. create Logical Volume (create LVM groups )
+
+~~~
+pvcreate /dev/mapper/enc-pv
+vgcreate vg /dev/mapper/enc-pv
+lvcreate -n swap vg -L 10G
+lvcreate -n root vg -l 100%FREE
+~~~
+
+6. Make file system
+
+~~~
+mkfs.vfat -n BOOT /dev/sda2
+mkfs.ext4 -L root /dev/vg/root
+mkswap -L swap /dev/vg/swap
+~~~
+
+7. Mount and swapon :
+
+~~~
+mount /dev/vg/root /mnt
+mkdir /mnt/boot
+mount /dev/sda2 /mnt/boot
+swapon /dev/vg/swap
+~~~
+
+
+
+
+
+## fdisk (MBR partitioning)
+
 3. Partitioning :
 
     Let's say you do;
@@ -32,11 +89,10 @@ lsblk                       ## find your device
 DISK="/dev/xxx"             ## set xxx as your device
 ~~~
 
-    * Use `fdisk`;
 
-        - At NixOS, GRUB can be installed on MBR.
-        - To build MBR partitioning, use `fdisk`
-        - if you use `system-boot` on GPT then use `gdisk`
+- At NixOS, GRUB can be installed on MBR.
+- To build MBR partitioning, use `fdisk`
+
 
 ~~~sh
 fdisk $DISK                                     ## fdisk do partitioning over MBR
@@ -61,7 +117,7 @@ lvcreate -n swap vg -L 16G
 lvcreate -n root vg -l 100%FREE
 ~~~
 
-    * ( In case you reboot, you may want to re-mount these volumes with; )
+* ( In case you reboot, you may want to re-mount these volumes with; )
 ~~~sh
 ## vgchange -a y vg      ## In case This activate vg in case you reboot
 ~~~
@@ -74,45 +130,52 @@ mkfs.ext4 -L root /dev/vg/root
 mkswap -L swap /dev/vg/swap
 ~~~
 
-7. Mount;
+7. Mount and Swapon;
 ~~~sh
 mount /dev/vg/root /mnt
 mkdir /mnt/boot
 mount ${DISK}1 /mnt/boot
-~~~
-
-8. Turn on Swap
-~~~sh
 swapon /dev/vg/swap
 ~~~
 
-9. Generate an initial configuration;
+
+
+## build or install nix files
+
+
+
+8. Generate an initial configuration;
 ~~~sh
 nixos-generate-config --root /mnt
 ~~~
 
-10. Edit Config File `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
+9. Edit Config File `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
 ~~~sh
 ## curl https://raw.githubusercontent.com/ghassheee/nixos/master/configuration.nix > /mnt/etc/nixos/configuration.nix
 ~~~
 
 
-11. Install NixOS;
+10. Install NixOS;
 ~~~sh
 nixos-install
 ~~~
 
-12. reboot
+11. reboot
 ~~~sh
 reboot
 ~~~
 
-13. Do not forget to set PASSWORD for users
+12. Do not forget to set PASSWORD for users
 ~~~sh
 passwd ghasshee             ## i.e. set password of your username for login
 ~~~
 
 That's all!
+
+
+## Reference
+
+https://chris-martin.org/2015/installing-nixos
 
 <br>
 <br>
