@@ -285,6 +285,44 @@ curl localhost:4000 |grep someword
 <br><br>
 
 
+
+## HTTP request
+
+jq のインストール
+
+~~~
+curl localhost:8080/api/json | jq
+curl localhost:8080/api/json -o response    // save output to a file
+curl localhost:8080/api/json -o             // save output to a file with a default name
+curl localhost:8080/api/json -O -#          // show ####### 100.0%
+curl -s localhost:8081/api/json             // exclude err but not displayed
+curl -Ss localhost:8080                     // -S : shows error
+~~~
+
+
+## HEADER
+~~~
+curl -I localhost:8080/api/json             // get HEADER only
+~~~
+
+
+## DUMP
+
+~~~
+curl --trace
+curl --trace-ascii
+~~~
+
+~~~
+curl --trace-time
+~~~
+
+jenkins を使い認証サービスを curl で使うことができる
+
+
+
+
+
 # `find`
 
 

@@ -223,4 +223,35 @@ nix-env -p /nix/var/nix/profiles/system --list-generations
 
 # Nix Pills
 
+# Nix On MacOS
+
+## macOS 10.15 cannot make `/nix` folder
+
+https://github.com/NixOS/nix/issues/3125
+
+Prepare macOS 10.15 (Catalina) for Nix:
+
+
+~~~
+echo 'nix' | sudo tee -a /etc/synthetic.conf
+Reboot
+~~~
+
+Create the Nix volume:
+
+~~~
+sudo diskutil apfs addVolume disk1 APFSX Nix -mountpoint /nix
+sudo diskutil enableOwnership /nix
+sudo chflags hidden /nix
+echo "LABEL=Nix /nix apfs rw" | sudo tee -a /etc/fstab
+Install Nix with sh <(curl https://nixos.org/nix/install) --daemon
+
+Reboot
+~~~
+
+
+locate the `org.nixos.nix-daemon.plist` and type
+
+~~~
+sudo cp -f /nix/.../Library/LaunchDaemons/org.nixos.nix-daemon.plist /Library/LaunchDaemons/org.nixos.nix-daemon.plist
 ~~~

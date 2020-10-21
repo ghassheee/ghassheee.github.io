@@ -1,6 +1,6 @@
 ---
 layout: dep
-title: Dragonbook 
+title: Dragonbook
 date: 2017-01-01
 ---
 
@@ -1122,3 +1122,34 @@ a
 再配置可能な機械語　実行にはリンキングローダを使用する
 
 リンキングローダ : 再配置可能な目的モジュールをリンクして、ロードする
+
+
+
+
+# self compile
+
+
+コンパイラが育っていくにつれて、セルフコンパイラがつくられるポイントがあるが、
+
+~~~
+asm : compiler
+cc : compiler compiler : p → asm
+c1,c2, ... : compiler
+t : target language
+~~~
+
+とすると
+セルフコンパイラは `cc(c1)` であり従って、それがもとのコンパイラと同じ動作をするので
+
+~~~
+cc     : c1 ↦ cc(c1)
+cc(c1) : c1 ↦ (cc(c1))(c1) ≡ cc(c1)
+~~~
+
+でないといけない
+
+あるいは、
+
+~~~
+∀p. (cc(c1))(c1)(p) = cc(c1)(p)
+~~~

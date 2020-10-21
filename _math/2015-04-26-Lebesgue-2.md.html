@@ -20,7 +20,11 @@ y の値をとる x はどれだけあるのかを求めることで、y*(積分
 - 「長方形(Box)で埋め尽す」
 - 「面積が図れる集合（可測集合）でうめつくしていく」
 
-ことにより、ある値Y をとるBox の体積の割合を計算し、それを積分すれば良い。というものである。<br>
+(によって完備化する）ことにより、
+ある値Y をとるBox の体積の割合を計算し、それを積分するものである。<br>
+
+
+
 
 # History
 
@@ -33,16 +37,22 @@ y の値をとる x はどれだけあるのかを求めることで、y*(積分
 
 ## リーマン積分への問題提起
 
-- ジョルダン
-- ボレル
-- ルベーグ
+- Jordan
+- Borel
+- Lebesgue
     - 「極限と積分の順序交換が可能か」
     - 「微分と積分の順序交換が可能か」
 
 
+
+
+
 # The Definitions
 
-## [外測度] $ \Gamma $
+## Outer measure (外測度)
+
+
+Outer measure $ \Gamma $
 
 $ \iff $
 
@@ -50,13 +60,13 @@ $ \iff $
 - $ A \subset B \Rightarrow \Gamma(A) \subset \Gamma(B) $
 - $ \Gamma(\bigcup ^ {\infty} _ {n=1} An ) \le \sum ^ {\infty} _ {n=1} ( A _ n ) $
 
-## [measurable]
+## measurable
 
 $ E $ ( $ \subset X $ ) is $ \Gamma $ - measurable $ \iff $
 
 - $ \forall A \subset X . \quad \Gamma(A \cap E) + \Gamma(A \cap E^c) $
 
-## [probability]
+## probability
 
 $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
@@ -66,7 +76,7 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-## [有限加法族]
+## Finite Algebra (有限加法族)
 
 - $ \emptyset \in \mathfrak{F} $
 - $ A \in \mathfrak{F} \Rightarrow A^{c} \in \mathfrak{F} $
@@ -74,7 +84,9 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-## [$ \sigma $ 加法族]
+## Sigma Algebra (Σ加法族)
+
+Sigma Algebra ($ \sigma $ 加法族)
 
 - $ \emptyset \in \mathfrak{B} $
 - $ E \in \mathfrak{B} \Rightarrow E^{c} \in \mathfrak{B} $
@@ -82,12 +94,14 @@ $ P(A) $ : probability measure of $ A $ ( $ \in \Omega $ ) $ \iff $
 
 
 
-## ルベーグ積分は 完全加法性 を満たす
+## ルベーグ積分 は 完全加法性 を満たす
 
 $$ A = \bigcup\ A_i = \sum A_i $$
 
 
-## [ indicator function of $ A $ ]
+## indicator function
+
+indicator function of $ A $
 
 $ \chi _ A (x) = \begin{cases}
 1 \ ( \ x \in A ) \\
@@ -95,7 +109,7 @@ $ \chi _ A (x) = \begin{cases}
 \end{cases} $
 
 
-## $ L^p $ 関数
+## L^p 関数
 
 
 # 三大定理
@@ -105,3 +119,844 @@ $ \chi _ A (x) = \begin{cases}
 - フビニ : 積分の順序交換の際に用いられる
 
 # 積測度
+
+
+
+
+# Tao - Introduction to Measure Thoery
+
+
+
+
+
+
+## Preface
+
+
+
+
+### Carathéodory's general construction of a measure from an outer measure
+
+
+
+### Axiom of Choice 0.0.4 - 0.0.6
+
+Remark 0.0.6
+
+AC の使用が許されないような状況下で、
+「どれほど実解析（の定理や事実）が生き残るのか」
+に答えるには、Logic と destriptive set theory が必要だ。
+
+Gedel's theorem (Go1938) :
+
+~~~
+any statement that can be phrased in the first-order language of
+Peano airthmetic and which is proven with the AC ,
+can also be proven without the AC.
+~~~
+
+これは、有限な状況においては、
+AC を使うことは安全ではあるが、
+選択公理が使われるのは、無限の時のみなのである。
+（有限計算において、必ず必要としないような概念を、公理とすることへの疑問がここで投げかけられている）
+
+
+
+
+~~~
+1.4.1  Elementary  Algebra
+1.4.2  Jordan      Algebra
+1.4.3  Lebesgue    Algebra
+1.4.12 Sigma       Algebra
+1.4.16 Borel Sigma Algebra
+
+* Borel Sigma 集合 : Powerset(X) の要素 (X の部分集合から生成される sigma-algabra)
+* R^d においてはすべての open set は Lebesgue なので、 Borel は Lebesgue よりもガサツ(coarse)
+* ルベグ可測な集合はボレル集合だとは限らない ([吉田] 付録７)
+
+
+Tao Remark 1.4.17 に、descriptive set theory が出てくる
+
+~~~
+
+
+constructive な mathematics の観点では、
+積は、pair として構築するわけですから、
+構成的に全順序をきちんといれてあげれば、なにも問題はおきない。
+
+
+$ \mathbb{R} $ を構成的に扱う枠組みが descriptive set theory なのかもしれない
+Tao は、AC を極力つかわず、descriptive set theory で話を進める。
+
+
+
+
+
+
+
+
+## The problem of measure
+
+
+Banach Tarski のパラドクスなど、
+Tao の冒頭及一章で、数々の気持ち悪い状況について、まず初めに話が述べられています。
+そのため、Tao はルベーグ測度の定義として、通常とは異なる定義（しかし論理的にequivalent なもの）を持ち出すと書かれています。
+
+いろいろと問題を記述して、俯瞰した上で Tao は再構成しているため、いまルベーグ積分をするなら、
+伊藤がを難しいとするのであれば、Tao の書籍一択である。
+バナッハタルスキなどの問題にも、AC を使わずに回避することのできる set theory があるなどとても大事なことが述べられている。
+
+Tao もまた、測度とは「アルキメデスに端を発するもので、長さ、面積、体積、... のことだ」と言っており、
+一次元と二次元を分けて考えるのは測度論の存在意義をゆるがします。
+こういった背景から抽象論をしているのに一次元の定義だけでとどまるのは、ナンセンスである。
+
+
+
+
+
+
+Analytic な幾何学において、Cartesian Product を取ってしまえば、
+つまり、面積を足して体積にしようとする操作によって、体積はゼロとなってしまう。
+この観点から、面積や体積あるいは、長さといった正しい抽象概念である measure をどのように定義すれば良いのかということを、
+problem of measure と呼ぶ。
+
+~~~
+  analytic math   |-   problem of measure
+  synthetic math  |-     　　　　?
+~~~
+
+
+
+
+### Elementary measure
+
+
+elementary set とは、整列してできる有限個の長方形をつなげてできる集合
+
+elementary measure はその上の自明な measure
+
+
+### Jordan measure
+
+
+1.1.8 あたりから大切な道具が次から次へと定義されていきます。
+
+- convex polytope
+- アフィン変形（線形変形）との可換性
+- Jordan Null Set
+- dyatic cube (半開区間のn-dim edition)
+- dyatic metric entropy (外側と内側）
+
+吉田でルベーグ積分をするのは、
+石器でもって、家をつくろうとしているような印象をうけます。
+
+
+
+1.1.17 Bolyai-Gerwien Theorem
+
+~~~
+Pを triangulation し、各単体を回転、平行移動などの変換で
+再度つなげあわせてQを構成できるとすると、
+Jordan measure m に対し、m(P) = m(Q) が成立する。
+逆は3次元以上では成り立たない
+
+（これは、二次元以上の空間があって初めて意味をなす定理であり、ルベーグ積分を一次元で考えるのはよくないことを暗示していると言える。）
+空間として、１次元と高次元では性質がまるで違うので、
+1次元だけでルベーグ積分を語るのは、入門の手段としては危険です。
+（なぜならば高次元の話が一次元だけで話しても、大丈夫だということを最初に証明しないといけない）
+~~~
+
+
+
+1.1.18 が吉田にはない重要な定理に見えます。
+
+1. m(cl(E)) = m(E)
+2. m(interior(E)) = m(E)
+3. E is jordan-measurable $ \iff $  $ m^{ * } (∂E) = 0  $ where $ m^{ * } $ is Jordan-outer-measure
+   ( 一次元で、boundary を持ち出すのはこれまた少し無理がある。)
+
+
+
+1.1.19
+
+~~~
+Caratheodory type property
+これは、1.1.18 がおおきくそのイメージを掴むのに寄与している。
+~~~
+
+### Connection with the Riemann integral
+
+
+~ 1.1.25
+
+~~~
+階段関数 piecewise constant function の導入と、p.c. 積分の導入、
+そして、その極限 (sup) として、きれいに拡張されている。
+これらすべての一次元の定義、定理は、高次元に拡張される。（練習問題)
+~~~
+
+
+## ルベーグ測度
+
+Tao では、日本語の先の二つの書籍と異なり、
+ジョルダン外測度とルベーグ外測度を「finite」と「countable (infinite )」の場合で
+明確に区別しており、とても見晴らしが良い
+
+
+
+p18. ex 1.2.1 / 1.2.2 は直感としてそれほど難しくなさそう。
+（ $ \mathbb{Q} $ や bullet の話を先にしてくれている。）
+
+
+measurable という単語は、
+
+* Elementary meaurable
+* Jordan measurable
+* Lebesgue measurable
+
+のどれであるかはっきりと明示する必要がある。<br>
+
+
+measure という単語の先には、さらに続きがあって、
+
+1. Elementary measure
+2. Jordan outer measure
+3. Lebesgue outer measure
+4. Outer measure
+
+この４ステップをふむことで、伊藤の定義する現代の（抽象）外測度までたどりつく。
+
+~~~
+Lebesgue measurable　の定義の仕方は、
+Jordan measure を定義したときと同じように
+inner と outer が等しいことをいい、
+subadditivity に起因する非対称性を取り除くことで、
+定義可能 (ex 1.2.17) だが、しかしこれは直感的でないので、違った方法を考えよう。
+~~~
+
+
+
+Definition 1.2.2 Lebesgue measurability
+
+~~~
+
+see the text
+
+
+Lebesgue measurable　の定義は他の同値な定義とは異なるようにみえました
+（とてもシンプルですが、definition 1.2.2)
+Littlewood's first principle という原理
+「全てのルベーグ可測な集合はほとんど open だ」
+があるようで、そのあたりの詳しい議論は 1.3.5 で。
+
+~~~
+
+
+
+
+Tao は、Jordan measure に力をいれているが、
+その（ひろがりをもった）イメージから得られるものはとても大きい。
+
+
+
+
+
+
+
+
+### Lebesgue measurability
+
+1.2.13 Lebesgue measurable set がどのようなものか述べている。
+
+* open set
+* closed set
+* null
+* empty
+* ...
+
+
+
+ルベーグ可測と同値な命題(1.2.7) や、inner regularity 、種々の性質についてみた。
+
+
+
+
+反例がすぐ出れば、大体証明は飛ばしているが、
+
+* 1.2.13 (iii) の反例は思いついていない。
+* 1.2.22 : 積測度の定義とルベーグ可測であることの証明
+* 1.2.23 : ルベーグ測度の一意性
+
+
+
+
+### 非可測集合
+
+~~~
+[0,1] 区間のすべての要素に対しコイントスをおこない、
+表だったものの集合をEとすると、
+大数の法則より、これは区間の半分をしめているはずである。
+よって、測度は1/2 である
+
+
+さらにどのような [0,1] の elementary subset F をとってきたとしても
+FとE との共通部分は、Fの半分の測度である。
+このことから、E は elementary set でありえない。
+実際、少しの計算によって、すべてのF に対して、
+m(EΔF) = 1/2 であることからルベーグ可測でないことが言える
+~~~
+
+
+命題 1.2.18
+
+~~~
+[0,1] の部分集合としてルベーグ可測でないものが存在する
+~~~
+
+
+Ex 1.2.26
+~~~
+Outer measure is not finitely additive
+~~~
+
+
+Ex 1.2.27
+~~~
+Projection of measurable sets need not be measurable
+（例 コイントスを対角線に並べるなど）
+~~~
+
+
+### notion to Hahn-Banaha theorem
+
+~~~
+AC を仮定すれば、
+countable additivity と translation invariance の両方をもった
+Rの任意の部分集合に対して、ルベーグ測度をあてることができない。
+
+もし、translation invariance を落とせば、
+measurable cardinal の理論を考えることとなり、
+それはZFCから決定不可能なものである。
+
+一方、finitely addtive translation invariant なルベーグ測度の拡張は、
+Rの冪集合である。これは別冊 An episilon of room 1.5 でのべる
+(Hahn-Banaha theorem)
+~~~
+
+
+
+## Lebesgue Integral
+
+~~~
+タオは階段関数の値として複素数を持ち出している。
+かなり、代数閉体を持ち出している点で、特異点の扱いがきれいになり、
+吉田とは世界感が違いそうな印象。
+
+まず、ルベーグ積分を
+「符号なし実数値関数」と「複素数値関数」の二つの場合でわけている。
+~~~
+
+
+~~~
+1.1 でRiemann 積分を 階段関数の sup として定義したが
+（lower Darboux Integral) 、対照的に upper integral を使わないのは、
+問題があるからだ。
+~~~
+
+
+~~~
+積分が piecewise constant であるということは、
+つまり被積分関数が、
+indicator function 1_I の有限一次結合でかけるということである。
+
+( ようやくルベーグ積分らしさがでてきた印象）
+~~~
+
+
+### simple function の積分
+
+
+p50 .
+
+Def 1.3.2 Simple function の定義( = 複素数値階段関数)
+
+* $ Simp(\mathbb{R}^d) $ は可換環
+* $ Simp^{+}(\mathbb{R}^d) $ は加群
+
+後者が環にならないのは、逆元が存在しないためそもそも群ですらない。
+
+
+~~~
+『indicator function のE上の積分値をm(E) 』と定義する
+それによって、すべての simple function の積分が計算できる。
+
+『indicator function のE上の積分値をm(E) 』これこそがルベーグ積分の要
+~~~
+
+
+
+Def 1.3.5
+~~~
+"Almost Everywhere" / "Support"
+
+noise-tolerant : 「a.e. で同じ関数は、同じ積分をもつ」
+( この性質は、sin x/ x 、1/|x|^a などの解析に便利 (p56) )
+
+
+noise-tolerant な関数を次のようにつくる
+sin x/ x などから特異点を除去し別の値を与える。
+すると、これは、もう集合論における写像の性質をもはや満たさない。
+~~~
+
+
+Remark 1.3.7.
+
+~~~
+ルベーグの哲学とは、
+「測度０の空間に対する制御を忘却しようというもの」である。
+これによる解析は、他のタイプの解析とは一線を画する。
+
+descriptive set theory は、R^d のsubset に重きをおいている。
+これは、a.e. equivalent な集合の pair を分類することができる。
+
+この制御の喪失は、
+ルベーグ積分の素晴らしい道具へのアクセスに必要不可欠である。
+~~~
+
+
+
+### Measurable function ( 可測関数 )
+
+タオの本書では、可測関数の定義として
+階段関数の極限として表すことができることとする手法をとっている
+
+複素数値関数に関して、
+吉田の定義は直接的に適用できない。
+なぜならば、可測関数の定義に順序関係を利用している。
+(単にすべての開集合の逆像がルベーグ可測集合とすればよい）
+
+( see Exercise 1.3.7 )
+
+Def 1.3.8 unsigned measurable function
+
+Def 1.3.11 measurable function
+
+
+ここから符号無しルベーグ積分は直ちに定義されるが、
+一般のルベーグ積分の定義には、絶対積分性を前提とする。
+（連続関数を考えると、
+複素数平面上で、無限遠点を扱わないためであろう、
+（無限遠点をまたいでしまうと極の位数が変わり、
+関数の性質をまるでかえてしまうのではなかろうか））
+
+
+
+### Unsigned Lebesgue Integral
+
+Def 1.3.13 unsigned Lebesgue Integral
+f の lower integral は、f 以下の階段関数の集合のsup として定義される
+f の upper integral は、双対的に定義される
+符号無しルベーグ積分は、Lower Integral として定義される
+
+
+Ex. 1.3.12
+~~~
+Q. measurable set の上の、measurable でない関数の積分において、
+finite additibity が成り立たつか
+A. δ関数はこの反例となるのではなかろうか
+~~~
+
+Ex. 1.3.13
+~~~
+「ルベーグ積分は面積の一般化だ」を示す（割愛）
+~~~
+
+Ex. 1.3.14
+~~~
+ルベーグ積分の一意性
+~~~
+
+
+Ex. 1.3.15
+~~~
+R^d全体としての積分は平行移動してもかわらない
+~~~
+
+
+Ex. 1.3.16
+~~~
+座標変換Tすると、|det(T)| だけかわる
+~~~
+
+
+Ex. 1.3.17
+~~~
+リーマン積分との互換性をもつ
+~~~
+
+
+Lemma 1.3.15 Markov's Inequality
+~~~
+（便利そうな道具、証明つき
+~~~
+
+
+
+### Absolute integrability
+
+L1 関数であることを absolute integrability とよび、
+複素数値積分をつくるときには、L1 を要請する
+
+Def 1.3.17 Lebesgue Integral
+あとは自然に定義される
+
+
+L1 関数の
+
+* 三角不等式
+* 距離
+
+が、絶対積分のおかげで定義できる。
+しかし、この距離は、metric でなく、
+semi-metric ( pseudo metric) とよばれるものである。
+
+
+
+Lemma 1.3.19
+~~~
+三角不等式の一般形　（証明つき
+~~~
+
+
+### Littlewoods' three principles
+
+1. measurable set はほぼほぼ区間の有限和
+2. 絶対積分（L1）関数は、ほぼほぼ連続
+3. 各点収束関数列はほぼほぼ一様収束する
+
+~~~
+1. は1.2.7 / 1.2.16 による
+2. を考えよう
+~~~
+
+
+Theorem 1.3.20
+
+1. すべてのL1 関数に対し、距離が０になるようなL1 simple function が存在する
+2. すべてのL1 関数に対し、距離が０になるような階段関数が存在する
+3. すべてのL1 関数に対し、距離が０になるようなcompactly supported な連続関数が存在する
+4. すべてのL1 関数に対し、距離が０になるような test function が存在する
+ ( 4 の証明は、An epsilon of room )
+
+
+1.3.21 Def 局所一様収束
+
+
+1.3.22 局所一様収束の別定義（ $ \mathbb{R}^d $ における ）
+~~~
+Heine-Borel の定理より、定義の同値性は直ちに言える
+~~~
+
+
+局所性
+~~~
+すべての数学の定義に通ずることであるが、
+性質Pの「局所性」とは、
+
+大域上の全ての点xにおいて性質Pが成り立つならば、
+xを含むある開集合U があってその上でもPが成り立つというもの
+~~~
+
+
+例1.3.23, 1.3.24
+~~~
+局所一様収束だが、一様収束でないものの例
+~~~
+
+例1.3.25
+~~~
+各点収束だが、局所一様収束ではない例
+~~~
+
+
+~~~
+Egorov の定理---------------------------------------+
+| f_n がf に各点収束する |
+|--------------------------------------------------- |
+| ある速度が高々εとしかならないAが存在して、|
+|Aの外側では局所一様収束する |
++------------------------------------------------------+
+~~~
+
+Egorov の定理は一様収束まで一般化することは、残念ながらできない
+
+しかしながら、無限遠点を取り除き有界区間で考えれば、簡単に一般化することはできる
+
+
+Little Wood 2 の言い換えとして
+
+~~~
+Lusin の定理-------------------------------------- +
+| f は L1                                         |
+| ----------------------------------------------- |
+| 測度がたかだかεの E があって、E以外では連続           |
++------------------------------------------------+
+~~~
+
+Lusin の定理は unsigned mesurable function f には直接的にはあてはまらない。
+
+それは、f は無限大をとりうるから。
+
+Remark 1.3.30
+~~~
+Tietze extension theorem ( An epsilon of room 1.10) と Lusin の定理より、
++----------------------------------------------------+
+| すべてのmeasurable function は、             |
+| 連続関数 g とマッチングすることができる。        |
++----------------------------------------------------+
+ことが言える
+~~~
+
+
+~~~
+1.3 までを吉田とくらべてみる率直な感想が、
+吉田だけでは視野が狭すぎる、というもの
+局所一様収束性や、適切な例の配置、など
+概念を正しく理解するための概念がまったくかかれていない、
+可測関数の定義においても、
+大事な事を先に述べずやりたい放題でひどい議論にみえるのは、
+今までと見方は変わらない。
+選択公理の問題点という一番大事な議論を隠蔽する姿勢であるから
+当然といえば当然だが。
+私がこの高みからそれらしいことを主張できるのは、
+1970年代の問題解決意識などをはじめ
+伊藤やテレンスタオなどの整備のおかげである。
+~~~
+
+
+
+
+## Abstrac measure theory
+
+
+ここからは、ユークリッド空間R^d を一般空間X に置き換えて考える
+
+そのためには、集合Xだけでは、議論ができないので、
+
+* X の部分集合の族 B(X)
+* その要素に対して定まる measure μ
+
+を用意しなければならない。
+
+
+~~~
+Finite Boolean algebra
+Atomic Algebra
+
+Null Algebra
+Elementary Algebra
+Jordan Algebra
+Lebesgue Algebra
+(Infinite) Boolean Algebra
+
+が定義される
+~~~
+
+
+1.4.10 Generation of albegra
+
+Ex 1.4.7 elementary algebra は box の集合により生成される
+
+Ex 1.4.9 Generation of algebra の再帰的定義
+（こちらの方が、constructive で好み）
+
+### σ-algebra と測度空間
+
+~~~
+boolean algebra B----------------
+|
+| ---------------[empty]
+| ∅　∈　B
+|
+| X ∈ B
+| ---------------[complement]
+| X^c ∈ B
+|
+| X, Y ∈ B
+| --------------[finite union]
+| X ∪ Y ∈ B
+|
++-------------------------------------
+~~~
+
+
+とくらべて、
+
+~~~
+σ-algebra -----------------------
+|
+| ---------------[empty]
+| ∅　∈　B
+|
+| X ∈ B
+| ---------------[complement]
+| X^c ∈ B
+|
+| X_i ∈ B
+| --------------[countable union]
+| ∪ X_i ∈ B
+|
++--------------------------------------
+~~~
+
+となっている。三つ目がcountable になっている。
+
+
+$ σ- $ というprefix は通常、countable union を表すという慣習がある. 例えば、
+
+* $ σ-compact topological space $ := a countable union of compact sets
+* $ F_σ set $ := a countable union of closed sets
+
+今までアブストラクトにしか見えなかった
+σ加法族は、このように過程を経て生成される。
+
+その差分を生成するのは、つまりおそらく、atomic algebra と見える。
+
+
+1.4.16
+~~~
++--------------------------------------------------------+
+| Borel σ-Algebra |
+| := σ-Algebra generated by "OPEN SETS" in X |
++--------------------------------------------------------+
+~~~
+
+
+
+Remark 1.4.17
+~~~
+非加算濃度をもつはじめのものである ω_1 は、
+point-set topology に様々な反例を与える。
+descriptive set theory において、
+F_sigma, G_delta, F_alpha は、
+descriptive set theory で重要である。
+~~~
+
+Ex. 1.4.15
+~~~
+show <F> = ∪ F_alpha
+
+このあたり、descriptive set theory を理解するのに外せないようだが、
+an epsilon of room 2.4 でかかれた
+ordinal について理解してある必要があるので、
+ここでは深く掘り下げない。
+~~~
+
+
+Ex. 1.4.16 (cardinal に対する理解が必要なので skip )
+
+
+Remark 1.4.18
+~~~
+Borel measurable でない集合を見せることは難しいが、不可能ではない。
+普通扱うものは、だいたい Borel measurable と考えて良い。
+~~~
+
+
+Ex 1.4.17
+~~~
+Borel 可測空間の積もまた Borel 可測
+( box から順々につくっていけばよい。あとは Remark 1.4.15 を使う。)
+~~~
+
+
+Ex 1.4.18
+~~~
+積がBorel ならその射影もまたBorel
+~~~
+
+
+Ex. 1.4.19
+~~~
+R^d 上の、Lebesgue sigma-algebra は、
+Borel-sigma-algebra と null-sima-algebra で生成される
+~~~
+
+
+### Countably additive measures and measure spaces
+
+
+1.4.27 Definition Measure Space 「測度空間」を定義
+
+~~~
+space X
+booleanAlgebra B
+measure μ
+
+の三つで構成され、
+これは一般化された空間として、距離などを定めるための土台となる。
+
+B は、2^X の部分集合であり、
+Boolean Algebra の公理を満たす。
+（Xの上に位相をひとつさだめるように、Xの上にひとつBを定める）
+~~~
+
+
+
+さらに、
+1.4.27 では、
+~~~
+measure と極限が交換する測度μの性質を、
+" Countable Additivity " だと定義
+~~~
+
+
+1.4.31 / 1.4.26
+~~~
+「測度空間の完備化」
+~~~
+
+
+
+1.4.27
+~~~
+ボレル測度空間の完備化は、ルベーグ測度空間
+~~~
+
+
+
+### （一般の）可測関数と積分
+
+
+
+1.4.27『ボレル測度空間の完備化は、ルベーグ測度空間』
+~~~
+この直感がなかったため、
+必要な概念を再構築した。
+
+これは、
+「open set と null set のunion が Lebesgue measurable set である」
+
+というLebesgue measurable set の定義を忘れていた。
+
+これはよい演習問題です。
+~~~
+
+NOT borel set
+BUT lebesgue set
+
+### Measurable But Not Borel
+
+[Measurable But Not Borel](https://www.math3ma.com/blog/lebesgue-but-not-borelLebesgue)
+
+~~~
+ボレルの完備化がルベーグであること、
+この差分の97.3 %が、カントール集合に関するものであること。
+
+ボレルの射影はボレルだが
+ルベーグの射影はルベーグではない。
+~~~
+
+
+このあたりをよくよく理解すれば、
+ルベーグ測度論はひとまず、復習できたとして良いのではなかろうか。

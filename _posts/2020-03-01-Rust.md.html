@@ -1023,3 +1023,527 @@ impl Drop for Droppable {
     }
 }
 ~~~
+
+
+
+# rust compiler
+
+
+## lifetime の考察
+
+
+
+ライフタイムは型が持つ属性の一つと考えるのがいい。
+たとえば参照型 &T と &mut T にはライフタイムが付きます。ライフタイムはコンパイラが推論できるので大半は省略可能。
+フィールドとして参照型を持つ struct や enum はライフタイムパラメータが必須。
+
+~~~rs
+// ライフタイムパラメータ 'a を持つ型
+struct MyStruct<'a> {
+    x: &'a i32,
+    y: &'a str,
+}
+// ライフタイムパラメータ 'a と型パラメータ T を持つ型
+struct MyGenericStruct<'a, T> {
+    x: &'a T,
+    y: &'a str,
+}
+~~~
+
+
+スコープは、let binding で実現しているのだという前提で話をすると、
+もしローカル変数がライフタイムを持つとすれば、「任意の型がライフタイムを持つ」となります。
+
+
+https://doc.rust-lang.org/1.9.0/book/lifetimes.html
+
+ここにありますように、ライフタイム推論には、local type inference を使っています。
+local type はざっくりと「型推論の部分証明木」です。
+
+
+
+
+Local Type Inference (98 Pierce) : https://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf (edited)
+
+chapter 1-4
+1. 導入、polymorphism , system F などについて
+2. F_< の定義、(F_< : ForAll 型のついた system F に対して、部分型を導入したもの)
+3. subtype relation において、 普遍性をもつ least super type が存在すれば、local type inference ができるということを理解した。（並びにそれらの定式化)
+4. local type inference (synthesis) と global type inference (checking) の融合について理解し、アルゴリズムをさっと見た。通常の型推論にはなぜなかったのかと思えるような機能
+（型推論の証明木を上(synthesis)下(checking)に自由に行き来するためのアルゴリズム）が書かれていて非常に勉強になりました。
+ライフタイムの実装にも使用されているようで、二、三日寝かせて、関連性を測りたいなと思います。
+
+
+型推論のところに　Subtyping obligations　
+https://rustc-dev-guide.rust-lang.org/type-inference.html#subtyping-obligations
+
+
+RFC 2094 : ライフタイム推論器のしくみ
+https://github.com/rust-lang/rfcs/pull/2094
+
+
+
+nikomatsakisnikomatsakis
+#2094 non-lexical lifetimes
+Extend Rust's borrow system to support non-lexical lifetimes -- these are lifetimes that are based on the control-flow graph, rather than lexical scopes. The RFC describes in detail how to infer these new, more flexible regions, and also describes how to adjust our error messages. The RFC also describes a few other extensions to the borrow checker, the total effect of which is to eliminate many common cases where small, function-local requires would be required to pass the borrow check. (The appendix describes some of the remaining borrow-checker limitations that are not addressed by this RFC.)
+Due to its size and complexity, this RFC is being run through an experimental process. The text of… Show more
+Assignees
+nikomatsakis
+Labels
+A-borrowck, A-control-flow, A-machine, A-typesystem, Ergonomics Initiative, T-lang, final-comment-period
+https://github.com/rust-lang/rfcs
+
+
+中間言語に関する歴史
+
+Introducing MIR | Rust Blog
+https://blog.rust-lang.org/2016/04/19/MIR.html
+
+
+
+ライフタイム推論（リージョン推論）
+https://ubnt-intrepid.github.io/blog/2017/12/01/rfc-2094-ja/
+
+
+
+RFC 2094 (non-lexical lifetime) の非公式訳
+本記事は Rust Internal Advent Calendar 2017 第1日目の記事です． 今年の 9/30 に採択された non-lexical lifetimes の RFC である RFC 2094 の非公式訳です．
+
+
+
+https://doc.rust-lang.org/1.9.0/book/lifetimes.html
+local type inference を使っている。
+local type は「型推論の部分証明木」だとざっくり理解しています。
+
+## problems of Rust
+
+
+### unsound hole
+
+fn f<'a, 'b, T> (&'b &'a T)
+では、b を閉じてから、aをとじるものとして推論をするらしい
+部分型のread /write に関して contravaiant の方をつかってなんかするバグらしい
+b をstatic つまり、region を無限大まで広げるなど、
+
+* https://github.com/rust-lang/rust/issues/25860
+* https://speakerdeck.com/moratorium08/rustfalseunsound-hole-issue-number-25860woli-jie-suru
+
+
+### problems of Rust
+
+健全性を証明するのは大変ですからまだ誰もできていないと思いますよ。
+健全性は「unsafeのないプログラムは、実際にUBを踏まない」という性質ですが、そもそもUBを踏む条件自体が厳密には定まっていない状況です。
+
+https://github.com/rust-lang/unsafe-code-guidelines/issues
+
+この手の検証の最先端はRustBeltチーム http://plv.mpi-sws.org/rustbelt/ のものだと思われますが、
+彼らでも「(UBの条件はある程度仮で決めた上で)個別のプログラムがUBを踏まないこと」を検証している段階のはずで、
+一般化して議論するのは相当先になるのではないかと思います。
+
+また、健全性を保証するのはコンパイラの責務なのでこの手の問題は最終的には解決されるべきですが、
+現実問題として全ての健全性を今すぐ解決するリソースがないのが現状です。
+https://github.com/rust-lang/rust/labels/I-unsound%20%F0%9F%92%A5 を見ると、
+既知だが解決できていない不健全性は沢山存在していることがわかります。
+
+
+
+## impl の意義
+
+struct と impl を Java では class を使って統一的に分けずに使う慣習もある。
+以下の Rust コードにおいては、関数は pure なものなので、
+impl が pure な部分だけを切り取るのに都合がよく、
+また、c++ user などの需要に応えるべく、abbreviation を置いたと解釈でき、言語設計の経緯が感じられる。
+
+
+~~~rs
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Person {
+    name: String,
+    age: u32,
+}
+
+impl Person {
+    pub fn new(name: &str, age: u32) -> Self {
+        Self {
+            name: name.to_owned(),
+            age,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn age(&self) -> u32 {
+        self.age
+    }
+}
+
+fn main() {
+    let people = vec![Person::new("Ken", 24), Person::new("Richard", 18)];
+
+    // ドットを使った呼び出し
+    dbg!(people[0].name());
+    // ドット記法は以下の :: を使った呼び出しの省略と見なせる
+    dbg!(Person::name(&people[0]));
+
+    // `Person::name` 自体が関数なので、以下のようにそのまま高階関数に渡せる
+    let names = people.iter().map(Person::name).collect::<Vec<_>>();
+    dbg!(names);
+}
+~~~
+
+
+
+
+
+~~~
+Attribute ::= #![ InnerAttr ]
+            | #[ OuterAttr ]
+~~~
+
+Rust の `#[...] ` は、総じて、Attribute と呼ばれる。
+
+https://doc.rust-lang.org/reference/attributes.html
+
+
+
+## user-defined subtype ?
+
+
+
+たとえば、Haskell で subtype をユーザ定義したいとき、コンパイラはどのように設計すればよいか。
+例えば、NaturalNumbers `N` に対して、EvenNumbers `E` を `N` のsubtype としてユーザーが定義したいような状況です。
+
+コンパイラが型推論に部分型を用いているならば、
+部分型をユーザー定義した場合、型推論器の挙動が少し変わってしまう。
+
+subtype をユーザ定義されるような言語の想定される仕様としては、
+例えば、Prelude に Set が内包されていると仮定して、subset => subtype という規則が内部言語に存在する
+subtype relation が Prelude に定義されていて、ユーザ定義されたsubtype relation が内部言語と競合しないことを確かめてからそれらを取り入れる
+などですが、どちらもふくまれていないように思う。
+
+traitは継承できる (これは、subtype のようなものと言える)
+
+
+
+## type lecture by nikomatsakis
+
+
+Ty lecture
+
+The many kinds of types
+- HIR types (rustdoc): describe the syntax of a type
+    - `fn foo(x: u32) → u32 { }` — these two instances of `u32` are distinct HIR types; they have distinct spans, etc
+    - `fn foo(x: &u32) -> &u32)` — the `&` here
+- `rustc::ty::Ty` (rustdoc): describe the semantics of a type
+    - TyS (rustdoc)
+    - TyKind (rustdoc)
+
+
+    fn foo(x: Ty<'tcx>) {
+      match x.sty {
+      }
+    }
+
+
+- There are a lot of related types, we’ll cover these in time
+    - regions (aka, lifetimes)
+    - “substitutions”
+    - etc
+Interning
+- We create a LOT of types during compilation
+- They are allocated from a long-lived arena
+    - and they are canonicalized
+- CtxtInterners (link)
+    - PartialEq for TyS (link) can just compare pointers
+
+
+    - Global <-- types that are global (u32) get allocated here
+      - Type-checking a specific fn
+        - local arena <-- types specific to type-checking
+Generics and substitutions
+- Consider this (generic) struct:
+    struct MyStruct<T> { x: u32, y: T }
+    //     ^ def_id1
+    //              ^ def_id2
+    // def_id => "Def path" => crate::foo::MyStruct
+- A reference to this struct (e.g., `MyStruct<u32>`) is as `TyKind::Adt` (link)
+    - `Adt(&'tcx AdtDef, SubstsRef<'tcx>),`
+    - The `AdtDef` defines the struct (`MyStruct`) (enums, unions)
+        - could also be a `DefId`, but the AdtDef struct has useful helper methods
+        - `tcx.adt_def(def_id)` (link) to get one
+    - The `SubstsRef` (link) is an interned list of types (`[u32]`)
+        - `&``'``tcx List<Kind<``'``tcx>>`
+            - `[u32, f32]` — list a
+                - `[f32]` — subslice of a
+            - `[f32]` — list b
+        - `&``'``tcx [Ty<``'``tcx>]` “morally 1.0”
+        - `&``'``tcx [Kind<``'``tcx>]` “morally 2.0” — kinds are either types or regions
+        - well, actually a list of kinds — we’ll come to that
+- What is the `Generics` struct (link)?
+    - Defines the type parameters
+Unsubstituted Generics
+- When inside the scope of a generic definition, generic types are represented by `TyKind::Param`
+
+
+    struct Foo<A, B> { // Adt(Foo, &[Param(0), Param(1)])
+      x: Vec<A>, // Adt(Vec, &[Param(0)])
+      ..
+    }
+    // A would have index 0
+    // B would have index 1
+
+    impl<X, Y> Foo<X, Y> {
+      fn method<Z>() {
+        // inside here, X, Y and Z are all in scope
+        // X has index 0
+        // Y has index 1
+        // Z has index 2
+      }
+    }
+
+    fn bar(foo: Foo<u32, f32>) { // Adt(Foo, &[u32, f32])
+      let y = foo.x; // Vec<Param(0)> => Vec<u32>
+    }
+
+
+- You can get the “self-view” of e.g. a struct using `tcx.type_of(field_def_id)`
+    - in case of `MyStruct`, that would come with a `SubstsRef` that has `TyKind::Param`
+- You can then `subst` (link) to replace those `Param` with specific types
+    - example of invoking subst (link)
+    - “morally”
+    match t.sty {
+      TyParam(idx, ..) => substs[idx],
+      _ => t.super_fold_with(..)
+    }
+TypeFoldable
+
+Analogy
+
+    vec.iter().map(|e1| foo(e2)).collect()
+    //             ^^^^^^^^^^^^ analogous to folder
+    //         ^^^ analogous to "Typefoldable"
+- `TypeFolder` (link) is a trait that defines a “map” operation:
+    - e.g., `fold_ty` (link) takes a type as input and returns a new type as a result
+- `TypeFoldable` (link) is a trait that is implemented by things that embed types
+    - it defines a kind of ‘map’ operation, which invokes the `TypeFolder`'s `fold_foo` methods on types, regions, etc that are contained within
+
+Typical form:
+
+
+    struct MyStruct<'tcx> {
+      def_id: DefId,
+      ty: Ty<'tcx>,
+    }
+
+    my_struct: MyStruct<'tcx>
+    my_struct.subst(..., subst)
+
+    impl TypeFoldable for MyStruct {
+      fn super_fold_with(&self, folder: &mut impl TypeFolder<'tcx>) -> MyStruct {
+        MyStruct {
+          def_id: self.def_id.fold_with(folder),
+          ty: self.ty.fold_with(folder),
+        }
+      }
+
+      fn super_visit_with(..) { }
+    }
+- Type like `Vec<Vec<X>>`
+    - Adt(Vec, &[Adt(Vec, &[Param(X)])]) when substituting X => u32 gives you
+    - Adt(Vec, &[Adt(Vec, &[u32])])
+- When you implement this trait, you define how to walk your type and — for each type embedded within — to process them
+- Macros are sometimes an option:
+    - `BraceStructTypeFoldableImpl` (link)
+    - sometimes subst shuld not have any effect (link)
+Errors
+- `Vec<``'``a>` // this would be caught earlier
+
+
+Question: Why not substitute “inside” the adt-def?
+
+The adt-def logically represents just the name of the struct (e.g., `Vec`). Its contents are always assumed to be expressed in terms of the “internal” or “self-view” — i.e., expressed in terms of the generics on the struct. If nothing else, this has an efficiency win:
+
+
+    struct MyStruct<T> {
+      ... 100s of field .. Vec<T>
+    }
+
+    MyStruct<A> ==> MyStruct<B>
+
+in an example like this, we can subst from `MyStruct<A>` to `MyStruct<B>` (and so on) very cheaply, by just replacing the one reference to `A` with `B`. But if we eagerly substituted all the fields, that could be a lot more work.
+
+A bit more deeply, this corresponds to structs in Rust being nominal types — which means that they are defined by their name (and that their contents are then indexed from the definition of that name, and not carried along “within” the type itself).
+
+
+
+
+## arena
+
+Crate arena[−][src]
+
+[−]
+The arena, a fast but limited type of allocator.
+
+Arenas are a type of allocator that destroy the objects within, all at once, once the arena itself is destroyed. They do not support deallocation of individual objects while the arena itself is still alive. The benefit of an arena is very fast allocation; just a pointer bump.
+
+This crate implements TypedArena, a simple arena that can only hold objects of a single type.
+
+
+
+
+# favorite
+
+iter_of_foo.map(|foo| foo.bar()) の代わりに iter_of_foo.map(Foo::bar) のように書けます
+
+
+
+
+LOBPCG法の実装 https://github.com/rust-ndarray/ndarray-linalg/pull/184
+
+#184 Add LOBPCG solver for large symmetric positive definite eigenproblems
+This PR ports the LOBPCG algorithm from scipy to Rust. The algorithm is useful for the symmetric eigenproblem for just a couple of eigenvalues (for example for multidimensional scaling of gaussian kernels). Solves the issue #160
+I did not implement the generalized eigenproblem for matrix B different to identity, as its a uncommon use-case (at least in machine-learning), but if required the modification should be minor.
+It also adds access to the functions ssygv, dsygv, zhegv, chegv for the generalized eigenvalue problem
+image
+with additional mass matrix B. The traits are implemented for tuples of A and B, so you can use it like this
+let (eigvals, (eigvecs, B_cholesky)) = (A, B).eigh(UPLO::Upper…
+
+
+
+
+bokuweb  Apr 14th at 2:47 PM
+GBAで遊んでみました。
+lto = true にしないと libunwind をリンクしにいって死ぬという現象が発生したんですが、どう解決すべきものなのか、わかりませんでした。
+https://blog.bokuweb.me/entry/2020/04/14/101202
+undefinedundefined
+Rustから目覚めるぼくらのゲームボーイ！ - undefined
+Conway氏についてですが、公式にアナウンスがでたようです。ご冥福をお祈り申し上げます。 www.math.princeton.edu 2003年に発売された「Linuxから目覚めるぼくらのゲームボーイ！」というC言語でゲームボーイアドバンスで動作する自作ゲームを作成していく書籍があります。 ゲームボーイアドバンスはARM7TDMIというコアを使用しており、Rustで自作ゲームを作ることも可能となっています。 この記事では「Linuxから目覚めるぼくらのゲームボーイ！」のステップをRustで実施するための準備としてライフゲームが動くまでを書いてみます。 動機は今作っているWasmインタープリ…
+
+
+
+
+
+https://qiita.com/hatoo@github/items/fa14ad36a1b568d14f3e
+cargo-snippetでAAを表示しようしたらバックスラッシュの扱いがバグってたので応急処置をした https://github.com/hatoo/cargo-snippet/pull/18
+スニペットのアップデートはまだ途中https://github.com/hatoo/competitive-rust-snippets/tree/v1.42 (昔書いたバケット法のコードとかが全く理解できないので整理したい)
+
+
+Rustで競技プログラミング スターターキット - Qiita
+https://github.com/hatoo/cargo-snippet
+
+
+
+
+# warp
+
+warp の使い方を見ていました！example 結構あって助かりました。
+https://github.com/seanmonstar/warp
+seanmonstar/warp
+
+A super-easy, composable, web server framework for warp speeds.
+https://seanmonstar.com/post/176530511587/warp
+https://github.com/seanmonstar/warp
+
+
+
+
+termoshtt  Apr 4th at 6:54 PM
+Rustのターゲットとして nvptx64-nvidia-cuda というのがあるので、 cargo build --target=nvptx64-nvidia-cuda でcrateをPTXにコンパイルできる
+accel-deriveというproc-macroでcargoを起動して、#[kernel] のついた関数をPTXに変換して文字列でソースコードに埋め込んでいる
+CUDAのAPIを使って文字列になってるPTXをGPU上に読み込んで、同じくCUDAのAPIを使って起動している
+
+
+
+rust-compiler
+
+Compiler Flow  https://www.ibm.com/support/knowledgecenter/SSAT4T_16.1.0/com.ibm.xlf161.lelinux.doc/getstart_cudaf/cudaflow.html　を参照
+
+The compilation process
+When CUDA Fortran support is enabled, the compilation process is as follows:
+Source files, which might contain host code, device code, or both, are processed into the XL intermediate language (W-Code) by the Fortran Frontend (xlfentry) and Transformer (xlfhot).
+If -O3, -qhot, or -qsmp=omp is in effect, the W-Code is optimized by the High-Level Optimizer (ipa).
+The W-Code is split into a host W-Code stream and a device W-Code stream by the W-Code intermediate language splitter (partitioner).
+Host code processing
+The host W-Code stream is processed into an object file by the Low-Level Optimizer (xlfcode).
+Device code processing
+The device W-Code stream is converted to NVVM intermediate representation (NVVM-IR) by the W-Code to LLVM-IR Translator (wc2llvm).
+The NVVM-IR is converted to PTX (NVIDIA's low-level Parallel Thread eXecution) instructions by the NVVM-IR to PTX translator (llvm2ptx).
+The PTX instructions are assembled into a device object (cubin) by the PTX assembler (ptxas).
+The device object is embedded into an object file by the fatbinary tool from the CUDA Toolkit.
+The object files for the host and device code are combined into a single object file by the host linker (ld).
+The following diagram shows the compilation process for CUDA Fortran programs.
+Figure 1. Compilation process for CUDA Fortran programs (edited)
+rust_mokumoku
+
+ubnt-intrepid  Apr 4th at 6:06 PM
+https://github.com/matklad/cargo-xtask#cargo-xtask-ci
+cargo-xtask は make や npm-scripts のようなプロジェクト固有のタスクを定義する上での枠組みです
+matklad/cargo-xtask
+
+有名どころだと rust-analyzer というプロジェクトで使用していたりします→ https://github.com/rust-analyzer/rust-analyzer
+rust-analyzer/rust-analyzer
+
+https://rust-analyzer.github.io/
+
+https://github.com/rust-analyzer/rust-analyzer
+
+
+Wasm インタープリタにインポート関数の validation をやる API を実装してました
+wasmtime のストリーミングコンパイラ lightbeam で使われてるっぽい中間表現 microwasm を眺めてました https://github.com/bytecodealliance/wasmtime/blob/master/crates/lightbeam/src/microwasm.rs
+crates/lightbeam/src/microwasm.rs
+
+
+https://github.com/bytecodealliance/wasmtime
+
+
+
+
+
+# wasm
+
+hiromasa  Mar 21st at 1:26 PM
+.wasm を実行環境する環境によって WebAssembly ランタイムとのインターフェースが異なるイメージになるでしょうか。ウェブブラウザーの場合は ECMAScript 側ではなくブラウザー側の仕様になると思います。
+ウェブブラウザーの場合は、JavaScript に対してブラウザーから .wasm をロードしたり関数を呼び出したりするインターフェースが提供されている。https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly　（なので、JavaScript を起点としてブラウザーに搭載の WebAssembly ランタイムを利用する）
+node.js の場合も（やったことないのですが）ウェブブラウザーと同じだと思います。
+Wasmer や Wasmtime などの WebAssembly (WASI) ランタイムは .wasm を直接起動できる。（fn main() { } がある。wasmer/hello_world, wasmetime/Running common languages with WASI）
+
+
+
+
+一応、fp-coreというライブラリはありますが、一部は構文上どうしようもないのでマクロに頼るしかないですね
+Rustは他言語よりも関数型(本格的な)使ってらっしゃる方が多い印象ですが、チーム開発では難しいかもしれませんね…
+https://github.com/JasonShin/fp-core.rs
+do記法を再現した便利なマクロもあります
+https://github.com/TeXitoi/rust-mdo
+
+
+
+## concurrency
+
+Rust での並列については、イテレータでのストリーム処理の並列化だと rayon がデファクト標準で、
+ (ちょっと古いかもだけど) 実装者がデザインの解説をしている記事があります:
+
+* http://smallcultfollowing.com/babysteps/blog/2015/12/18/rayon-data-parallelism-in-rust/
+
+もっと自由度の高い並列/並行処理については、最近 async / await の言語仕様が安定化されましたが、エコシステムはまだまだ発展途上という感じみたいです。
+コア機能については https://rust-lang.github.io/async-book/01_getting_started/01_chapter.html あたりが充実していけば参考になるかもしれません
+
+smallcultfollowing.com
+Rayon: data parallelism in Rust
+Over the last week or so, I’ve been working on an update to Rayon, my experimental library for data parallelism in Rust. I’m pretty happy with the way it’s b...
+
+
+## curry / uncurry
+
+手続き型言語のユーザを多数抱える Rust においては、
+add(1, 2) を add(1) と書いたとき add(1): i32 -> i32 となるのは喜ばしくなく、
+
+Rust では curry 化をしたくば、コストをかけて
+
+~~~
+ |n| add(1, n)
+~~~
+
+のように書きます。
