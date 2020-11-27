@@ -242,6 +242,27 @@ tcsh
 zsh
 ~~~
 
+変数の文字列を先頭大文字にしたり全て大文字/小文字にしたりするのに sed は使わない。
+
+~~~
+$ os=linux; echo ${os^}
+Linux
+
+$ os=linux; echo ${os^^}
+LINUX
+
+$ os=LinuX; echo ${os,}
+linuX
+
+$ os=LinuX; echo ${os,,}
+linux
+
+$ os=LiNuX; echo ${os~~}
+lInUx
+
+$ os=Linux; echo ${os//inu/umi}
+Lumix
+~~~
 
 
 # `cat -n`
