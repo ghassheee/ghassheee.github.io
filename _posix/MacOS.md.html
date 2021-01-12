@@ -4,6 +4,37 @@ layout: dep
 date: 2017-05-30
 ---
 
+# Annoying Notification of Updates
+
+
+If you want to disable updates for specific apps, you can use
+
+```
+softwareupdate --ignore.
+```
+
+Do all the following in Terminal
+
+Start with
+
+```
+softwareupdate -l
+```
+
+to list all available updates,
+
+```
+defaults read /Library/Preferences/com.apple.SoftwareUpdate.plist
+```
+
+to find the Identifier of the app you want to ignore, and then
+
+```
+softwareupdate --ignore 'Identifier'
+```
+
+to ignore the update. Should disappear from Software Updates in System Preferences immediately.
+
 # TeX on MacOS
 
 basic installtion

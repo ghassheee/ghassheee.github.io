@@ -16,22 +16,104 @@ UNDER CONSTRUCTION
 
 # Linear Logic
 
+* [Girard] Linear Logic : its syntax and semantics
+    * resource comsumption ( good examples / motivations )
+    * `~A -o B` means "except the price A, B"
+    * `!A` means "as many A as you want to use"
+    * `?A` means "you can deduct A no matter how it cost"
+    * weakening means  A $ \otimes $ B $ \models $ A & B
+    * contraction means A & B $ \models $ A $ \otimes $ B
+    * proof nets introduction and little Exercises
+
+* [Girard] [A New constructive logic : classical logic](https://hal.inria.fr/inria-00075117)
+    * coherent space
+    * the introduction of polarity
+    * cocomonad and comonad / negative and positive
+    * 1. classical logic => 2. polarized linear logic
+
+* [Abramsky] [Computational interpretation of linear logic](https://www.sciencedirect.com/science/article/pii/030439759390181R)
+    * This is a computational reinterpretation of Girard's work.
+    * It uses stack machine as the concrete example of the interpretation of Linear Logic.
+    * The correspondence between Classical Linear Logic and Parallel computation.
+
+* [Honda] An exact correspondence between a typed pi-calculus and polarised proof-nets
+    * The correspondence between Partial Polarized LL and IO limited π-calculus
+    * [Laurent] Polarized proof-nets and λμ-calculus
+
+* [Andreoli] [Logic Programming with Focusing Proofs in Linear Logic](https://pdfs.semanticscholar.org/b9dd/97a9ed29263923a2d7da195f1f7e790242d1.pdf)
+    * How to transform Linear Logic to the alternative equivalent logic which can be useful to compute the proof.
+    * negative and positive / asynchronous and synchronous / deterministic and non-deterministic
+    * Monadic Sequent Calculus
+    * Diadyc Sequent Calculus
+    * Triadic Sequent Calculus
+    * LinLog : ( Negative check => Positive check ) version of Triadic Sequent Calculus
+
+* [Pierce Sangiorigi] Typeing and Subtyping for Mobile processes
+    * use Subtyping for Input Output process in a similar way of Read Write Subtyping in TaPL.
+
+* [Kobayashi Pierce Turner] Linearity and the Pi-Calculus
+    * arities and polarities : see more The Pi-calculus Book chapter 6-8.
+
+
+For Constructive Math 
+
+* [Shulmann] [Linear Logic for Constructive Mathmatics](https://arxiv.org/pdf/1805.07518.pdf)
+
+
+
+## resource comsumption
+
+## weakening / contraction
+
+## cut free
+
+## proof nets
+
+## polarity
+
+### negative & positive / cocomonad & comonad / asynchronous & synchronous / deterministic & non-deterministic
+
+## IMLL / IMELL
+
+### categorical interpretation
+
+ Classical MLL (CMLL) is generalized as [*-autonomous category](https://ncatlab.org/nlab/show/star-autonomous+category)
+
+## isomorphism
+
+### term : parallel computation
+
+### SECD machine ( stack machine )
+
+### Abramsky's classical linear correspondence
+
+### Laurent's fragment of Linear Logic
+
+### Honda's isomorphism
+
+### Extension of Honda's isomorphism
+
+## Pierce's subtype
+
+
+
+# Old notes of Linear Logic (2016)
 
 ## resource comsumption
 
 - "linear logic" consumes resources.
-- "classical logic" never consumes propositions.
+- "intuitionistic logic" never consumes propositions.
 
-In classical logic, we do have a single $ A $ to say $ A \land A $ .
+In intuitionistic logic, we do have a single $ A $ to say $ A \land A $ .
 
 $ A \vdash A \land A $
-
 
 But in Linear Logic, we must prepare 2 $ A $ s to say $ A \land A $.<br>
 This is the comsumption of resources.
 
-
 $ A, A \vdash A \land A $
+
+
 
 
 ## what is $ ( A ^ \bot ⊗ B ^ \bot ) ^ \bot $

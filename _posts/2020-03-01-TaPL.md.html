@@ -24,57 +24,75 @@ I recommend you to start with combinator theory .<br>
 # Mathematical Prerequired Definitions
 
 
+## `powerset`
 
+$ \mathcal{P} ( \mathcal{S} ) := \{ U ; U \subset S \} $
 
-* $ \mathcal{P} ( \mathcal{S} ) $ : `powerset` of $ S $
+## `difference`
 
-* $ \mathcal{S} \ \backslash \ \mathcal{T} $ : `difference`
+$ \mathcal{S} \ \backslash \ \mathcal{T} \ := \ S ∩  T ^ C  $
 
-* $ \mathbb{N} $ : `set of natural number`
+## `natural numbers`
 
-* `n-placed relation`
-    - $ s_1 \in \mathcal{S_1} , ... , s_n \in \mathcal{S_n} $ are `related`
-    - `if` $ (s_1, ... , s_2) \in R $
-    - where $ R \subseteq \mathcal{S_1} \times ... \times \mathcal{S_n} $
+$ \mathbb{N} := \{ 0,1,2,3,4,5,6,7,8, ... \} $
 
-* $ P(s) := s \in P $ : `predicate ( 1-place relation )`
+## `n-placed relation`
 
-* $ s R t := ( s , t ) \in R $ : `Binary Relation`
-    * where $ s, t \in \mathcal{ U } $
+$ s_1 \in \mathcal{S_1} , ... , s_n \in \mathcal{S_n} $ are `n-place related` <br>
+`if` $ (s_1, ... , s_2) \in R $ where $ R \subseteq \mathcal{S_1} \times ... \times \mathcal{S_n} $
 
-* $ s R t := ( s , t ) \in R $ : `2-place Relation`
-    * where $ s \in \mathcal{S} , t \in \mathcal{T} $
+## `predicate ( 1-place relation )` P
 
-* $ \Gamma \vdash s : T $ : `3-place Relation`
-    * this is Typing Relation (see Chapter 9)
+$ P(s) := s \in P $
 
-* $ R $ is `Partial Function` : $ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
-* $ R $ is `Total Function` : $ dom(R) = \mathcal{S} $
-    * where $ \mathcal{S} R \mathcal{T} $
+## `Binary Relation` R
 
-* `Defined` / `Undefined`
-    * Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
-    * $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
-    * $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
+$ s R t := ( s , t ) \in R $
+<br>    where $ s, t \in \mathcal{ U } $
 
-* Diverge / Failure
-    * `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
-    * fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
-    * Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
+## `2-place Relation` R
 
+$ s R t := ( s , t ) \in R $
+<br>    where $ s \in \mathcal{S} , t \in \mathcal{T} $
 
+## `3-place Relation`
 
+see `n-place Relation `. e.g. ;
+
+* $ \Gamma \vdash s : T $  ( Typing Relation (see Chapter 9) )
+
+## `Partial Function` R
+
+$ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
+
+## `Total Function` R
+
+$ dom(R) = \mathcal{S} $
+<br>    where $ \mathcal{S} R \mathcal{T} $
+
+## `Defined` / `Undefined`
+
+Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
+
+* $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
+* $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
+
+## `Diverge` ≠ `Failure`
+
+* `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
+* fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
+* Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
 
 
 ## `Predicate`　
-    - $ s \in P $ であれば sは述語を持つという
-    - where $ s \in \mathcal{S} , P \subseteq \mathcal{S} $
+
+* $ s \in P $ であれば sは述語を持つという
+* where $ s \in \mathcal{S} , P \subseteq \mathcal{S} $
 
 e.g.
 
-- $ s \in P := P(\mathcal{S}) = $ { $ True , False $ }
-- $ P := s \rightarrow $ { $ True , False $ }
-
+* $ s \in P := P(\mathcal{S}) = $ { $ True , False $ }
+* $ P := s \rightarrow $ { $ True , False $ }
 
 
 述語を持たせるのは [Russell's Paradox](../math/2015-12-15-russell.md/) を解消させるため
@@ -100,14 +118,42 @@ e.g.
 
 ## term definition
 
-~~~hs
-t ::=
-        x               variable
-        λx.t            abstraction
-        t t             application
+Syntax are given by;
+
+~~~
+t := x                        <variable>
+   | λx. t                    <λ abstraction>
+   ∣ t t                      <application>
 ~~~
 
-## evaluation definition
+and its evaluation is given by;
+
+~~~
+(λx. t)  t'  →   t[x↦t']
+~~~
+
+We read the right hand side "replace all x which appears in t with t' ".
+
+## e.g. S K I combinator
+
+For example, K and S are λ abstractions.
+
+~~~
+K := λx. λy. x
+S := λx. λy. λz. ((x)(z))(y z)
+~~~
+
+K takes x and y as its arguments and returns x.
+S takes x, y, and z as its arguments and returns `(x z) (y z)`
+
+~~~
+S K K x
+= ((K)(x))(K x)
+= (λx. λy. x) (x) (K x)
+= x
+~~~
+
+Thus, identity combinator is given by `I` := `S K X`.
 
 
 
@@ -508,12 +554,130 @@ foldr [x,y,z] f i 
  = f x ( f y ( f z i ))
 ~~~
 
+## Evaluation Strategies
+
+
+We can classify evaluations into 2 different strategies,
+lazy evaluation and call-by-value evaluation.
+lazy evaluation can be further classified into `call-by-name` `call-by-need`.
+
+~~~
+(λx. t)  t'  →   t[x↦t']
+~~~
+
+だと言ったが、これでは、`t` と `t'` のどちらから先に計算すればよいのかなど不確定な情報が多く、それらは実装に依存する。
+これを避けるために、明示的に評価戦略を示してやる必要がある。
+
+評価戦略というのは、構文木のどこからどのような規則で、返り値をもとめていくか。
+ということである。
+電卓の簡単な例でいえば、`1+1*1` の掛け算を先にするのか、足し算を先にするのか、といった問題も評価戦略の問題である。
+TaPL に記載されている4つの評価戦略は次のとおりである。
+
+![TaPL1.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/321074/b7d66c69-3529-8f86-9518-d38299199456.png)
+
+実際に、これらの計算を
+`times (times 3 (times 2 1))` に対して、適用したのが、次である。
+
+![TaPL.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/321074/4812ce71-097a-ec3b-b4d6-2e8c5e101f71.png)
+
+
+
+### call by value
+
+OCaml has call by value strategy which defines the following 1-step evaluations;
+
+~~~ml
+let rec isval ctx = function
+    | TmAbs(_,_,_,_)                        -> true
+    | _                                     -> false
+
+let rec eval1 ctx = function
+    | TmApp(fi,TmAbs(_,x,tyT11,t12),v2) when isval ctx v2
+                                            ->  termSubstTop v2 t12
+    | TmApp(fi,v1,t2) when isval ctx v1     ->  TmApp(fi,v1,eval1 ctx t2)
+    | TmApp(fi,t1,t2)                       ->  TmApp(fi,eval1 ctx t1,t2)
+    | _                                     ->  raise NoRuleApplies
+~~~
+
+
+and the multi step evaluation is defined as;
+
+~~~ml
+let rec eval ctx t =
+    try eval ctx (eval1 ctx t)
+    with NoRuleApplies -> t
+~~~
+
 
 
 # de Bruijn
 
-# ML implementation of Lamda Calculus
+## Naming Variables
 
+~~~
+(\f. (\x.(f x) x)(\x.(f x) x)) (\x.x)
+~~~
+
+中の `\x.(f x) x` には、外から `f` を渡してやる必要がある。<br>
+つまり、context は外から、λ式の中に入る時に（外の項の評価から中の項へと評価が移るときに）増える。
+
+新しいスコープの中に入り局所変数が増えると考えることもできる
+
+
+
+## Context Γ の導入
+
+通常のラムダ計算では、変数を使うが、
+変数に数字を用いて名前を付け、`Γ` に保存する。この `Γ` を Name Context と呼ぶ。
+例えば、Γ = {  a $\mapsto$ 2, b $ \mapsto $ 1, c $ \mapsto $ 0 } であれば、３つの変数が保存されている。
+この Name Context によって
+たとえば、`(a b) c`  は、`(2 1) 0` と解釈することができる。
+`λc.λd.c d d`のように、「束縛変数」を２個持つ式は、
+Γ に新たに２つの mapping を、
+Γ = {a $\mapsto$ 4, b $ \mapsto $ 3, c $ \mapsto $ 2, c' $ \mapsto $ 1, d $ \mapsto $ 0} と「右から積む」ことで、
+`λ.λ.1 0 0`のように表記することができる。
+
+## SHIFT / SUBSTITUTION
+
+このように、新しい変数を積む際に、自由変数 `{a,b,c}` に関しては、 `+2`だけ `shift` してやる必要がある。そして、一時限りの束縛変数を使用したあとは、逆に`-2` `shift` してやる必要がある。
+
+これが具体的に行われるのは、 Application `(λx.t) s` の次の工程、
+Substitution `[x ↦ s] t` においてである。
+
+これを実装したものが、
+shift / substitution
+である。。
+
+~~~ml
+(* syntax.ml *)
+...
+
+(* -------------------------------------------------- *)
+(* Shifting *)
+
+let rec walk funOnVar c   = let f = funOnVar in function
+    | TmVar(fi,x,n)             -> funOnVar fi c x n
+    | TmAbs(fi,x,tyT,t2)        -> TmAbs(fi,x,tyT,walk f(c+1)t2)
+    | TmApp(fi,t1,t2)           -> TmApp(fi, walk f c t1, walk f c t2)
+    | TmIf(fi,t1,t2,t3)         -> TmIf(fi,walk f c t1, walk f c t2, walk f c t3)
+    | TmSucc(fi,t)              -> TmSucc(fi, walk f c t)
+    | TmPred(fi,t)              -> TmPred(fi, walk f c t)
+    | TmIsZero(fi,t)            -> TmIsZero(fi, walk f c t)
+    | x                         -> x
+
+let termShiftOnVar d        = fun fi c x n ->   if x>=c then TmVar(fi,x+d,n+d) else TmVar(fi,x,n+d)
+let termShiftAbove d        = walk (termShiftOnVar d)
+let termShift d             = if d>=0 then print_endline ("SHIFT: "^(string_of_int d));termShiftAbove d 0
+
+(* -------------------------------------------------- *)
+(* Substitution *)
+let termSubstOnVar j s t    = fun fi c x n ->   if x=j+c then termShift c s else TmVar(fi, x, n)
+let termSubst j s t         = walk (termSubstOnVar j s t) 0 t
+let termSubstTop s t        = print_endline "SUBSTITUTE: "; termShift (-1) (termSubst 0 (termShift 1 s) t)
+~~~
+
+
+# ML implementation of Lamda Calculus
 
 # Typed Arithmetic Expressions
 
@@ -632,61 +796,54 @@ well-typed term cannot reach wrong term
 
 # Simple Typed Lambda Calculus
 
-## Function Type
+
+
+
+型付きラムダ計算とは、項t に対し、Type Context $ \Gamma $ と、型 $ T $ を追加したものである。実装において、この Type Context $ \Gamma $ と、さきほど出てきた Name Context $ \Gamma $ など、様々な種類の Context をタグ付けすることにより、同じ型の Context として実装している。（ただし実行時、構文解析器が使用する `Name Context` と、型検査機が使用する Type Context は異なるインスタンスである。）この Context $ \Gamma $ は、このように実行時における様々な環境要素を含んでいるため、コンパイラの実行時環境などと呼ぶこともあるが、実行時環境には他にもC(Constraint 22章) や Σ(Store 16章) などがあり、曖昧性をもつ。そのためふつう $ \Gamma $ は、「 (Type) Context 」と呼ぶ。
+
+コンテクストと、項、型の関係は次のような関係 ( 3-placed relation ) で表し、
+
+$ \Gamma \vdash  t : T $
+
+「コンテクスト $ \Gamma $ における項 t の型は、T である」とよむ。
+
+## 構文 Syntax
+
+型付ラムダ計算の最も小さい構文は、
 
 ~~~
-\x.t : ->
+    t  ::=                              term
+            x                           variable
+            λx:T.t                      abstraction
+            t t                         application
+
+    v  ::=                              value
+            λx:T. t                     abstraction value
+
+    T  ::=                              type
+            T → T                       arrow type
+
+    Γ  ::=
+            ∅                           empty context
+            Γ,x:T                       term variable binding
 ~~~
 
+である。
+
+値 v は、それ以上単独で評価することができない項である。さきほど述べた、評価戦略 call by value の策定に、この v が大きく関わってくる。
+
+
+型 T は、すべての項は関数だという、関数型言語の思想をよく表しており、すべて Arrow Type の形でかける。実際の実装では、これに$ \mathbb{B} $ のような基本型を加えるので、以下の方が想像しやすいのかもしれない。
 
 ~~~
-T ::=
-    Bool
-    T -> T
+    T  ::=                              type
+            B                           boolean type
+            T → T                       arrow type
 ~~~
 
-`T->T->T` means `T->(T->T)`  : right associative
+といった具合である。
 
-## Typing Relation
-
-$ \rightarrow $
-
-~~~
-T ::=
-     T -> T
-~~~
-
-$ \Gamma $ $ ::= $
-
-$ \qquad \varnothing $
-
-$ \qquad \Gamma , x : T $
-
-
-~~~
-         x : T ∈ Γ
-      ---------------
-         Γ ⊢ x : T
-
-
-        Γ , x : T1 ⊢ t2 : T2
-      --------------------------
-        Γ ⊢ \x:T1.t2 : T1->T2
-
-
-        Γ ⊢ t1 : T11->T12   Γ ⊢ t2 : T2
-      ------------------------------------
-               Γ ⊢ t1 t2 : T12
-~~~
-
-
-
-
-
-$ \Gamma $ $ \vdash $ t : T
-
-$ \Gamma $ is a set of assumptions and therefore t : T .
-
+Γ は、Type Context である。
 
 $ \Gamma $ :=
 ~~~
@@ -696,6 +853,56 @@ $ \Gamma $ :=
     x_0 -> 0 : T0
 ~~~
 
+## Function(Arrow) Type
+
+
+~~~
+T ::= ...
+    | T -> T
+~~~
+
+Arrow Types are right associative;  i.e. `T->T->T` means `T->(T->T)`  .
+
+
+
+
+## 評価規則 Evaluation Rules
+
+評価規則は、先ほどのとおりである。
+
+~~~
+                    t1   →  t1'
+          -------------------------------------- [E-APP1]
+                 t1 t2   →  t1' t2
+
+
+                    t2   →  t2'
+          -------------------------------------- [E-APP2]
+                 v1 t2   →  v1 t2'
+
+
+          (λx:T11.t) v2  →  [x ↦ v2] t           [E-APPABS]
+~~~
+
+## 型付け規則 Typing Rules
+
+これに、型規則を導入したが形有りラムダ計算である。
+
+~~~
+                    x : T ∈ Γ
+          -------------------------------------- [T-VAR]
+                    Γ ∣- x : T
+
+
+                   Γ,(x:S) ∣- t : T
+          -------------------------------------- [T-ABS]
+                  Γ ∣- λx:S.t : X → T
+
+
+            Γ |- t1 : T2 -> T ,   Γ ∣- t2 : T2
+          -------------------------------------- [T-APP]
+                    Γ ∣- t1 t2 : T
+~~~
 
 
 
@@ -705,6 +912,287 @@ $ \Gamma $ :=
 
 
 # ML implementaion of Simple Types
+
+
+具体的実装における構文や、
+型規則、評価戦略は以下のようになる。
+
+型規則は、`typeof` 関数の実装であり、
+評価戦略は、`eval1` 関数の実装である。
+
+ソースコードは、[github レポジトリ](https://www.github.com/kripkejoyal/ocamyl)にある。
+
+
+## 構文
+
+~~~hs
+
+/* Modules both for Interpreter and for Compiler */
+Command     :       /* A top-level command */
+    | Term                          { fun ctx   -> let t = $1 ctx in Eval(tmInfo t,t),ctx }
+    | LCID Binder                   { fun ctx   -> ((Bind($1.i,$1.v,$2 ctx)), addname ctx $1.v) }
+Binder      :
+    | COLON Type                    { fun ctx   -> VarBind($2 ctx) }
+
+Type        :
+    | ArrowType                     { $1 }
+AType       :
+    | LPAREN Type RPAREN            { $2 }
+    | BOOL                          { fun ctx   -> TyBool }
+    | NAT                           { fun ctx   -> TyNat  }
+ArrowType   :
+    | AType ARROW ArrowType         { fun ctx   -> TyArr($1 ctx, $3 ctx) }
+    | AType                         { $1 }
+
+Term        :
+    | AppTerm                       { $1 }
+    | LAMBDA LCID COLON Type DOT Term
+        { pe "PARSER: λx:T.t"; fun ctx -> let ctx1=addname ctx $2.v in TmAbs($1,$2.v,$4 ctx,$6 ctx1)}
+    | IF Term THEN Term ELSE Term   { fun ctx   -> TmIf($1, $2 ctx, $4 ctx, $6 ctx) }
+AppTerm     :
+    | ATerm                         { $1 }
+    | SUCC ATerm                    { fun ctx   -> TmSucc($1, $2 ctx ) }
+    | PRED ATerm                    { fun ctx   -> TmPred($1, $2 ctx ) }
+    | ISZERO ATerm                  { fun ctx   -> TmIsZero($1, $2 ctx) }
+    | AppTerm ATerm                 { fun ctx   -> let e1=$1 ctx in TmApp(tmInfo e1,e1,$2 ctx) }
+ATerm       :         /* Atomic terms are ones that never require extra parentheses */
+    | LPAREN Term RPAREN            { pe "PARSER: ( t )"; $2 }
+    | LCID                          { fun ctx   -> TmVar($1.i, name2index $1.i ctx $1.v, ctxlength ctx) }
+    | TRUE                          { fun ctx   -> TmTrue($1) }
+    | FALSE                         { fun ctx   -> TmFalse($1) }
+    | INTV                          { fun ctx   -> let rec f = function
+              0 -> TmZero($1.i)
+            | n -> pe "succ"; TmSucc($1.i, f (n-1))
+          in f $1.v }
+~~~
+
+
+## 評価器
+
+~~~ml
+open Format
+open Core
+open Support.Pervasive
+open Support.Error
+open Syntax
+open Arg
+open Type
+
+exception NoRuleApplies
+
+let rec isnumericval ctx = function
+    | TmZero(_)         -> true
+    | TmSucc(_,t1)      -> isnumericval ctx t1
+    | _                 -> false
+
+let rec isval ctx = function
+    | TmAbs(_,_,_,_)                -> true
+    | TmTrue(_)                     -> true
+    | TmFalse(_)                    -> true
+    | t when isnumericval ctx t     -> true
+    | _                             -> false
+
+let rec eval1 ctx = function
+    | TmApp(fi,TmAbs(_,x,tyT11,t12),v2) when isval ctx v2
+                                        ->  termSubstTop v2 t12
+    | TmApp(fi,v1,t2) when isval ctx v1 ->  TmApp(fi,v1,eval1 ctx t2)
+    | TmApp(fi,t1,t2)                   ->  TmApp(fi,eval1 ctx t1,t2)
+    | TmIf(_,TmTrue(_),t2,t3)           ->  t2
+    | TmIf(_,TmFalse(_),t2,t3)          ->  t3
+    | TmIf(fi,t1,t2,t3)                 ->  let t1' = eval1 ctx t1 in TmIf(fi, t1', t2, t3)
+    | TmSucc(fi,t1)                     ->  let t1' = eval1 ctx t1 in TmSucc(fi, t1')
+    | TmPred(_,TmZero(_))               ->  TmZero(dummyinfo)
+    | TmPred(_,TmSucc(_,nv1)) when (isnumericval ctx nv1)
+                                        ->  nv1
+    | TmPred(fi,t1)                     ->  TmPred(fi, eval1 ctx t1)
+    | TmIsZero(_,TmZero(_))             ->  TmTrue(dummyinfo)
+    | TmIsZero(_,TmSucc(_,nv1)) when (isnumericval ctx nv1)
+                                        ->  TmFalse(dummyinfo)
+    | TmIsZero(fi,t1)                   ->  let t1' = eval1 ctx t1 in TmIsZero(fi, t1')
+    | _                                 ->  raise NoRuleApplies
+
+let rec eval ctx t =
+    try eval ctx (eval1 ctx t)
+    with NoRuleApplies -> t
+
+
+
+let rec process_command ctx = function
+    | Eval(fi,t)                ->
+            let tyT = typeof ctx t in
+            printtm_ATerm true ctx (eval ctx t);
+            print_break 1 2; pr ": "; printty tyT; force_newline(); ctx
+    | Bind(fi,x,bind)           ->  pr ("Now, "^x^ " is a variable: "); prbindingty ctx bind; force_newline(); addbinding ctx x bind
+
+
+let print_eval ctx cmd      =
+    open_hvbox 0;
+    process_command ctx cmd;
+    print_flush ()
+
+~~~
+
+
+## 型解釈器
+
+~~~ml
+open Format
+open Core
+open Support.Pervasive
+open Support.Error
+open Syntax
+open Arg
+
+exception NoRuleApplies
+
+
+(* ----------- TYPING --------------- *)
+
+let rec typeof ctx   t      = pr "TYPEOF: ";printtm ctx t;print_newline ();  match t with
+    | TmVar(fi,i,_)             -> getTypeFromContext fi ctx i
+    | TmAbs(fi,x,tyT1,t2)       ->
+            let ctx'    = addbinding ctx x (VarBind(tyT1)) in
+            let tyT2    = typeof ctx' t2 in
+            TyArr(tyT1,tyT2)
+    | TmApp(fi,t1,t2)           ->
+            let tyT1 = typeof ctx t1 in
+            let tyT2 = typeof ctx t2 in
+            (match tyT1 with
+                | TyArr(tyT11,tyT12)    -> if (=) tyT2 tyT11 then tyT12 else error fi "type mismatch"
+                | _                     -> error fi "arrow type expected" )
+    | TmTrue(fi)                -> TyBool
+    | TmFalse(fi)               -> TyBool
+    | TmZero(fi)                -> TyNat
+    | TmSucc(fi,t)              -> if (=) (typeof ctx t) TyNat then TyNat else error fi "succ expects 𝐍"
+    | TmPred(fi,t)              -> if (=) (typeof ctx t) TyNat then TyNat else error fi "succ expects 𝐍"
+    | TmIsZero(fi,t)            -> if (=) (typeof ctx t) TyNat then TyBool else error fi "iszero expects 𝐍"
+    | TmIf(fi,t1,t2,t3)         -> if (=) (typeof ctx t1) TyBool then
+                let tyT2 = typeof ctx t2 in
+                if (=) tyT2 (typeof ctx t3) then tyT2 else error fi "resulting type of if statement mismatch"
+                else error fi "if-condition expects a boolean"
+
+
+(* ---- *)
+
+let prbindingty ctx = function
+    | NameBind                  -> ()
+    | VarBind(tyT)              -> pr ": "; printty tyT
+
+
+
+
+~~~
+
+
+## (番外編) 左再帰と右再帰
+
+### 構文解析の知識
+
+構文には、左再帰構文と呼ばれる構文と、右再帰構文と呼ばれる構文がある。
+正規表現 ab* の構文の定義方法として、
+
+~~~
+Left Recursion
+
+t ::=
+     | a
+     | t b
+~~~
+
+
+という定義方法があり、これを左再帰という。
+文 `abbb` を解析すると、
+
+~~~
+  ((((a) b) b) b)
+
+           t
+          / \
+         t   b
+        / \
+       t   b
+      / \
+     t   b
+    /
+   a
+~~~
+
+これに対し、右再帰構文とは、
+
+~~~
+Right Recursion
+
+t  ::=
+     |  a s
+
+s  ::=
+     |  ∅
+     |  b s
+~~~
+
+のような定義であり、
+
+~~~
+
+   (a (b (b (b ∅))))
+
+
+      t
+     / \
+    a   s
+       / \
+      b   s
+         / \
+        b   s
+           / \
+          b   ∅
+~~~
+
+
+というように、右へ、構文木が垂れ下がっていく。
+
+構文解析器、字句解析器ともに、通常文を左から順番に読み込んでいく（走査していく）。
+
+文を左から走査していくとき、
+右再帰構文では、最後の∅ が見えるまで、s も t もその内容物が確定しないのに対して、
+左再帰構文では、毎度毎度、各 t の内容物が確定する。
+
+
+
+###  コンパイラとインタプリタの違い
+
+インタプリタは止まらなくてもいいので、とりあえず、入力の最初から順番に評価していけばよいが、
+入力の列が途絶えるかどうかはまったく気にしなくてよい。むしろ気にしてはいけない。入力が終了するのを待っていては、対話式インタプリタはかけない。
+
+これに対し、コンパイラは、入力が一区切り付いたかどうかなどはどうでもよく、終了したのか終了していないのかは決定しないければいけない。
+この意味で、コンパイラとREPLとで採用される構文は、「左再帰」と「右再帰」という相反する構文をそれぞれが目的に応じて採用するのが適当である。
+
+
+
+~~~hs
+/************   REPL   **********************************************/
+input :   /* Left Recursion */
+    |                                   { fun _     ->  [],[]                                   }
+    | input DOUBLESEMI                  { fun ctx   ->  [],ctx                                  }
+    | input oneREPL                     { let _,ev_ctx  = $1 [] in
+                                          let cmds,_    = $2 ev_ctx in
+                                          let ev_ctx'   = process_commands ev_ctx cmds in
+                                          fun _     ->  [],ev_ctx'                              }
+oneREPL :
+    | Command DOUBLESEMI                { fun ctx   ->  let cmd,ctx'   = $1 ctx in [cmd],ctx'   }
+    | Command SEMI oneREPL              { fun ctx   ->  let cmd,ctx'   = $1 ctx in
+                                                        let cmds,ctx'' = $3 ctx' in cmd::cmds,ctx''  }
+~~~
+
+~~~hs
+/************  COMPILER  *********************************************/
+toplevel : /* Right Recursion */
+    | EOF                               { fun ctx   ->  [],ctx                                  }
+    | Command SEMI toplevel             { fun ctx   ->  let cmd,ctx  = $1 ctx in
+                                                        let cmds,ctx = $3 ctx in cmd::cmds,ctx  }
+~~~
+
+
 
 # Simple Extensions
 
@@ -1323,11 +1811,48 @@ Then Type;
 
 # Existential Types
 
+Existential Type is a tuple (∃X,T) where X is type variable and T is a Type.
+We can instantiate, `X` by a concrete Type e.g. `Int` then we get the instance of existential type `(Int, T[X↦Int])`.
+
+This instanciation reminds us of Object Oriented Programming.
+
 
 
 # An ML Implementation of System F
 
 # Bounded Quantification
+
+
+##
+
+## Kernel F-sub  v.s. Full F-sub
+
+
+Kernel F-sub :
+~~~
+      Γ,X<:U ⊢ S2 <: T2
+ ------------------------------[KERNEL S-ALL ]
+  Γ ⊢ ∀X<:U.S2 <: ∀X<:U.T2
+~~~
+
+This definition can be more generalised since ∀X. T can be thought as
+as Π-Type, generalisation of arrow-type .
+So, it can be rewritten with mimicing `S-ARROW` which is defined Chap 15.
+
+FULL F-sub :
+~~~
+  Γ ⊢ T1 <: S1   Γ,X<:U ⊢ S2 <: T2
+ ----------------------------------[KERNEL S-ALL ]
+    Γ ⊢ ∀X<:S1.S2 <: ∀X<:T1.T2
+~~~
+
+
+
+The Object Oriented Programming Language $ O _ { 1 \<\: } $ can be realised in $ F _ { \<\: μ } $ .
+
+- [Reference] [Abadi, Cardelli, Viswanathan] An Interpretation of Object Types
+
+
 
 # Case Study : Imperative Objects, Redux
 
