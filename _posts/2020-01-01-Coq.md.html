@@ -4,6 +4,32 @@
 ---
 
 
+# Coq Art
+
+
+
+# SProp
+
+
+~~~
+Tesla Zhang  :  How important it is to make SProp impredicative?
+Andrej Bauer :  Impredicativity is important in math. One has to work hard to avoid it.
+                For instance, classic topology and predicative topology differ quite a bit.
+                Even something as basic as Dedekind reals suffer without impredicativity.
+Egbert Rijke :  Maybe I agree. Toposes are also impredicative.
+                The important kind of impredicativity is that Prop is a small object.
+                There’s also the kind of impredicativity where you get something small if you quantify over all types in the universe of all types.
+                Is that as important?
+Andrej Bauer :  Prop is already a universe that is closed under arbitrary products.
+                Speaking categorically, impredicativity is about internal-completeness of an internal category.
+                (BTW, just say "all types" instead of "all types in the universe of all types", as there is no such universe.)
+
+James Wood   :  How much difference is there between having impredicative SProp and having impredicative HProp?
+Tesla Zhang  :  Actually, I meant SProp by "strictly irrelevant HProp", so :/
+James Wood   :  So you mean something like SProp-squash on HProps is an equivalence? Is that a done thing?
+Tesla Zhang  :  Have you looked at Arend? They have syntactical homotopy truncation, and I guess these are easily probable
+~~~
+
 
 # How to Load Library in Coq
 
