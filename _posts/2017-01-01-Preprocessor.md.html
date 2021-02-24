@@ -1,12 +1,15 @@
 ---
 title: C Preprocessor
-layout: dep
-date: 2018-01-01
+layout: journal
 ---
 
 
 
-cpp : The C preprocessor
+CPP := The C preprocessor
+=================================================
+
+`#include` statement
+-------------------------------------------
 
 ~~~c
 #include <stdio.h>
@@ -17,13 +20,17 @@ int main(void)
 }
 ~~~
 
-The preprocessor $ replace $ the line `#include <stdio.h>` with the text of the file 'stdio.h'.
+The preprocessor $ replace $ the line `#include <stdio.h>` with the text contents in the standard library file 'stdio.h'.
 Double quotes `#include "stdio.h"` denotes the search path for the file is expand to include the current directory.
 
 
-if statement
 
-~~~
+
+`#if` statement
+------------------------------------------
+
+
+~~~c
 #if
 #ifdef
 #ifndef
@@ -32,15 +39,17 @@ if statement
 #endif
 ~~~
 
-~~~
+~~~c
 #define PI 3.14159
 #define RADTODEG(x) ((x) * 57.29578)
 #undef PI
 ~~~
 
 
-Debug feature
-~~~
+Debugging feature
+---------------------------------------------
+
+~~~c
 __FILE__            ## filename
 __LINE__            ## current line
 __STDC__            ## 1 if the implementation confirms ISO standard
@@ -50,8 +59,10 @@ __TIME__
 ~~~
 
 
-Token stringification `#` operator
-~~~
+Operator `#` := Token stringification
+------------------------------------------------
+
+~~~c
 #define xstr(s) str(s)
 #define str(s) #s
 #define foo 4
@@ -60,23 +71,24 @@ str (foo)   // "foo"
 xstr (foo)  // "4"
 ~~~
 
-`##` operator denotes "concatenation"
+!!! Tip
+    `##` operator denotes "concatenation"
 
 
 
 
 
 
+`#pragma` statement
+----------------------------------------------------------
 
 
-~~~
+~~~c
 #pragma     ## compiler-specific derective
 ~~~
 
 
 A compiler with support for the OpenMP parallelization can parallelize a for loop automoatically
-~~~
+~~~c
 #pragma omp parallel for
-~~~
-
 ~~~

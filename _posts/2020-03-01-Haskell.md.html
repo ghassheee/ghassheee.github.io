@@ -1,7 +1,6 @@
 ---
 title: Haskell
-layout: dep
-date: 2020-03-01
+layout: journal
 ---
 
 
@@ -11,7 +10,6 @@ Haskell のコンパイラ
 
 * type inference が２階直感主義論理に対応し、停止性が保証されない
 * evaluation strategy : http://dev.stephendiehl.com/fun/005_evaluation.html
-
 
 
 
@@ -36,7 +34,10 @@ Why Infinite type is not intruduced in Haskell ?
 * Answer : It allows `[T] = T ` which is quite ambiguous, and also dangerous.
 * Ωコンビネータの定義の仕方 : https://stackoverflow.com/questions/33546004/is-it-possible-to-define-omega-combinator-λx-xx-in-modern-haskell
 
-Reference : https://www.quora.com/Why-doesnt-Haskell-implement-infinite-types
+!!! Tip
+    Reference : https://www.quora.com/Why-doesnt-Haskell-implement-infinite-types
+
+
 
 * Haskell では、Infinite type は導入されていない。
 * 実用的には、99%は fix type で代用が効き、残りの1%を犠牲にしている。
@@ -126,7 +127,7 @@ https://blog.jle.im/entry/intro-to-machines-arrows-part-1-stream-and
 
 cryptohash-0.11.9
 
-~~~
+~~~ Haskell
 stack install cryptohash-0.11.9
 stack install bytestring
 ghci --package bytestring --package-hiding cryptonite

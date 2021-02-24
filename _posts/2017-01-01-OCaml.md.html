@@ -1,7 +1,6 @@
 ---
-layout: dep
+layout: journal
 title: OCaml
-date: 2017-02-20
 ---
 
 Reference : [Atsushi Igarashi] Programming in OCaml
@@ -10,14 +9,15 @@ Reference : [Atsushi Igarashi] Programming in OCaml
 
 ## installation
 
-Linux : See https://ghassheee.github.io/posix/archlinux-gui
-MacOS : Maybe like this; `brew install opam && opam init && opam install utop`
-Windows : Do not use Windows.
+* Linux : See https://ghassheee.github.io/posix/
+* MacOS : Maybe like this; `brew install opam && opam init && opam install utop`
+* Windows : Do not use Windows.
 
 
 ## interpreter
 
-First, let's run the ocaml interpreter; so type as below;
+First, let's run the ocaml interpreter; open a terminal emulator and type as the following;
+
 ~~~sh
 $ ocaml         ## or utop
 ~~~
@@ -61,7 +61,7 @@ stderr : out_channel
 ~~~
 
 
-#
+# OCaml Low Level Assembly
 
 ~~~
 $ ocaml -dinstr                                                                                                                                                                     system
@@ -255,17 +255,21 @@ let hoge i j =
 A - Z is ALPHABET- : unit = ()
 ~~~
 
-    escape sequence     |   character
-------------------------|-----------------------
-    `\\`                | backslash
-    `\'`                | single quotation
-    `\"`                | double quotation
-    `\n`                | -
-    `\r`                | return to the head of the line
-    `\t`                | tab
-    `\b`                | backspace
-    `\ddd`              | \000 - \255 ascii code
-    `\xhh`              | \00 - \ff ascii code
+
+
+
+escape sequence     |   character
+:-------------------|:-----------------------
+`\\`                | backslash
+`\'`                | single quotation
+`\"`                | double quotation
+`\n`                | -
+`\r`                | return to the head of the line
+`\t`                | tab
+`\b`                | backspace
+`\ddd`              | `\000` - `\255` ascii code
+`\xhh`              | `\00` - `\ff` ascii code
+
 
 ## naming variable
 

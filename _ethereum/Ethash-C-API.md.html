@@ -1,6 +1,6 @@
 This is just a documentation of the request of the C API described in [this PR](https://github.com/ethereum/ethash/pull/11).
 
-```c
+~~~c
 typedef int(*Callback)(unsigned);
 typedef /*...*/ ethash_light_t;
 typedef /*...*/ ethash_full_t;
@@ -16,14 +16,15 @@ uint64_t ethash_full_dag_size(ethash_full_t full);
 void const* ethash_full_dag(ethash_full_t full);
 ethash_result_t ethash_full_compute(ethash_full_t full, ethash_h256_t header_hash, uint64_t nonce);
 void ethash_full_delete(ethash_full_t full);
-```
+~~~
 
 non-zero return from Callback means "cancel DAG creation" - this should cause an immediate return of `ethash_full_new` with 0.
 
 an object of type `ethash_full_t` may be tested for validity with != 0
 
 ### Example usage:
-```c
+
+~~~c
 int callback(unsigned _progress)
 {
   printf("\rGenerating DAG. %d%% done...", _progress);
@@ -51,4 +52,4 @@ void main()
   printf("Got winner! nonce is %d\n", nonce);
   ethash_full_delete(dag);
 }
-```
+~~~

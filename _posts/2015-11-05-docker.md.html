@@ -1,6 +1,6 @@
 ---
 title: Docker
-layout: dep
+layout: journal
 ---
 
 
@@ -10,46 +10,6 @@ layout: dep
 
 # Deploy とは
 
-兵士や兵器を配備する
-
-web service などを user が使えるようにする
-
-
-<br/>
-<br/>
-
-
-
-# Beginning of Docker
-
-dotCloud : PaaS 型クラウドサービス
-
-PaaS : Platform as a Service
-
-Docker : dotCloud 社が Paas を支える技術を open source 化したもの
-
-
-<br/>
-<br/>
-
-
-
-# Role of Docker
-
-* make `docker img`
-* execute `docker img`
-
-
-<br>
-<br>
-
-# `Application img` and `Docker img `
-
-
-
-
-<br/>
-<br/>
 
 **************************************************************************
 *                                                                        *
@@ -81,15 +41,54 @@ Docker : dotCloud 社が Paas を支える技術を open source 化したもの
 
 
 
+「兵士や兵器を配備する」が転じて、
 
-<br/>
-<br/>
+「 Web Service などを User が使えるようにする」という意味である。
+
+
+<br>
+<br>
+
+
+通常の `Application image` と `Docker image` との違いは、
+
+「仮想環境」ごと配備するかどうかの違いである。
+
+言わば、戦争において、敵地近くに「空母」を配備しているかどうかの違いにある。
+
+
+<br>
+<br>
+
+
+# Beginning of Docker
+
+dotCloud : PaaS 型クラウドサービス
+
+PaaS : Platform as a Service
+
+Docker : dotCloud 社が Paas を支える技術を open source 化したもの
+
+
+<br>
+<br>
+
+
+
+# Role of Docker
+
+* make `docker img`
+* execute `docker img`
+
+
+<br>
+<br>
 
 
 # Docker Technology
 
-<br/>
-<br/>
+<br>
+<br>
 
 ## Linux Container とは
 
@@ -111,8 +110,8 @@ Docker : dotCloud 社が Paas を支える技術を open source 化したもの
 
 `cgroups` : Control Groups : CPU / MEMORY 割り当て
 
-<br/>
-<br/>
+<br>
+<br>
 
 ## Docker Container
 
@@ -162,15 +161,15 @@ docker build -t image_name .
 *     |eth0 80|     | eth0  |          *
 *     +---+---+     +---+---+          *
 *         |             |              *
-*      +--+-------------'---------+    *
+*      +--+-------------+---------+    *
 *      | Virtual Bridge (docker0) |    *
-*      +--------------------------+    *
+*      +-----+----------+---------+    *
 * -p 8000:80 |          |              *
-*   +------------+      |              *
-*   |  NIC 8000  |      |--net=host    *
+*   +--------+---+      |              *
+*   |  NIC 8000  |      | --net=host   *
 *   +-----+------+      |              *
 *         |             |              *
-*  -------+----------------external    *
+*  -------+-------------+--external    *
 *                                      *
 ****************************************
 
@@ -420,13 +419,7 @@ $ apt-get install docker-engine
 <br>
 
 
-# docker swarm
 
- moved to [here](../docker-network-configure.md)
-
-<br>
-<hr>
-<br>
 
 # docker machine
 
@@ -530,27 +523,15 @@ $ sudo apt-get install bridge-utils net-tools
 1. brctl addbr br0
 2. ip link set br0 up
 3. ip addr add 192.168.17.1/24 dev br0
-
-
 4. ip link add name veth-host type veth peer name veth-guest
 5. ip link set veth-host up
-
-
 6. brctl addif br0 veth-host
-
-
 7. ip link set veth-guest netns hoge
-
-
 8. ip netns exec hoge ip link set veth-guest name eth1
-
-
 9. ip netns exec hoge ip addr add 192.168.17.2/24 dev eth1
 10. ip netns exec hoge ip link set eth1 up
 11. ip netns exec hoge ip route delete default
 12. ip netns exec hoge ip route add default via 192.168.17.1
-
-
 13. ifconfig eth0 192.168.11.2 up
 14. dhclient br0
 

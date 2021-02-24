@@ -1,6 +1,6 @@
 ---
-layout: dep
-title: agvm
+layout: newsmag
+title: AGVM
 comments: true
 ---
 
@@ -8,8 +8,8 @@ comments: true
 
 
 
-# IoT 安全設計指針
-
+IoT 安全設計指針
+======================================================================
 - 安全フィルターがn重であるとする。
     - n → Infinity で
     - 確率的に安全性が100パーセントに収束するように設計されている
@@ -23,30 +23,26 @@ comments: true
 
 
 
+On blockchain
+====================================================================
 
-
-
-
-# on blockchain
-
-すこし、IOTに関する自分の意見をまとめたので、
-説明いたします。
+IOT と Blockchain
 
 blockchain の仕組みの理解を前提とします。
 
 ~~~
-state ----(state transition function)-----> state
-　　　|
-　　　|-----(state transition function) --------> state
+state -+-----(state transition function) --------> state
+　　　  |
+　　　  +-----(state transition function) --------> state
 ~~~
 
 このように、状態遷移関数はだれでもfork 可能です。
 しかし、悪意ある人がfork すると、
 
 ~~~
-state ----(state transition function)-----> state
-　　　|
-　　　|-----(state transition function) --------> cracked state
+state -+----(state transition function) --------> state
+　　　  |
+　　　  +----(state transition function) --------> cracked state
 ~~~
 
 
@@ -70,12 +66,12 @@ avm ( architectural vitual machine )をつくると以下のようになりま�
 
 ~~~
 external physical censor
-　　　　↓
-　physical value (strain) ---|
-　　　　　　　　　　　　|---(verifying)---> apparent state : calculated with `strain`
-　　　|--------------------------|
-　　　|
-state ----(state transition function(mining)) ---> calculated state : calculated with `stress`
+　　　　     ↓
+　physical value (strain) ---+
+　　　　　　　　　　　　         |--->  (verifying) ---> apparent state : calculated with `strain`
+　　　   +--------------------+
+　　　   |
+state --+--(state transition function(mining)) ---> calculated state : calculated with `stress`
 ~~~~
 　
 the verifying process is like :

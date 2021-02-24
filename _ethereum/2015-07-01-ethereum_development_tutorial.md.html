@@ -1,5 +1,5 @@
 ---
-layout: dep
+layout: journal
 title: Ethereum Development Tutorial
 date: 2014-7-01
 ---
@@ -39,7 +39,7 @@ Manage an ongoing contract or relationship between multiple users. Examples of t
 　アリスとボブが、「来年サンフランシスコの気温が35度を超えることはない」ということに１００Gavcoin（開発者の名前が付けられた仮想通貨）の賭けをしたとしよう。しかし、アリスは危険回避思考の持ち主で、アリスの第一アカウントは、マルチシグをかけた「前進型契約」を保持している。ボブは量子暗号に猜疑的で（疑い深く）、伝統的な楕円曲線アルゴリズムに沿ったランポート署名を施したメッセージを転送する「前進型契約」を保持している（訳略）。この賭博を管理する契約アカウントはそれ自身サンフランシスコの気象データをあるコントラクトから呼び出してこないといけない。（以後、契約アカウントの呼び名として、プログラマであるわれわれがmethodのことをメソッドと呼ぶように、コントラクトと呼ぶことにする。コンストラクタ等と混同しないように別名がほしいところだが。）またGavCoinコントラクトともやりとりしなくてはならない。・・・
 　以下に図を示す。
 
-![contract relationship](https://github.com/ethereumbuilders/GitBook/blob/master/en/vitalik-diagrams/contract_relationship1.png width="600")
+![contract relationship](/image/contract_relationship.png width="600px")
 
 　スタック上に積み上がっていくメソッドの呼び出し（コールスタック）を頭に思い描くことができれば、
 ここでの説明は容易であろう。
@@ -57,13 +57,18 @@ GavCoin はすべて Gavcion contract データベースの項目として "貯�
 ステップ 6 の内容にある単語 "account" が意味するところは単に Gavcoin cocntract の中に、bet contract の address のための key と 残高 とともに、データ項目 があるということだ。
 この message を受信したあと、Gavcoin contract は自身の残高からある量の値を減らし、同じ分だけボブの forwarding contract への送信項目の値を増やす。以下のdiagramにこれらのステップを示した:
 
-![contract relationship 2](https://raw.githubusercontent.com/ethereumbuilders/GitBook/master/en/vitalik-diagrams/contract_relationship2.png?1 width="600")
+![contract relationship 2](/image/contract_relationship2.png width="600px")
 
-# State Machine
+State Machine
+=========================================================================================
+
 
 　Ethereum仮想マシンの計算処理は、ビットコインスクリプトと伝統的アセンブラやリスプといったものの架け橋である、スタックベースのバイトコード言語を使用する。（Lispは再帰的コントラクト呼出の機能の役割を担う。）仮想マシン上のプログラムは以下のようなopcodesのシーケンスである。
 
+~~~
     PUSH1 0 CALLDATALOAD SLOAD NOT PUSH1 9 JUMPI STOP PUSH1 32 CALLDATALOAD PUSH1 0 CALLDATALOAD SSTORE
+~~~
+
 
 　この例が示すコントラクトの目的は、レジストリという名前をもつ contract として振る舞うことにある。誰でも64バイトのデータを含む「メッセージ」送付することができる。 32バイトは鍵keyに 32バイトは値valueにわり振られる。このレジストリcontractは、鍵がすでにストレージ内に登録されているかをチェックし、もし登録されていなければ、その鍵と共に値を登録する。
 
@@ -173,7 +178,12 @@ LLLやSerpent、Mutanなどと言った数々の高級言語が存在し、コ�
 　このopcodesを読み解く上での鍵はCODECOPYだ。今スタック上には[16,12,0]の順に積まれていて、コード配列の要素１２（１３番目）からスタートして、１６バイト分をコピーしたものをメモリの０番地を起点としたところに貼り付け、今貼り付けられたメモリ上の０番目から１６番目の値を返す。
 結果として、１２（含まず）〜２８番目のコードがこの一つのコードにより実行される。
 
-# Gas
+
+
+
+Gas
+=======================================================================================
+
 
 　仮想マシンを動かす上で重要な側面がある。それは「仮想マシン内部で処理されるあらゆる単一操作は、実際はすべてのノード上で同時に実行される」ということだ。イーサリウム１．０の必要なコンポーネントであり、「仮想マシン上のどんなコントラクトもほぼコスト０で他のあらゆるコントラクトを呼び出すことができる」といった恩恵をもたしてくれる。しかしながら、Ethereum仮想マシン上での計算処理のステップはとても高価なもとなる。Ethereum仮想マシンの使用方法の概要は、「１９９９年代以降のスマホでできないことは、ここでもできない。」とでもとらえておけばだいたい正しい。
 ビジネスロジックを走らせたり、署名やその他の暗号オブジェクトの有効化をしているEVMの正しい使用法として；EVMの使用法の上限としてあるのが、他のブロックチェインの部分集合を有効化するアプリケーションだ。（例：分散型ether - bitcoin 両替所） 受け入れがたい使い道としては、ファイルストレージやEmailテキスト、メールシステム、画像処理インターフェースを用いて行うプログラムや遺伝的アルゴリズムや機械学習、グラフ探索などのcloud computingにベストマッチするアプリケーションなどだ。
@@ -186,7 +196,7 @@ LLLやSerpent、Mutanなどと言った数々の高級言語が存在し、コ�
 
 
 
-ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+==========================================================================
 
 ※　トランザクションデータ長　トランザクションのデータにあるバイトの数のこと。
 
@@ -195,7 +205,12 @@ LLLやSerpent、Mutanなどと言った数々の高級言語が存在し、コ�
 　コントラクト呼び出しの際、途中でガスが尽きると、処理は元に戻るだけで、処理が遂行すれば返り値を返し、このどちらかの状態しかありえないので、完全に安全に呼び出し処理ができるのである。
 サブのコントラクトが余力を残していれば、親の実行まで戻る。
 
-# Virtual machine opcodes
+
+
+
+Virtual machine opcodes
+==========================================================================
+
 
 The opcodes in the EVM are as follows:
 
@@ -258,7 +273,10 @@ The opcodes in the EVM are as follows:
 
 Note that high-level languages will often have their own wrappers for these opcodes, sometimes with very different interfaces.
 
-# Basics of the Ethereum Blockchain
+
+
+Basics of the Ethereum Blockchain
+==========================================================================
 
 　イーサリアム・ブロックチェイン(あるいは「帳簿」）は分散型で（中央集約型ではなく）、全アカウントのカレントステイト（現在の状態）を保持し、大規模に複製されたデータベースである。このブロックチェーンは全アカウントの状態を貯蔵するのに、[「パトリシア木」](https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-Patricia-Tree) というデータ構造を採用している。この「パトリシア木」は本質的に、一般的なKey/value貯蔵時にふるまう「マークル木」の特殊型である。標準のマークル木のように、パトリシア木はルートハッシュを保持している。ルートハッシュは、木構造全体を参照するために使用可能で、木のコンテンツはルートハッシュの変更なしに修正不可能である。それぞれのアカウントのために、木は、[    account_nonce,     ether_balance, code_hash,     storage_root     ]　をふくんだ、４つの構成要素からなるタップル（４-tuple)を貯蔵している。ここで、このタップルの要素の定義は以下の通りである。
 
@@ -277,7 +295,9 @@ Note that high-level languages will often have their own wrappers for these opco
 
 　パトリシア木の仕組みのおかげで、もし少ししかない変更がなされれば、木の大部分は変更前の最後の状態と全く同じになるだろう。このように、新しいパトリシア木のノードが単に、古いパトリシア木と新しいパトリシア木が全く同じである空間における古い方のノードを貯蔵する同じメモリアドレスを指し戻すことができるだろうような場合には、同じデータを二度蓄える必要はない。N番目のブロックとN+１番目のブロックの間に（N＋１番目のブロックに取り込まれるべき）、千箇所の変更があったとして、たとえ全パトリシア木のデータサイズが何ギガバイトに及ぼうとも、N＋１番目のブロックに貯蔵されるのに必要な新しいデータ量はたかだか数百キロバイトであり、基本的にもっと少ない（同じコントラクト内で変化が生じたときは特に）。全てのブロックは、ブロック数、タイムスタンプ、マイナーのアドレス、ガスの上限のような他のデータと同様にして、一つ前のブロックのハッシュ値を含んでいる。
 
-# Graphical Interfaces
+Graphical Interfaces
+==========================================================================
+
 
 　コントラクトはそれ自身とてもパワフルなものだが、Dアプリを完全にするものとは言えない。Dアプリはむしろ、コントラクトとそのコントラクトを使用するグラフィカルインターフェースの融合によるものである。（これは、現バージョンのイーサリアムのことを述べており、イーサリアムの未来バージョンでは、whisperといった、Dアプリ内のノードに対して、ブロックチェインなしで互いにp２pメッセージを送らせることのできるプロトコルを含むだろう。）いまちょうど、そのインターフェイスは、HTML/CSS/JSのウェブページとして実装され、特別な  javascript  API がイーサリアムブロックチェインと一緒に動作する eth オブジェクト形式の中にある。javascript APIのキーとなる部分は以下の通りである。
 
@@ -293,6 +313,7 @@ Note that high-level languages will often have their own wrappers for these opco
 しかしながら、そうして作られたDアプリはイーサリアムクライアントの中で開いたときのみ動作するようになり、一般的なwebブラウザ上では動かない。Javascript APIの実践的使用例として[the source code of this webpage](http://gavwood.com/gavcoin.html)を訪れるとよい。
 .
 
-# Fine Points To Keep Track Of
+Fine Points To Keep Track Of
+==========================================================================
 
 See [https://github.com/ethereum/wiki/wiki/Subtleties](https://github.com/ethereum/wiki/wiki/Subtleties)

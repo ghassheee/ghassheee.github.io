@@ -1,6 +1,6 @@
 ---
 title: libp2p whitepaper
-layout: dep
+layout: journal
 ---
 
 
@@ -12,7 +12,7 @@ Ethereum が成功ををおさめ、そして、Ethereum が達成されると�
 
 しかし、将来も含めてたくさんのそのようなタイプの分散コミュニケーションシステムを想像にえがくことができます。たとえば、identity-based RTC に対するものです。これらの各構成要素は数々の shared prerequisities を要します。 peer-discovery / recording , network will-formedness , transport-level buffering , scheduling / framing , authentication / security などです。これらのsaltに値するコンピュータサイエンティストは誰でも、手早く「抽象的な実戦の機会」をつかむことができます！
 
-### What it is
+# What it is
 
 libp2p ( aka ÐΞVp2p ) は 軽量抽象レイヤ を提供することを目的とし、それにより低級アルゴリズムやある透明な枠組におけるプロトコルやサービスが、結果としてのプロトコルのユースケースを決定することなく、提供されます。
 
@@ -29,7 +29,7 @@ Kademlia-style network well-formedness guarantees a low maximum hope distance to
 - *DPI security:* Framing と bandwidth 制御は、交通網の形を制御するために使用されうる。
 - *Transport-layer Agnostic:* TCP/IP v4 と v6 は、初期のプロトコル仕様で与えられています。他は、後に、API を変更することなく付け加えると言う形で付与されます。複雑なネットワーキングデバイスであれば、究極的には、自らこれらを実装することが可能でしょう。
 
-### Basic Design
+# Basic Design
 
 - peer はそれぞれ node-ID によって識別される。
 - 複数の peer とコミュニケートするの能力 *だけ* しか提供しない。

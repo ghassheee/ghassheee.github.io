@@ -1,11 +1,13 @@
 ---
-layout: dep
+layout: journal
 title: Ethereum White Paper
 date: 2015-06-01
 ---
 
 
 # 次世代 Smart contract と 分散型アプリケーション基盤
+
+
 
 ナカモトサトシの論文により、2009年に開発された Bitcoin は通貨・貨幣における革新的な発明だと
 謳われ、金兌換のような後ろ盾がなく、中央通貨管理局をもたないはじめての デジタル財産 の例です。( [intrinsic value](http://bitcoinmagazine.com/8640/an-exploration-of-intrinsic-value-what-it-is-why-bitcoin-doesnt-have-it-and-why-bitcoin-does-have-it/) ) しかし、その壮大な Bitcoin の実験における、より特筆すべき重要部は別の所にあります。
@@ -699,10 +701,13 @@ A から X 単位を差し引き、それを B にやる
 トークンシステムの実装するのにかかる手間は、このロジックを contract に実装するだけです。
 トークンシステムの Serpent における実装の基本コードは以下のようになります:
 
+~~~py
     def send(to, value):
         if self.storage[msg.sender] >= value:
             self.storage[msg.sender] = self.storage[msg.sender] - value
             self.storage[to] = self.storage[to] + value
+~~~
+
 
 これは、基礎的に、このドキュメントの冒頭で説明した"銀行システム" の状態遷移関数の文字通りの実装となります。
 このコードとは別に、初期化ステップとして通貨単位を共有するあるいはその他特例のために、数行必要となり、
@@ -1015,7 +1020,10 @@ NCはオペレーションを処理するためのネットワーク全体のコ
 どのブロックも`BLK_LIMIT_FACTOR`回 x `長期指数関数移動平均` 以上のオペレーションを行うことはできません。
 つまり、
 
+~~~
     blk.oplimit = floor((blk.parent.oplimit * (EMAFACTOR - 1) + floor(parent.opcount * BLK_LIMIT_FACTOR)) / EMA_FACTOR)
+~~~
+
 
 `BLK_LIMIT_FACTOR` と `EMA_FACTOR` は、当分は、65536と1.5に設定される定数で、さらに解析が進めば、変更される可能性があります。
 
@@ -1069,12 +1077,15 @@ EVMコード は二つの方法でループを可能にします。
 しかし実際は、チューリング不完全では、与えられた問題の正しい解決からはほど遠いものです。
 その理由を知るために、以下のcontractを考えましょう。
 
+~~~
     C0: call(C1); call(C1);
     C1: call(C2); call(C2);
     C2: call(C3); call(C3);
     ...
     C49: call(C50); call(C50);
     C50: (run one step of a program and record the change in storage)
+~~~
+
 
 いまあるトランザクションをAに送ります。
 このように、51個のトランザクションにおいて、2<sup>50</sup> の計算ステップを持つ contract を保持するものとします。

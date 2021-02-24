@@ -1,7 +1,6 @@
 ---
-layout: dep
+layout: journal
 title: Shell
-date: 2015-12-06
 ---
 
 
@@ -10,7 +9,7 @@ date: 2015-12-06
 ~~~
 $ wget --spider --force-html -r -l2 "vitalik.ca" 2>&1 | grep "https" > hoge.txt
 
-$ cat url-list.txt | while read line ; do /Applications/Chromium.app/*/*/Chromium --headless --print-to-pdf="$(echo $line | sed -e 's/https\:\/\/vitalik\.ca\/general\///' -e 's/\//-/g' -e 's/html/pdf/')" "$line" ; done ; ./page2pdf.sh     
+$ cat url-list.txt | while read line ; do /Applications/Chromium.app/*/*/Chromium --headless --print-to-pdf="$(echo $line | sed -e 's/https\:\/\/vitalik\.ca\/general\///' -e 's/\//-/g' -e 's/html/pdf/')" "$line" ; done ; ./page2pdf.sh
 ~~~
 # Devices
 

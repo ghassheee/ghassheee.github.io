@@ -1,13 +1,17 @@
 ---
 title : TaPL
-layout: dep
+layout: journal
 ---
+
+
 
 Reference
 
-* [Pierce] Types and Programming Languages
+* [Benjamin C. Pierce] Types and Programming Languages
 
 <br>
+
+
 
 # Introduction
 
@@ -24,67 +28,67 @@ I recommend you to start with combinator theory .<br>
 # Mathematical Prerequired Definitions
 
 
-## `powerset`
+## Power Set
 
 $ \mathcal{P} ( \mathcal{S} ) := \{ U ; U \subset S \} $
 
-## `difference`
+## Difference
 
 $ \mathcal{S} \ \backslash \ \mathcal{T} \ := \ S ∩  T ^ C  $
 
-## `natural numbers`
+## Natural numbers
 
 $ \mathbb{N} := \{ 0,1,2,3,4,5,6,7,8, ... \} $
 
-## `n-placed relation`
+## N-placed relation
 
 $ s_1 \in \mathcal{S_1} , ... , s_n \in \mathcal{S_n} $ are `n-place related` <br>
 `if` $ (s_1, ... , s_2) \in R $ where $ R \subseteq \mathcal{S_1} \times ... \times \mathcal{S_n} $
 
-## `predicate ( 1-place relation )` P
+## Predicate ( 1-place relation ) `P`
 
 $ P(s) := s \in P $
 
-## `Binary Relation` R
+## Binary Relation `R`
 
 $ s R t := ( s , t ) \in R $
 <br>    where $ s, t \in \mathcal{ U } $
 
-## `2-place Relation` R
+## 2-place Relation `R`
 
 $ s R t := ( s , t ) \in R $
 <br>    where $ s \in \mathcal{S} , t \in \mathcal{T} $
 
-## `3-place Relation`
+## 3-place Relation
 
 see `n-place Relation `. e.g. ;
 
 * $ \Gamma \vdash s : T $  ( Typing Relation (see Chapter 9) )
 
-## `Partial Function` R
+## Partial Function `R`
 
 $ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
 
-## `Total Function` R
+## Total Function `R`
 
 $ dom(R) = \mathcal{S} $
 <br>    where $ \mathcal{S} R \mathcal{T} $
 
-## `Defined` / `Undefined`
+## Defined & Undefined
 
 Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
 
 * $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
 * $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
 
-## `Diverge` ≠ `Failure`
+## Diverge ≠ Failure
 
 * `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
 * fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
 * Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
 
 
-## `Predicate`　
+## Predicate
 
 * $ s \in P $ であれば sは述語を持つという
 * where $ s \in \mathcal{S} , P \subseteq \mathcal{S} $
@@ -573,12 +577,12 @@ lazy evaluation can be further classified into `call-by-name` `call-by-need`.
 電卓の簡単な例でいえば、`1+1*1` の掛け算を先にするのか、足し算を先にするのか、といった問題も評価戦略の問題である。
 TaPL に記載されている4つの評価戦略は次のとおりである。
 
-![TaPL1.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/321074/b7d66c69-3529-8f86-9518-d38299199456.png)
+![TaPL1.png](/image/evaluation_strategy.png width="600px")
 
 実際に、これらの計算を
 `times (times 3 (times 2 1))` に対して、適用したのが、次である。
 
-![TaPL.png](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/321074/4812ce71-097a-ec3b-b4d6-2e8c5e101f71.png)
+![TaPL.png](/image/evaluation_strategy_eg.png width="600px")
 
 
 
@@ -682,8 +686,9 @@ let termSubstTop s t        = print_endline "SUBSTITUTE: "; termShift (-1) (term
 # Typed Arithmetic Expressions
 
 
-## Types
+## Syntax
 
+Syntax of Term
 ~~~
 t ::=
     true
@@ -693,9 +698,8 @@ t ::=
     succ t
     pred t
     iszero t
-~~~
 
-~~~
+
 v ::=
     true
     false
@@ -708,15 +712,17 @@ nv ::=
 
 
 
-## The Typing Relation
+## Typing Relation
 
 $ \mathbb{B} $
 
+Syntax of Type
 ~~~
 T ::=
     Bool
 ~~~
 
+Typing Rules
 ~~~
   true : T
 
@@ -729,11 +735,14 @@ T ::=
 ~~~
 
 $ \mathbb{B}\ \mathbb{N} $
+
+Syntax of Type
 ~~~
 T ::=
     Nat
 ~~~
 
+Typing Rules
 ~~~
    0 : Nat
 
@@ -920,7 +929,6 @@ Arrow Types are right associative;  i.e. `T->T->T` means `T->(T->T)`  .
 型規則は、`typeof` 関数の実装であり、
 評価戦略は、`eval1` 関数の実装である。
 
-ソースコードは、[github レポジトリ](https://www.github.com/kripkejoyal/ocamyl)にある。
 
 
 ## 構文
@@ -1159,18 +1167,16 @@ s  ::=
 
 
 
+
+
 ###  コンパイラとインタプリタの違い
 
 インタプリタは止まらなくてもいいので、とりあえず、入力の最初から順番に評価していけばよいが、
 入力の列が途絶えるかどうかはまったく気にしなくてよい。むしろ気にしてはいけない。入力が終了するのを待っていては、対話式インタプリタはかけない。
 
-これに対し、コンパイラは、入力が一区切り付いたかどうかなどはどうでもよく、終了したのか終了していないのかは決定しないければいけない。
-この意味で、コンパイラとREPLとで採用される構文は、「左再帰」と「右再帰」という相反する構文をそれぞれが目的に応じて採用するのが適当である。
 
-
-
-~~~hs
-/************   REPL   **********************************************/
+~~~
+/************   REPL   **************************/
 input :   /* Left Recursion */
     |                                   { fun _     ->  [],[]                                   }
     | input DOUBLESEMI                  { fun ctx   ->  [],ctx                                  }
@@ -1184,8 +1190,13 @@ oneREPL :
                                                         let cmds,ctx'' = $3 ctx' in cmd::cmds,ctx''  }
 ~~~
 
-~~~hs
-/************  COMPILER  *********************************************/
+
+コンパイラは、入力が一区切り付いたかどうかなどはどうでもよく、終了したのか終了していないのかは決定しないければいけない。
+この意味で、コンパイラとREPLとで採用される構文は、「左再帰」と「右再帰」という相反する構文をそれぞれが目的に応じて採用するのが適当である。
+
+
+~~~
+/************  COMPILER  ************************/
 toplevel : /* Right Recursion */
     | EOF                               { fun ctx   ->  [],ctx                                  }
     | Command SEMI toplevel             { fun ctx   ->  let cmd,ctx  = $1 ctx in
@@ -1295,8 +1306,8 @@ $$
 $$
 {\displaystyle
     \frac
-    {\text{ t : T } \quad \wedge \quad \text{ t \to t' }}
-    {R _ T (t) \iff R _ T (t')}
+    {\text{ t : T } \quad \wedge \quad \text{ t } \to \text{ t' }}
+    { R_T (\text{t}) \iff R_T (\text{t'})}
 }
 $$
 
@@ -1823,7 +1834,7 @@ This instanciation reminds us of Object Oriented Programming.
 # Bounded Quantification
 
 
-##
+## Section 1
 
 ## Kernel F-sub  v.s. Full F-sub
 
