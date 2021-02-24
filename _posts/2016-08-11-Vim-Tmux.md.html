@@ -14,6 +14,23 @@ there open ways if we get out of 'Insert mode'
 
 # Problems
 
+## how to get fileName
+
+
+see [Get the name of Current file](https://vim.fandom.com/wiki/Get_the_name_of_the_current_file)
+
+~~~
+:echo @% 	               def/my.txt
+:echo expand('%:t') 	   my.txt
+:echo expand('%:p') 	   /abc/def/my.txt
+:echo expand('%:p:h') 	   /abc/def
+:echo expand('%:p:h:t')    def
+:echo expand('%:r') 	   def/my
+:echo expand('%:e') 	   txt
+~~~
+
+
+
 ## autoReplace `$1` into `()` problem defined in extended.vimrc
 
 type
