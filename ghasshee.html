@@ -1,11 +1,28 @@
 ---
 layout      : default
-title       : Posix
-categories  : /posix
-permalink   : /posix/
+title       : GhaSShee
+categories  : /ghasshee
+permalink   : /ghasshee/
 ---
 
 <div class="home">
+
+<br><h1 class="post-title"> Computer </h1><br>
+
+    Unordered Posts are here. Basically, I will post here articles and information about Computers and the theory of Computer Science for Both Hardware and Software.
+
+<div class="grid post-list">
+    <br>
+    {% for post in site.ghasshee %}
+    <div class="unit half">
+    <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+    </div>
+    {% endfor %}
+</div>
+
+<br><br><br><br><br><br>
+    <div class="grid post-list"></div>
+<br><br>
 
 <br><h1 class="post-title"> Posix </h1><br>
 

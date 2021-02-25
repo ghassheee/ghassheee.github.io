@@ -14,33 +14,39 @@ kramdown:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 
 collections:
-  build:
-    output: true
-    permalink: /build/:path/
-  ethereum:
-    output: true
-    permalink: /ethereum/:path/
-  math:
-    output: true
-    permalink: /math/:path/
-  category:
-    output: true
-    permalink: /category/:path/
-  functional:
-    output: true
-    permalink: /functional/:path/
-  posix:
-    output: true
-    permalink: /posix/:path/
-  diary:
-    output: true
-    permalink: /diary/:path/
-  os:
-    output: true
-    permalink: /os/:path/
-  linux:
-    output: true
-    permalink: /linux/:path/
-  tool:
-    output: true
-    permalink: /tool/:path/
+    build:
+        output: true
+        permalink: /build/:path/
+    category:
+        output: true
+        permalink: /category/:path/
+    diary:
+        output: true
+        permalink: /diary/:path/
+    ethereum:
+        output: true
+        permalink: /ethereum/:path/
+    functional:
+        output: true
+        permalink: /functional/:path/
+    ghasshee:
+        output: true
+        permalink: /ghasshee/:path/
+    html:
+        output: true
+        permalink: /html/:path/
+    posix:
+        output: true
+        permalink: /posix/:path/
+    math:
+        output: true
+        permalink: /math/:path/
+    os:
+        output: true
+        permalink: /os/:path/
+    linux:
+        output: true
+        permalink: /linux/:path/
+    tool:
+        output: true
+        permalink: /tool/:path/
