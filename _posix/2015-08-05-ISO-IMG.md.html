@@ -1,31 +1,33 @@
 ---
-title: iso $\iff$ img
+title: ISO $\iff$ IMG
 layout: newsmag
 ---
 
-# iso $\iff$ usb
+# ISO v.s. USB
 
-## img
+## USB (`.img` file)
+
+    - USB : Universal Serial Bus : 普遍的な情報の通りみち
+    - USB boot :
+        - 普遍的な情報の通りみちの端点に接続された USB Flash Drive などに書かれた Boot Script を起動すること
+        - BIOS は、USB STACK protocol を含む組み込みファームウェアを実行する。
+        - USB 接続が確立されると、制御メカニズムは抽象化され、HDD boot と同様のものとして扱われる。
+        - なので、MasterBootRecord を読みにいく。
 
 
-- USB : Universal Serial Bus : 情報の通りみち
-- "USB boot" ; where USB := USB Flash Drive
+## ISO (`.iso` file)
 
-USB boot : BIOS は、USB STACK protocol を含む組み込みファームウェアを実行する。
-USB 接続が確立されると、制御メカニズムは抽象化され、HDD boot と同様のものとして扱われる。
-なので、MasterBootRecord を読みにいく。
-
-## iso
-
-- 抽象 DISK : not the same layout with HDD
-
-CD boot : CDROM は、 ISO 9660 Standard　において定められています。
+    - Abstract Disk : not the same layout with HDD
+    - CD boot
+        - CD (CDROM) は、 ISO 9660 Standard　において定めらている。
+        - ISO ファイルとは、古くはこの ISO 9660 Standard に特有のデータ構造のための image ファイルをさし、`.img` ファイルとは根本的につくりが異なる
 
 ## conclusion
 
 ~~~
 CD 用の ISO image と USB 用の Hybrid ISO/IMG image は別物で相互変換には修正が必要。
 ~~~
+
 
 ## original source sentence　　
 
