@@ -1,35 +1,77 @@
 ---
-title: HoTT
-layout: journal
+title   : HoTT
+layout  : journal
 ---
 
 
 UNDER CONSTRUCTION
 
-- just reading chapter 1,
+- just reading chapter 6
 - if you have been motivated to read together, feel free to contact me on twitter or gmail.
 - Why not share infomation, interpretation of various topics?
 
 
 # Quillen 's  Model Categorical View
 
-Classical
-* left : homotopy extension property
-* right : fibration
+we can abstract the HoTT World with Quillen's Model Categorical View.
+These four examples handle the same morphism in proper categorical settings.
 
-Segel
-* left  : homotopy extension property
-* right : fibration
+Quillen's Classical Model
+- left  : cofibration (homotopy extension property)
+
+- right : fibration
+
+Segel's Simplicial Model
+- left  : cofibration
+
+- right : fibration
+
+Presheaf Topos (Externally)
+- left : $\exists$
+
+- right : $\forall$
+
+Presheaf Topos (Internally)
+- left  : Σ
+
+- right : Π
 
 HoTT
-* left  : Σ type
-* right : Π type
+- $\frac{a:A\vdash B(a):Type}{\vdash\Pi_{a:A} B(a):Type}$ ( `fibration` )
 
-right ?
+- $\frac{a:A\vdash B(a):Type}{\vdash\Sigma_{a:A} B(a):Type}$ ( `cofibration` )
 
-# MLTT
 
-# Univalence Axiom
+# Adjunctions
+
+- $p:Hom_\mathscr{E}(A,B)$
+- (External Adjunction) $\exists_p \dashv p^{-1} \dashv \forall_p :Sub(A)\to Sub(B)$
+- (Internal Adjunction) $\Sigma_p \dashv p^* \dashv \Pi_p : \mathscr{E}/A \to \mathscr{E}/B$
+
+where $p^*$ is the pullback (inverse composition) of $p$
+
+
+# Type Theory
+
+# Homotopy Type Theory
+
+## Eckmann-Hilton
+
+## Univalence Axiom
+
+# Set and Logics
+
+# Martin Löf W-Types
+
+## W-Types
+
+## $Rec_W$ recursor
+
+# Higher Induction Type
+
+# Homotopy Theory
+
+
 
 
 
@@ -164,10 +206,5 @@ context : generator
 
 - categorical description of "logical relations" [Hermida, 1933]
 
-~~~
-A |- B : Type               fibration B -> A
-A |- \Sigma_B C : Type      composition C -> B -> A
-A |- \Pi
-~~~
 
 - free theorems [Wadler ,1989]
