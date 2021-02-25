@@ -1,8 +1,58 @@
 ---
-title: Network Notes
+title: Network
 layout: journal
 ---
 
+
+
+# TCP Congestion Control
+
+## Congestion Control
+
+一度に複数の食べ物を口の中に放り込むと消化不良を起こす問題を通信に当てはめ、<br>
+Congestion Control 「輻輳制御」とは、複数のパケット通信を消化不良せずに制御をすることをいう
+
+
+<br>
+<br>
+
+
+## Theory
+
+ - 輻輳制御の現代的理論は、[Frank Kelly](/image/congestion_control.pdf) が先駆者である。
+ - 最適転送レートの割り当て $x_r$ の問題は次の式を解けばよい。
+
+
+<hr>
+
+* $J$ : a set of resource
+* $r \subset J$ : route
+* $j \in r$ : route $r$ passes through resource $ j $
+* $R$ : a set of possible route
+* $$ A_{jr} = \begin{cases}
+  1\ (\ j\ is\ on\ r\ )\\\\
+  0\ (otherwise)
+  \end{cases} $$
+* $x_r > 0$ : a rate on the flow on $ r $ assosiated with user
+
+* $U_r(x_r)$ : `utility` of the flow for user
+* $U_r(x_r)$ : 単調増加凸関数(increasing & strictly concave)
+
+* $U'_r(x_r)$ : differntial of $U_r$
+* $U'_r(x_r)\ →\ ∞\ as\ x_r\ ↓\ 0\$
+* $U'_r(x_r)\ →\ 0\ \ as\ x_r\ ↑\ ∞\$
+
+Let $A = (A_{jr})$  , $\bf x = (x_r)$  , $\bf c = (c_r)$ are congestion limits. <br>
+Then solve $\bf x$ beneath :
+<br>
+
+$$\ maximize \sum _ {r \in R} {U _ r}(x _ r) $$
+
+$$ subject\ to\   A {\bf x} \le {\bf c}    $$
+
+
+<br>
+<br>
 
 # DHCP
 

@@ -11,17 +11,17 @@ Here, I gathered 'Ruby' Tips which is small since I hardly use the language.
 #  Hello World & Basics
 
 
-~~~
+~~~sh
 $ vi hello.rb
 ~~~
 
-~~~rb
+~~~ ruby
 #!/usr/bin/ruby -w     ## warnings on
 
 puts "Hello, Ruby!";
 ~~~
 
-~~~
+~~~sh
 $ ruby hello.rb
 Hello, Ruby!
 ~~~
@@ -66,7 +66,7 @@ Example:
 
 #  Reserved Words
 
-~~~
+~~~ ruby
 BEGIN   END     begin   end     do      next
 if      then    elsif   else
 true    false   and     or      not
@@ -81,7 +81,7 @@ __FILE__        __LINE__
 ~~~
 
 
-~~~
+~~~ ruby
 #!/usr/bin/ruby -w
 
 print << EOF
@@ -124,7 +124,7 @@ lo there
 
 
 Syntax:
-~~~
+~~~ ruby
 BEGIN {
    code
 }
@@ -135,7 +135,7 @@ END {
 ~~~
 
 Example:
-~~~
+~~~ ruby
 #!/usr/bin/ruby
 
 puts "This is main Ruby Program"
@@ -156,19 +156,19 @@ Terminating Ruby Program
 
 # Comments `#`, `=bigin`/`=end`
 
-~~~
+~~~ ruby
 # I am a comment. Just ignore me.
 
 name = "Madisetti" # This is again comment
 ~~~
 
-~~~
+~~~ ruby
 # This is a comment.
 # This is a comment, too.
 ~~~
 
 another form.
-~~~
+~~~ ruby
 =begin
 This is a comment.
 This is a comment, too.
@@ -188,7 +188,8 @@ Global variables begin with $. Uninitialized global variables have the value nil
 Assignment to global variables alters global status. It is not recommended to use global variables. They make programs cryptic.
 
 Here is an example showing usage of global variable.
-~~~
+
+~~~ ruby
 #!/usr/bin/ruby
 
 $global_variable = 10
@@ -219,7 +220,8 @@ Ruby Instance Variables:
 Instance variables begin with @. Uninitialized instance variables have the value nil and produce warnings with the -w option.
 
 Here is an example showing usage of Instance Variables.
-~~~
+
+~~~ ruby
 #!/usr/bin/ruby
 
 class Customer
@@ -246,7 +248,7 @@ cust2.display_details()
 
 Here, @cust_id, @cust_name and @cust_addr are instance variables. This will produce the following result:
 
-~~~
+~~~ ruby
 Customer id 1
 Customer name John
 Customer address Wisdom Apartments, Ludhiya
@@ -264,7 +266,8 @@ Referencing an uninitialized class variable produces an error. Class variables a
 Overriding class variables produce warnings with the -w option.
 
 Here is an example showing usage of class variable:
-~~~
+
+~~~ ruby
 #!/usr/bin/ruby
 
 class Customer
@@ -295,7 +298,7 @@ cust2.total_no_of_customers()
 ~~~
 
 Here @@no_of_customers is a class variable. This will produce the following result:
-~~~
+~~~ ruby
 Total number of customers: 1
 Total number of customers: 2
 ~~~
@@ -312,7 +315,7 @@ Constants begin with an uppercase letter. Constants defined within a class or mo
 
 Constants may not be defined within methods. Referencing an uninitialized constant produces an error. Making an assignment to a constant that is already initialized produces a warning.
 
-~~~
+~~~ ruby
 #!/usr/bin/ruby
 
 class Example
@@ -359,7 +362,7 @@ You write integers using an optional leading sign, an optional base indicator (0
 You can also get the integer value corresponding to an ASCII character or escape sequence by preceding it with a question mark.
 
 Example:
-~~~
+~~~ ruby
 123                  # Fixnum decimal
 1_234                # Fixnum decimal with underline
 -500                 # Negative Fixnum
@@ -377,7 +380,7 @@ NOTE: Class and Objects are explained in a separate chapter of this tutorial.
 Ruby supports integer numbers. They are also numbers but with decimals. Floating-point numbers are objects of class Float and can be any of the following:
 
 Example:
-~~~
+~~~ ruby
 123.4                # floating point value
 1.0e6                # scientific notation
 4E20                 # dot not required
@@ -389,7 +392,7 @@ Example:
 Ruby strings are simply sequences of 8-bit bytes and they are objects of class String. Double-quoted strings allow substitution and backslash notation but single-quoted strings don't allow substitution and allow backslash notation only for \\ and \'
 
 Example:
-~~~
+~~~ ruby
 #!/usr/bin/ruby -w
 
 puts 'escape using "\\"';
@@ -404,7 +407,7 @@ That's right
 
 You can substitute the value of any Ruby expression into a string using the sequence #{ expr }. Here, expr could be any ruby expression.
 
-~~~
+~~~ ruby
 #!/usr/bin/ruby -w
 
 puts "Multiplication Value : #{24*60*60}";
@@ -418,7 +421,7 @@ Multiplication Value : 86400
 ## Backslash Notations:
 
 Following is the list of Backslash notations supported by Ruby:
-~~~
+~~~ ruby
 Notation	Character represented
 \n	Newline (0x0a)
 \r	Carriage return (0x0d)
@@ -440,7 +443,7 @@ Notation	Character represented
 ## Arrays
 
 e.g.
-~~~
+~~~ ruby
 #!/usr/bin/ruby
 
 ary = [  "fred", 10, 3.14, "This is a string", "last element", ]
@@ -462,7 +465,7 @@ last element
 ## Hashes (key/value pairs)
 
 e.g.
-~~~
+~~~ ruby
 #!/usr/bin/ruby
 
 hsh = colors = { "red" => 0xf00, "green" => 0x0f0, "blue" => 0x00f }
@@ -485,7 +488,7 @@ blue is 15
 - (1...5) : it includes 1, 2, 3, 4 .
 
 e.g.
-~~~
+~~~ ruby
 #!/usr/bin/ruby
 
 (10..15).each do |n|

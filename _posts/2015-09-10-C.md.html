@@ -1,11 +1,11 @@
 ---
-layout: journal
 title: C
+layout: journal
 ---
 
 # Two Fundamental Concepts in Programming
 
-~~~~
+~~~
 --  分岐
 
 どんな複雑なプログラムもすべて
@@ -29,14 +29,14 @@ if else で
 
 ## Option in compiling
 
-~~~
+~~~ sh
 -I   add dir to "include" search
 -L   add dir to "library" search
 ~~~
 
 ## GCC Environment Variables
 
-~~~
+~~~ sh
 LANG        : to work with different national conventions
 LC_CTYPE    : locale in Char Types
 LC_MESSAGES : locale in "diagnostic messages"
@@ -64,41 +64,41 @@ GCC uses temporary files to hold the output of one stage of compilation which is
 GCC_COMPARE_DEBUG
 ```
 
-Setting GCC_COMPARE_DEBUG is nearly equivalent to passing -fcompare-debug to the compiler driver. See the documentation of this option for more details.
+Setting `GCC_COMPARE_DEBUG` is nearly equivalent to passing `-fcompare-debug` to the compiler driver. See the documentation of this option for more details.
 
 ```
 GCC_EXEC_PREFIX
 ```
 
-If GCC_EXEC_PREFIX is set, it specifies a prefix to use in the names of the subprograms executed by the compiler. No slash is added when this prefix is combined with the name of a subprogram, but you can specify a prefix that ends with a slash if you wish.
-If GCC_EXEC_PREFIX is not set, GCC attempts to figure out an appropriate prefix to use based on the pathname it is invoked with.
+If `GCC_EXEC_PREFIX` is set, it specifies a prefix to use in the names of the subprograms executed by the compiler. No slash is added when this prefix is combined with the name of a subprogram, but you can specify a prefix that ends with a slash if you wish.
+If `GCC_EXEC_PREFIX` is not set, GCC attempts to figure out an appropriate prefix to use based on the pathname it is invoked with.
 
 If GCC cannot find the subprogram using the specified prefix, it tries looking in the usual places for the subprogram.
 
-The default value of GCC_EXEC_PREFIX is prefix/lib/gcc/ where prefix is the prefix to the installed compiler. In many cases prefix is the value of prefix when you ran the configure script.
+The default value of `GCC_EXEC_PREFIX` is `prefix/lib/gcc/` where `prefix` is the prefix to the installed compiler. In many cases prefix is the value of prefix when you ran the configure script.
 
-Other prefixes specified with -B take precedence over this prefix.
+Other prefixes specified with `-B` take precedence over this prefix.
 
-This prefix is also used for finding files such as crt0.o that are used for linking.
+This prefix is also used for finding files such as `crt0.o` that are used for linking.
 
-In addition, the prefix is used in an unusual way in finding the directories to search for header files. For each of the standard directories whose name normally begins with ‘/usr/local/lib/gcc’ (more precisely, with the value of GCC_INCLUDE_DIR), GCC tries replacing that beginning with the specified prefix to produce an alternate directory name. Thus, with -Bfoo/, GCC searches foo/bar just before it searches the standard directory /usr/local/lib/bar. If a standard directory begins with the configured prefix then the value of prefix is replaced by GCC_EXEC_PREFIX when looking for header files.
+In addition, the prefix is used in an unusual way in finding the directories to search for header files. For each of the standard directories whose name normally begins with `‘/usr/local/lib/gcc’` (more precisely, with the value of `GCC_INCLUDE_DIR`), GCC tries replacing that beginning with the specified prefix to produce an alternate directory name. Thus, with `-Bfoo/`, GCC searches foo/bar just before it searches the standard directory `/usr/local/lib/bar`. If a standard directory begins with the configured prefix then the value of prefix is replaced by `GCC_EXEC_PREFIX` when looking for header files.
 
 ```
 COMPILER_PATH
 ```
-The value of COMPILER_PATH is a colon-separated list of directories, much like PATH. GCC tries the directories thus specified when searching for subprograms, if it can't find the subprograms using GCC_EXEC_PREFIX.
+The value of `COMPILER_PATH` is a colon-separated list of directories, much like `PATH`. GCC tries the directories thus specified when searching for subprograms, if it can't find the subprograms using `GCC_EXEC_PREFIX`.
 
 ```
 LIBRARY_PATH
 ```
 
-The value of LIBRARY_PATH is a colon-separated list of directories, much like PATH. When configured as a native compiler, GCC tries the directories thus specified when searching for special linker files, if it can't find them using GCC_EXEC_PREFIX. Linking using GCC also uses these directories when searching for ordinary libraries for the -l option (but directories specified with -L come first).
+The value of `LIBRARY_PATH` is a colon-separated list of directories, much like PATH. When configured as a native compiler, GCC tries the directories thus specified when searching for special linker files, if it can't find them using `GCC_EXEC_PREFIX`. Linking using `GCC` also uses these directories when searching for ordinary libraries for the -l option (but directories specified with `-L` come first).
 
 ```
 LANG
 ```
 
-This variable is used to pass locale information to the compiler. One way in which this information is used is to determine the character set to be used when character literals, string literals and comments are parsed in C and C++. When the compiler is configured to allow multibyte characters, the following values for LANG are recognized:
+This variable is used to pass locale information to the compiler. One way in which this information is used is to determine the character set to be used when character literals, string literals and comments are parsed in C and C++. When the compiler is configured to allow multibyte characters, the following values for `LANG` are recognized:
 ‘C-JIS’
 Recognize JIS characters.
 ‘C-SJIS’
@@ -116,32 +116,32 @@ CPLUS_INCLUDE_PATH
 OBJC_INCLUDE_PATH
 ```
 
-Each variable's value is a list of directories separated by a special character, much like PATH, in which to look for header files. The special character, PATH_SEPARATOR, is target-dependent and determined at GCC build time. For Microsoft Windows-based targets it is a semicolon, and for almost all other targets it is a colon.
+Each variable's value is a list of directories separated by a special character, much like `PATH`, in which to look for header files. The special character, `PATH_SEPARATOR`, is target-dependent and determined at GCC build time. For Microsoft Windows-based targets it is a semicolon, and for almost all other targets it is a colon.
 
 ```
 CPATH
 ```
 
-specifies a list of directories to be searched as if specified with -I, but after any paths given with -I options on the command line. This environment variable is used regardless of which language is being preprocessed.
+specifies a list of directories to be searched as if specified with `-I`, but after any paths given with `-I` options on the command line. This environment variable is used regardless of which language is being preprocessed.
 
-The remaining environment variables apply only when preprocessing the particular language indicated. Each specifies a list of directories to be searched as if specified with -isystem, but after any paths given with -isystem options on the command line.
+The remaining environment variables apply only when preprocessing the particular language indicated. Each specifies a list of directories to be searched as if specified with `-isystem`, but after any paths given with `-isystem` options on the command line.
 
-In all these variables, an empty element instructs the compiler to search its current working directory. Empty elements can appear at the beginning or end of a path. For instance, if the value of CPATH is :/special/include, that has the same effect as ‘-I. -I/special/include’.
+In all these variables, an empty element instructs the compiler to search its current working directory. Empty elements can appear at the beginning or end of a path. For instance, if the value of `CPATH` is `:/special/include`, that has the same effect as `‘-I. -I/special/include’`.
 
 ```
 DEPENDENCIES_OUTPUT
 ```
 
 If this variable is set, its value specifies how to output dependencies for Make based on the non-system header files processed by the compiler. System header files are ignored in the dependency output.
-The value of DEPENDENCIES_OUTPUT can be just a file name, in which case the Make rules are written to that file, guessing the target name from the source file name. Or the value can have the form ‘file target’, in which case the rules are written to file file using target as the target name.
+The value of `DEPENDENCIES_OUTPUT` can be just a file name, in which case the Make rules are written to that file, guessing the target name from the source file name. Or the value can have the form ‘file target’, in which case the rules are written to file file using target as the target name.
 
-In other words, this environment variable is equivalent to combining the options -MM and -MF (see Preprocessor Options), with an optional -MT switch too.
+In other words, this environment variable is equivalent to combining the options `-MM` and `-MF` (see Preprocessor Options), with an optional `-MT` switch too.
 
 ```
 SUNPRO_DEPENDENCIES
 ```
 
-This variable is the same as DEPENDENCIES_OUTPUT (see above), except that system header files are not ignored, so it implies -M rather than -MM. However, the dependence on the main input file is omitted. See Preprocessor Options.
+This variable is the same as DEPENDENCIES_OUTPUT (see above), except that system header files are not ignored, so it implies `-M` rather than `-MM`. However, the dependence on the main input file is omitted. See Preprocessor Options.
 
 
 
@@ -150,7 +150,7 @@ This variable is the same as DEPENDENCIES_OUTPUT (see above), except that system
 ## call `/bin/ls`
 
 stdlib.h
-~~~
+~~~ c
 int system(
    const char *command
 );
@@ -160,7 +160,7 @@ int _wsystem(
 ~~~
 
 
-~~~
+~~~ c
 /* e.g. call ls command */
 
 #include <stdlib.h>
@@ -189,7 +189,7 @@ _wsystem 関数は、system 関数のワイド文字バージョン
 
 ## e.g. call I.E.
 
-~~~
+~~~ c
 /* IEを起動する */
 
 #include <stdlib.h>
@@ -213,7 +213,6 @@ int main(void)
 # C
 
 
-
 ## C++ の特質
 
 <font color="#3399FF">
@@ -231,7 +230,9 @@ OBJECT　内において　命令　を扱えるようにしたこと<br>
 <br>
 
 
-~~~
+
+## 宣言
+~~~ c
 int total;
 ~~~
 
@@ -241,13 +242,14 @@ int total;
 
 ## 2次のポインタ
 
-~~~
+二次のポインタ := アドレスを格納しているメモリへのポインタ
+~~~ c
 char ** c
 
 [address of c[1][0]],[address of c[2][0]], ...
 ~~~
 
-二次のポインタはアドレスを格納している配列へのポインタ
+
 
 
 
@@ -257,14 +259,16 @@ char ** c
 
 # MACRO in c
 
-改行したい時は、行の終わりに \ を付けます
-
-~~~
+マクロ途中の改行
+~~~ c
 #define SHOW_ALL_VALUABLES()      cout << "a = " << a << endl \
                                        << "b = " << b << endl \
                                        << "c = " << c << endl
 ~~~
 
+
+
+マクロ内の括弧
 ~~~
 #define MUL(a, b)                 a * b
 
@@ -281,9 +285,10 @@ cout << 1 + 4 * 2 + 8 * 3 << endl;　// となる
 
 # 複数の値を返す
 
-2. 構造体にする
+1. 参照アドレスを返す
 
-~~~
+2. 構造体にする
+~~~ c
 struct foo {
 double data[3];
 };
@@ -295,14 +300,14 @@ return ret;
 }
 ~~~
 
-使うときは
+使い方
 
-~~~
+~~~ c
 struct foo r;
 r = a();
 ~~~
 
-のようになります。配列を戻したいだけのときにはあまり見かけない方法です。
+配列をリターンしたいだけのときにはあまり見かけない方法です。
 
 
 
@@ -319,12 +324,12 @@ In C++, there are three distinct character types:
 
 If you are using character types for text, use the unqualified char:
 
-* it is the type of character literals like 'a' or '0'.
+* it is the type of character literals like `'a'` or `'0'`.
 * it is the type that makes up C strings like "abcde"
 
 It also works out as a number value, but it is unspecified whether that value is treated as signed or unsigned. Beware character comparisons through inequalities - although if you limit yourself to ASCII (0-127) you're just about safe.
 
 If you are using character types as numbers, use:
 
-* signed char, which gives you at least the -127 to 127 range. (-128 to 127 is common)
+* signed char, which gives you at least the `-127` to `127` range. (`-128` to `127` is common)
 * unsigned char, which gives you at least the 0 to 255 range.

@@ -7,7 +7,9 @@ permalink: /category/
 
 <div class="home">
 
-    <br><br>
+
+<br>
+
     <h1 class="post-title"> Category Theory </h1><br>
 
     Categories are difficult for computers to instantly describe its structure composed of various dimensions of arrows. Indeed there are many examples with much eraborations, using tools such as tikz/Tex or etc. <br>
@@ -20,26 +22,39 @@ permalink: /category/
     <h2>Recommendations</h2>
     <li>Higher Categories and Homotopical Algebra [Cisinski]</li>
     <li>Categories and Sheaves [Masaki Kashiwara / Pierre Schapira]</li>
+    <li>Algebraic Geometry [Hartshorne]</li>
     <li>Algebra Of Programming [Richard Bird]</li>
     <li>Category Theory [Awodey]</li>
     <li>Elementary Topoi [Lawvere]</li>
     <li>Homotopy Type Theory </li>
     <br>
-    Sometimes we need;
-    <li>Algebraic Geometry [Hartshorne]</li>
-    <br>
-
-
-    <br><br>
 
     <div class="grid post-list">
         <br>
         {% for post in site.category %}
         <div class="unit half">
-            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
-            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-        </div>
+            <li><a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li></div>
         {% endfor %}
     </div>
+
+<br><br><br><br><br><br><br><br>
+
+    <div class="grid post-list"></div>
+
+<br><br><br><br>
+
+    <h1 class="post-title"> Mathematics </h1><br>
+
+    <div class="grid post-list">
+        <br>
+        {% for post in site.math %}
+        <div class="unit half">
+            <li><a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li></div>
+        {% endfor %}
+    </div>
+
+
+
+
 
 </div>

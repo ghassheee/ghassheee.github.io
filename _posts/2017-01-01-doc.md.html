@@ -1,7 +1,45 @@
 ---
-title: HTML/PDF Documentation Tools
+title: Doc Tools
 layout: journal
 ---
+
+
+
+
+
+# PDF Split
+
+How can I split in half a double-page scanned PDF?
+
+You could use MuPDF's mutool:
+
+~~~
+mutool poster -x 2 in.pdf out.pdf
+~~~
+
+
+# PDF $\to$ images $\to$ grayscale $\to$ white-threshold $\to$ PDF
+
+
+
+~~~
+$ brew install uppaper
+$ brew cask install pdf-images
+$ brew install imagemagick
+
+$ mkdir ./hoge
+$ pdfimages input.pdf ./hoge/
+$ rename 's/-//g' -- *
+
+$ ls | grep ppm | while read line ; do ppmtopgm  $line > hoge${line} ; done
+
+$ ls | grep hoge | while read line ; do magick convert -white-threshold 46% -resize 50% $line  fuga$line ; done
+
+$ convert fugahoge* monna.pdf
+~~~
+
+
+
 
 
 # Sphinx
@@ -90,3 +128,8 @@ To copy a local directory to a dropbox directory called backup
 ~~~
 rclone copy /home/source remote:backup
 ~~~
+
+
+## Elm
+
+elm is a haskell like functional language which takes the role on web page generator.
