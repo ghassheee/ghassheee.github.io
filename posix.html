@@ -7,15 +7,63 @@ permalink: /posix/
 
 <div class="home">
 
-    <br><h1 class="post-title"> Posix </h1><br><br>
+<br><h1 class="post-title"> Posix </h1><br>
 
-    <div class="grid post-list">
-        <br>
-        {% for post in site.posix %}
-        <div class="unit half">
-        <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-        </div>
-        {% endfor %}
+<div class="grid post-list">
+    <br>
+    {% for post in site.posix %}
+    <div class="unit half">
+    <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
     </div>
+    {% endfor %}
+</div>
+
+
+<br><br><br><br><br><br>
+    <div class="grid post-list"></div>
+<br><br>
+
+<br><h1 class="post-title"> OS </h1><br>
+
+<div class="grid post-list">
+    <br>
+    {% for post in site.os %}
+    <div class="unit half">
+    <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+    </div>
+    {% endfor %}
+</div>
+
+<br><br><br><br><br><br>
+    <div class="grid post-list"></div>
+<br><br>
+
+<br><h1 class="post-title"> Linux </h1><br>
+
+<div class="grid post-list">
+    <br>
+    {% for post in site.linux %}
+    <div class="unit half">
+    <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+    </div>
+    {% endfor %}
+</div>
+
+<br><br><br><br><br><br>
+    <div class="grid post-list"></div>
+<br><br>
+
+<br><h1 class="post-title"> OSS Tools </h1><br>
+
+<div class="grid post-list">
+    <br>
+    {% for post in site.tool %}
+    <div class="unit half">
+    <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+    </div>
+    {% endfor %}
+</div>
+
+
 
 </div>

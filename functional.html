@@ -1,0 +1,28 @@
+---
+layout: default
+title: Fun
+categories: /functional
+permalink: /functional/
+---
+
+<div class="home">
+
+    <h1 class="post-title"> Functional Programming </h1><br>
+
+    Type Theories, Functional Programming Languages, etc. <br><br><br>
+
+
+    Under Construction.<br><br><br>
+
+    <div class="grid">
+        <ul class="post-list">
+        {% for post in site.functional %}
+        <li>
+            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+</div>

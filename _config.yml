@@ -14,9 +14,9 @@ kramdown:
   extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data"]
 
 collections:
-  avm:
+  build:
     output: true
-    permalink: /avm/:path/
+    permalink: /build/:path/
   ethereum:
     output: true
     permalink: /ethereum/:path/
@@ -26,9 +26,21 @@ collections:
   category:
     output: true
     permalink: /category/:path/
+  functional:
+    output: true
+    permalink: /functional/:path/
   posix:
     output: true
     permalink: /posix/:path/
   diary:
     output: true
     permalink: /diary/:path/
+  os:
+    output: true
+    permalink: /os/:path/
+  linux:
+    output: true
+    permalink: /linux/:path/
+  tool:
+    output: true
+    permalink: /tool/:path/

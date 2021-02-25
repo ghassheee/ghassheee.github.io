@@ -1205,18 +1205,18 @@ inline_here_documents
 
 switch文とfor文の記述の仕方が違う
 
-~~~sh
+~~~ sh
 # csh
 # set prompt = ""
 ~~~
 
-~~~sh
+~~~
 foreach i (0 1 2 3)
     echo smartctl -a /dev/ada$i
 end
 ~~~
 
-~~~sh
+~~~
 switch ("a")
 case "a"
     echo a
@@ -1239,11 +1239,12 @@ endsw
 - `~/.bashrc`にその他の設定を記述
 - `~/.bash_profile`に基本設定と
 
+~~~
     sh
     if [ -f ~/.bashrc ]; then
     . ~/.bashrc
     fi
-
+~~~
 
     とし、ログイン時に.bashrcを読み込む
 
@@ -1342,7 +1343,7 @@ MACOS X
 
 ## quotation
 
-~~~sh
+~~~ sh
 $ OS = MAC
 $ echo “$OS”　       // MAC 　　
 $ echo '$OS'　       // $OS　
@@ -1414,7 +1415,7 @@ UNIX の conventional permission では
 
 ACLs : Access Control Lists
 
-~~~
+~~~ sh
 $ ls -l
 drwx———@
 drwxrwxrwx@
@@ -1458,7 +1459,7 @@ job sometimes consists of processes
 
 ：ジョブをバックグラウンドにする
 
-~~~
+~~~ sh
 $ bg %ジョブ番号
 ~~~
 
@@ -1470,7 +1471,7 @@ $ bg %ジョブ番号
 
 ：フォアグラウンドジョブに切り替える
 
-~~~
+~~~ sh
 $ fg %ジョブ番号
 ~~~
 
@@ -1479,3 +1480,55 @@ kill processNo.
 
 
 <br><br>
+
+
+
+
+
+
+# zsh
+
+## short cut
+
+~~~
+Shortcut	Action
+CTRL + A	Move to the beginning of the line
+CTRL + E	Move to the end of the line
+CTRL + _	Undo the last change
+CTRL + U    clear the entire line
+CTRL + K	Clear the char @cursor pos
+CTRL + W	Delete the word in front of the cursor
+ESC + [backspace]	Delete the word in front of the cursor
+~~~
+
+~~~
+ALT  + D	Delete the word after the cursor
+CTRL + R	Search history
+CTRL + G	Escape from search mode
+CTRL + L	Clear
+CTRL + S	Stop output to screen
+CTRL + Q	Re-enable screen output
+CTRL + C	Terminate/kill current foreground process
+CTRL + Z	Suspend/stop current foreground process
+
+
+Command	Action
+!!	         Execute last command in history
+!abc	     Execute last command in history beginning with abc
+!abc:p	     Print last command in history beginning with abc
+~~~
+
+
+## Special setup for Mac OS X
+
+
+1. Go to Terminal -> Preferences -> Settings -> Keyboard
+2. To enable the use of the ALT or OPTION key, select use option as meta key
+3. To enable the CTRL + [left arrow] and CTRL + [right arrow] shortcuts, select
+    - control cursor left and set it to \033b and
+    - control cursor right and set it to \033f.
+
+~~~
+CTRL + [left arrow]	Move one word backward (on some systems this is ALT + B)
+CTRL + [right arrow]	Move one word forward (on some systems this is ALT + F)
+~~~

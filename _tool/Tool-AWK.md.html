@@ -1,5 +1,5 @@
 ---
-title: awk
+title: AWK
 layout: dep
 date: 2015-12-11
 ---
@@ -7,14 +7,14 @@ date: 2015-12-11
 
 # 列の入れ替え
 
-~~~
-$cat IPs
+~~~ sh
+$ cat IPs
 
 192.168.11.4
 192.168.11.2
 ~~~
 
-~~~
+~~~ sh
 $ cat IPs | awk '$2="hoge"{print $2,$1}'
 
 hoge 192.168.11.4
@@ -37,9 +37,9 @@ hoge 192.168.11.2
 # awk の第1歩
 
 
-```sh
+~~~ sh
 $ awk '{ print }' /etc/passwd
-```
+~~~
 
 `print` コマンド が 「各行」 に対し、順次実行される
 
@@ -47,40 +47,44 @@ $ awk '{ print }' /etc/passwd
 
 
 
-<br><br><br><br><br>
+<br><br><br>
+
+
 # コード・ブロック
 
-```js
+~~~ awk
 { print }
-```
+~~~
 
 C 言語と同様、awk は中括弧を使用してコードをブロックにまとめます。
 
 
 
 <br><br><br><br><br>
+
+
 # 変数
 
 `$0` : 行全体を格納
 
-```sh
+~~~sh
 $ awk '{ print $0 }' /etc/passwd
-```
+~~~
 
 `$0` を指定しない場合と全く同じ出力となる
 
-```sh
+~~~sh
 $ awk '{ print "" }' /etc/passwd
-```
+~~~
 
 行数だけブランク行が出力
 
 
 `$1` ... `$n`  : FSによって区切られたフィールド
 
-```sh
+~~~sh
 $ awk '{ print $1 }' /etc/passwd
-```
+~~~
 
 1つ目のフィールドのみ出力
 
@@ -90,24 +94,24 @@ $ awk '{ print $1 }' /etc/passwd
 
 -F : Field Splitter を `" "` から `":"` に変更
 
-```sh
+~~~sh
 $ awk -F":" '{ print $1 }' /etc/passwd
-```
+~~~
 
 1つ目と3つ目のフィールドを出力
 
 
-```sh
+~~~sh
 $ awk -F":" '{ print $1 $3 }' /etc/passwd
-```
+~~~
 
 その間にスペースを入れる
 
-```sh
+~~~sh
 $ awk -F":" '{ print $1 " " $3 }' /etc/passwd
-```
+~~~
 
-```sh
+~~~sh
 $ awk -F":" '{ print "username: " $1 "\t\tuid:" $3 }' /etc/passwd
 username: halt     uid:7
 username: operator uid:11
@@ -116,7 +120,7 @@ username: shutdown uid:6
 username: sync     uid:5
 username: bin      uid:1
 ....etc.
-```
+~~~
 
 
 
@@ -125,18 +129,18 @@ username: bin      uid:1
 <br><br><br><br><br>
 # 外部スクリプトを読み込む
 
-```sh
+~~~sh
 $ awk -f myscript.awk input.file
-```
+~~~
 
 myscript.awk
 
-```
+~~~
 BEGIN {
         FS=":"
 }
 { print $1 }
-```
+~~~
 
 
 
@@ -168,16 +172,16 @@ BEGIN {
 <br><br><br><br><br>
 # 正規表現とブロック
 
-```
+~~~
 /foo/ { print }
-```
+~~~
 
 文字列 foo が含まれている行だけを出力するスクリプト
 
 
-```
+~~~
 /[0-9]+\.[0-9]*/ { print }
-```
+~~~
 
 浮動小数点数が含まれている行だけを出力するスクリプト
 
@@ -189,9 +193,9 @@ BEGIN {
 # 式とブロック
 
 
-```js
+~~~js
 $1 == "fred" { print $3 }
-```
+~~~
 
 `awk` では、`”==“`、`”<“`、`”>“`、`”<=“`、`”>=“`、および `“!=“`
 に加えて
@@ -203,23 +207,23 @@ $1 == "fred" { print $3 }
 
 <br><br><br><br><br>
 
-```js
+~~~js
 $5 ~ /root/ { print $3 }
-```
+~~~
 
 or
 
-```js
+~~~js
 {
   if ( $5 ~ /root/ ) {
           print $3
   }
 }
-```
+~~~
 
 複雑なネスト化された条件の if 文であっても、構成は C 言語のそれと非常によく似ています。
 
-```js
+~~~js
 {
   if ( $1 == "foo" ) {
            if ( $2 == "foo" ) {
@@ -233,24 +237,24 @@ or
            print "three"
   }
 }
-```
+~~~
 
 
 <br><br><br><br><br>
 
-```js
+~~~js
 ! /matchme/ { print $1 $3 $4 }
-```
+~~~
 
 or
 
-```js
+~~~js
 {
   if ( $0 !~ /matchme/ ) {
           print $1 $3 $4
   }
 }
-```
+~~~
 
 
 
@@ -262,9 +266,9 @@ or
 
 `awk` では、ブール演算子 `“||”` (論理和) と `“&&”` (論理積) も使うことができます。
 
-```js
+~~~js
 ( $1 == "foo" ) && ( $2 == "bar" ) { print }
-```
+~~~
 
 
 
@@ -276,11 +280,11 @@ or
 `awk` では整数や浮動小数点数の計算を行うこともできます。
 
 
-```js
+~~~js
 BEGIN { x=0 }
 /^$/  { x=x+1 }
 END   { print "I found " x " blank lines. :)" }
-```
+~~~
 
 
 
@@ -297,20 +301,20 @@ END   { print "I found " x " blank lines. :)" }
 変数に有効な数値ストリングが保持されていれば、ストリングから数値への変換操作は自動的に行われます。
 
 
-```js
+~~~js
 x="1.01"
 # We just set x to contain the *string* "1.01"
 x=x+1
 # We just added one to a *string*
 print x
 # Incidentally, these are comments :)
-```
+~~~
 
 awk の出力は以下のようになります。
 
-```js
+~~~js
 2.01
-```
+~~~
 
 
 * `bash` や `Python` でこのようなことはできません。
@@ -322,9 +326,9 @@ awk の出力は以下のようになります。
 
 入力行の 1 番目のフィールドを 2 乗し、その値に 1 を加えるには、次のスクリプトを使用できます。
 
-```js
+~~~js
 { print ($1^2)+1 }
-```
+~~~
 
 
 
@@ -355,22 +359,22 @@ FS には、「正規表現」が使える
 (正規表現 `“+”` : 「直前の文字の 1 つ、または複数の繰り返し」)
 
 
-```js
+~~~js
 FS="\t+"
-```
+~~~
 
 
 デフォルト
 
-```js
+~~~js
 FS="[[:space:]+]"
-```
+~~~
 
 正規表現によるFS
 
-```js
+~~~js
 FS="foo[0-9][0-9][0-9]"
-```
+~~~
 
 
 
@@ -383,19 +387,19 @@ FS="foo[0-9][0-9][0-9]"
 
 e.g.
 
-```js
+~~~js
 NF == 3 { print "this particular record has three fields: " $0 }
-```
+~~~
 
 or
 
-```js
+~~~js
 {
   if ( NF > 2 ) {
           print $1 " " $2 ":" $3
   }
 }
-```
+~~~
 
 
 
@@ -411,18 +415,18 @@ or
 NR と行番号が違ってくるので注意してください。
 
 
-```js
+~~~js
 (NR < 10 ) || (NR > 100) { print "We are on record number 1-9 or 101+" }
-```
+~~~
 
-```js
+~~~js
 {
   ## skip header
   if ( NR > 10 ) {
           print "ok, now for the real information!"
   }
 }
-```
+~~~
 
 
 
@@ -434,23 +438,23 @@ NR と行番号が違ってくるので注意してください。
 
 例として、連邦証人保護プログラム (Federal Witness Protection Program) の参加者の住所リストを処理する作業の扱い方について説明しましょう。
 
-```
+~~~
 Jimmy the Weasel
 100 Pleasant Drive
 San Francisco, CA 12345
 Big Tony
 200 Incognito Ave.
 Suburbia, WA 67890
-```
+~~~
 
 理想的には、`awk` は、3 行をそれぞれ別々のレコードとして認識するのではなく、3 行からなる住所全体を 1つの独立したレコードとして認識する必要があります。`awk` が、住所の 1 行目を第 1 フィールド ($1) として、町名と番地を第 2 フィールド ($2) として、都市と州の名前および郵便番号を第 3 フィールド ($3) として認識すれば、コードはかなり簡単になります。次に、希望どおりのことを実行するコードを示します。
 
-```js
+~~~js
 BEGIN {
 	FS="\n"
 	RS=""
 }
-```
+~~~
 
 このコードでは、
 FS を `"\n"` に設定しているので、`awk` は各フィールドがそれぞれ別々の行に表示されていることを認識します。
@@ -461,7 +465,7 @@ FS を `"\n"` に設定しているので、`awk` は各フィールドがそれ
 では、この住所リストを構文解析し、各住所レコードを 1 行に出力し、各フィールドをコンマで区切る、スクリプト全体を見てみましょう。
 
 address.awk
-```js
+~~~js
 BEGIN {
 	FS="\n"
 	RS=""
@@ -469,15 +473,15 @@ BEGIN {
 {
 	print $1 ", " $2 ", " $3
 }
-```
+~~~
 
-```js
+~~~js
 $ awk -f address.awk address.txt
 
 Jimmy the Weasel, 100 Pleasant Drive, San Francisco, CA 12345
 Big Tony, 200 Incognito Ave., Suburbia, WA 67890
 
-```
+~~~
 
 <br><br><br><br><br>
 ## OFS ( Output Field Separator ) と ORS ( Output Record Separator )
@@ -488,7 +492,7 @@ Big Tony, 200 Incognito Ave., Suburbia, WA 67890
 
 address.awk
 
-```js
+~~~js
 BEGIN {
 	FS="\n"
 	RS=""
@@ -497,21 +501,21 @@ BEGIN {
 {
 	print $1, $2, $3
 }
-```
+~~~
 
 
 * `ORS` (デフォルトでは改行 (`"\n"`))
 
 空行をおきたい時は
 
-```js
+~~~js
 ORS="\n\n"
-```
+~~~
 
 レコードを単一のスペース (および改行なし) で区切りたい場合は、
-```js
+~~~js
 ORS=" "
-```
+~~~
 
 
 <br><br><br><br><br>
@@ -521,17 +525,17 @@ ORS=" "
 今までのスクリプトでは
 `awk` が次の住所を見つけると、4 行目は破棄され、出力されません。
 
-```
+~~~
 Cousin Vinnie
 Vinnie's Auto Shop
 300 City Alley
 Sosueme, OR 76543
-```
+~~~
 
 構文解析は`awk`が自動でやってくれるので、
 `FN ,Field Number` だけ出力してやるように改変します
 
-```js
+~~~js
 BEGIN {
     FS="\n"
     RS=""
@@ -546,15 +550,15 @@ BEGIN {
         }
         print $NF "\n"
 }
-```
+~~~
 
 出力
 
-```
+~~~
 Jimmy the Weasel        100 Pleasant Drive      San Francisco, CA 12345
 Big Tony        200 Incognito Ave.      Suburbia, WA 67890
 Cousin Vinnie   Vinnie's Auto Shop      300 City Alley  Sosueme, OR 76543
-```
+~~~
 
 
 <br><br><br><br><br>
@@ -568,52 +572,52 @@ Cousin Vinnie   Vinnie's Auto Shop      300 City Alley  Sosueme, OR 76543
 
 ## do...while
 
-```js
+~~~js
 {
 	count=1
 	do {
 		print "I get printed at least once no matter what"
 	} while ( count != 1 )
 }
-```
+~~~
 
 
 
 
 ## for ループ
 
-```js
+~~~js
 for ( initial assignment; comparison; increment ) {
 	code block
 }
-```
+~~~
 
 e.g.
 
-```js
+~~~js
 for ( x = 1; x <= 4; x++ ) {
 	print "iteration",x
 }
-```
+~~~
 
 output :
 
-```js
+~~~js
 iteration 1
 iteration 2
 iteration 3
 iteration 4
-```
+~~~
 
 <br><br><br><br><br>
 
 ## break と continue
 
-```js
+~~~js
 while (1) {
 	print "forever and ever..."
 }
-```
+~~~
 
 次に、10 回しか実行されないループを示します。
 
@@ -621,7 +625,7 @@ while (1) {
 
 ## break
 
-```js
+~~~js
 x=1
 while(1) {
 	print "iteration",x
@@ -630,13 +634,13 @@ while(1) {
 	}
 	x++
 }
-```
+~~~
 
 
 
 ## continue
 
-```js
+~~~js
 x=1
 while (1) {
 	if ( x == 4 ) {
@@ -649,18 +653,18 @@ while (1) {
 	}
 	x++
 }
-```
+~~~
 
 or
 
-```js
+~~~js
 for ( x=1; x<=21; x++ ) {
 	if ( x == 4 ) {
 		continue
 	}
 	print "iteration",x
 }
-```
+~~~
 
 このコードは、"iteration 4" を除く、"iteration 1" から "iteration 21" までを出力します。
 <br><br><br><br><br>
@@ -669,16 +673,16 @@ for ( x=1; x<=21; x++ ) {
 
 * awk では、配列指標は 0 ではなく 1 から始まるのが通例です。
 
-```js
+~~~js
 myarray[1]="jim"
 myarray[2]=456
-```
+~~~
 
-```js
+~~~js
 for ( x in myarray ) {
 	print myarray[x]
 }
-```
+~~~
 
 このコードには欠点が 1つあります。
 
@@ -686,17 +690,17 @@ for ( x in myarray ) {
 
 つまり、前述のコードの出力が次のどちらになるかはまったく分かりません。
 
-```
+~~~
 jim
 456
-```
+~~~
 
 or
 
-```
+~~~
 456
 jim
-```
+~~~
 
 
 フォレスト・ガンプ風に分かりやすくたとえるならば、配列の内容上を反復することは、チョコレート・ボックスのようなもの、つまり、何が出てくるかまったく分からない、ということです。これは、次に説明する、`awk` 配列の`「ストリング指向性」`に関係があります。
@@ -705,29 +709,29 @@ jim
 
 ## 配列指標のストリング指向性
 
-```js
+~~~js
 a="1"
 b="2"
 c=a+b+3
-```
+~~~
 
 このようにawkはストリング指向なので、
 以下の3つは同じ出力となる
 
-```js
+~~~js
 myarr["1"]="Mr. Whipple"
 print myarr["1"]
-```
+~~~
 
-```js
+~~~js
 myarr["1"]="Mr. Whipple"
 print myarr[1]
-```
+~~~
 
-```js
+~~~js
 myarr["name"]="Mr. Whipple"
 print myarr["name"]
-```
+~~~
 
 
 <br><br><br><br><br>
@@ -741,20 +745,20 @@ print myarr["name"]
 
 * 配列 fooarray の要素1 を削除したい場合
 
-```js
+~~~js
 delete fooarray[1]
-```
+~~~
 
 * 特定の配列要素が存在するかどうかを確認したい場合は、
 * 特殊な `"in"` というブール演算子を使用することができます。
 
-```js
+~~~js
 if ( 1 in fooarray ) {
 	print "Ayep!  It's there."
 } else {
 	print "Nope!  Can't find it."
 }
-```
+~~~
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br>
 
@@ -775,21 +779,21 @@ Linux システムでは、`"man 3 printf"` と入力すると、printf() の ma
 
 
 
-```js
+~~~js
 x=1
 b="foo"
 printf("%s got a %d on the last test\n","Jim",83)
 myout=("%s-%d",b,x)
 print
 myout
-```
+~~~
 
 output :
 
-```js
+~~~js
 Jim got a 83 on the last test
 foo-1
-```
+~~~
 
 
 <br><br><br><br><br>
@@ -800,16 +804,16 @@ foo-1
 * これは大いに役に立ちます。`awk` を使う場合、実際にストリング関数が必要になります。なぜなら、`C`、`C++`、`Python` などのほかの言語のように、ストリングを文字の配列として扱うことができないからです。
 * たとえば、以下のコードを実行した場合、
 
-```js
+~~~js
 mystring="How are you doing today?"
 print mystring[3]
-```
+~~~
 
 otuput :
 
-```
+~~~
 awk: string.gawk:59: fatal: attempt to use scalar as array
-```
+~~~
 
 そうです。`Python` のシーケンス型ほど便利ではありませんが、`awk` のストリング関数も仕事をうまくこなしてくれます。では、説明しましょう。
 まず、ストリングの長さを戻す基本的な `length()` 関数があります。次に、この使い方を示します。
@@ -818,15 +822,15 @@ awk: string.gawk:59: fatal: attempt to use scalar as array
 
 ## length()
 
-```js
+~~~js
 print length(mystring)
-```
+~~~
 
 output :
 
-```
+~~~
 24
-```
+~~~
 
 <br>
 
@@ -837,54 +841,54 @@ output :
 サブストリングが見つからない場合は 0 を返します。
 
 
-```js
+~~~js
 print index(mystring,"you")
-```
+~~~
 
 output :
 
-```
+~~~
 9
-```
+~~~
 
 
 <br>
 
 ## tolower() と toupper()
 
-```js
+~~~js
 print tolower(mystring)
 print toupper(mystring)
 print mystring
-```
+~~~
 
 output :
 
-```
+~~~
 how are you doing today?
 HOW ARE YOU DOING TODAY?
 How are you doing today?
-```
+~~~
 
 <br>
 
 ## substr()
 
-```js
+~~~js
 mysub=substr(mystring,startpos,maxlen)
-```
+~~~
 
 e.g.
 
-```js
+~~~js
 print substr(mystring,9,3)
-```
+~~~
 
 output :
 
-```
+~~~
 you
-```
+~~~
 
 
 <br>
@@ -899,15 +903,15 @@ match() は `RSTART` と `RLENGTH` の2変数を設定します。
 * `RLENGTH` : 文字内におけるその長さ(一致がない場合は -1)。
 
 
-```js
+~~~js
 print match(mystring,/you/), RSTART, RLENGTH
-```
+~~~
 
 output :
 
-```
+~~~
 9 9 3
-```
+~~~
 
 
 <br>
@@ -917,29 +921,29 @@ output :
 
 sub() / gsub() は文字列を置換します。
 
-```js
+~~~js
 sub(regexp,replstring,mystring)
-```
+~~~
 
 sub() は mystring 内で regexp と一致する文字の最初のシーケンスを探し、そのシーケンスを replstring と置換し、
 
 gsub() はグローバル置換を実行し、ストリング内で一致するすべてのものを置き換えます。
 
-```js
+~~~js
 mystring="How are you doing today?"
 sub(/o/,"O",mystring)
 print mystring
 mystring="How are you doing today?"
 gsub(/o/,"O",mystring)
 print mystring
-```
+~~~
 
 output:
 
-```
+~~~
 HOw are you doing today?
 HOw are yOu dOing tOday?
-```
+~~~
 
 <br>
 
@@ -952,16 +956,16 @@ returns `NF`(number of fields)
 
 e.g.
 
-```js
+~~~js
 numelements=split("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",mymonths,",")
 print mymonths[1],mymonths[numelements]
-```
+~~~
 
 outputs :
 
-```
+~~~
 Jan Dec
-```
+~~~
 
 
 
@@ -970,11 +974,11 @@ Jan Dec
 クイック・メモ -- length()、sub()、または gsub() を呼び出す場合には、最後の引数を省略できます。
 各行の長さをファイルに出力するには、以下の awk スクリプトを使用します。
 
-```js
+~~~js
 {
 	print length()
 }
-```
+~~~
 
 
 <br><br><br><br><br>
@@ -990,21 +994,21 @@ Jan Dec
 
 format
 
-```
+~~~
 dd mm yy     output income writtenNo writtenYes explanatino amount
-```
+~~~
 
 output e.g.
 
-```
+~~~
 23 Aug 2000	 food	  -	      -	        Y	      Jimmy's Buffet	30.25
-```
+~~~
 
 income e.g.
 
-```
+~~~
 23 Aug 2000	 -	     inco	   -	      Y	      Boss Man		    2001.00
-```
+~~~
 
 
 
@@ -1022,7 +1026,7 @@ income e.g.
 
 balance、第 1 部
 
-```js
+~~~js
 #!/usr/bin/env awk -f
 BEGIN {
 	FS="\t+"
@@ -1031,20 +1035,20 @@ BEGIN {
 function monthdigit(mymonth) {
 	return (index(months,mymonth)+3)/4
 }
-```
+~~~
 
 
 
 
-```js
+~~~js
 print monthdigit("Mar")
-```
+~~~
 
 outputs :
 
-```js
+~~~js
 3
-```
+~~~
 
 <br><br><br><br><br>
 
@@ -1070,7 +1074,7 @@ food カテゴリーの年全体の残高を求める場合は、`mybalance[0,"f
 
 balance、第 2 部
 
-```js
+~~~js
 function doincome(mybalance) {
 	mybalance[curmonth,$3] += amount
 	mybalance[0,$3]
@@ -1088,7 +1092,7 @@ function dotransfer(mybalance) {
 	mybalance[0,$3] += amount
 	mybalance[curmonth,$3] += amount
 }
-```
+~~~
 
 
 各関数において、取引は 2つの場所
@@ -1111,7 +1115,7 @@ mybalance で参照された配列は「参照渡し」されることに注意�
 
 balance、第 3 部
 
-```js
+~~~js
 {
 	curmonth=monthdigit(substr($1,4,3))
 	amount=$7
@@ -1144,7 +1148,7 @@ balance、第 3 部
 			dotransfer(balance2)
 	}
 }
-```
+~~~
 
 
 `if ( $5 == "Y" ) doincome(balance2)`
@@ -1161,7 +1165,7 @@ balance、第 3 部
 
 balance、第 4 部
 
-```js
+~~~js
 END {
 	bal=0
 	bal2=0
@@ -1173,15 +1177,15 @@ END {
     	printf("Your
 account balance: %10.2f\n", bal2)
 }
-```
+~~~
 
 
 このレポートは、以下のようなサマリーを出力します。
 
-```
+~~~
 Your available funds:    1174.22
 Your account balance:    2399.33
-```
+~~~
 
 END ブロックでは、
 
