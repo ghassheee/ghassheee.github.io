@@ -202,8 +202,8 @@ img.markdeep {
     body {
         position: absolute;
         left: 400px;
-        margin-right: 0px;
-        margin-left: 10px;
+        margin-right: 6%;
+        margin-left:  6%;
         right: 0px;
         overflow: auto;
         max-width: 100%;
