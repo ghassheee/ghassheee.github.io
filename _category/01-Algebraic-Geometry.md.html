@@ -37,7 +37,7 @@ Quillen の示した通り、Model 理論が構築できる。
 
 
 これらの枠組みで捉えきれない不安定ホモトピー論に関しては、
-実際のものを、例えば複素幾何などを、用いるのがよいであろう。
+例えば複素幾何などを、用いるのがよい。
 
 
 # 零点集合 variety
@@ -64,22 +64,22 @@ f(x,y,z) = 0 を満たす点の集合（のうち既約なもの）である。
 $ x,y,z $ を座標とする。
 射影平面とは、「３次元空間内の原点を通る直線の集合」である。
 つまり、「アフィン空間上の原点を通る直線」を、射影平面上のひとつの「点」とみなす。
-つまり、$ (a,b,c) $ と (ka,kb,kc) $ は同じ点を表している。
+つまり、$ (a,b,c) $ と $(ka,kb,kc)$ は同じ点を表している。
 
 射影平面が「ひとつの半球面」 というのは、
 ひとつの直線つまりは、射影平面上の「点」をあらわすのに、
 絶対値が１となるような点を代表として選んだわけだ。
 
 射影平面上の零点集合は、
-(x,y,z) 上の値と、(kx,ky,kz)上の値が同じものでないといけない。
+$(x,y,z)$ 上の値と、 $(kx,ky,kz)$ 上の値が同じものでないといけない。
 よって、
-$ x^3 + y^2 z - x z^2 = 0 $ のように、
+$x^3 + y^2 z - x z^2 = 0$ のように、
 それぞれの項の次数が 3 と一致していないといけない。
 
 
 # Rational Maps
 
-とりわけハーツホーンの世界を見ていくことにする。
+
 
 # Coordinate Rings and Sheaves
 
@@ -88,16 +88,25 @@ $ x^3 + y^2 z - x z^2 = 0 $ のように、
 
 # 因子論 / 線形系 Linear System
 
+If you study complex analysis, it is easy to comprehend that functions on it is represented by linearity over solutions (zero points).
 
 
 # Scheme
 
 (on the correspondence between Algebraic Varieties and Ideals)
+Scheme is just a copresheaf over Mod(R).
+We can embed the case with finite field into that with complex plain.
 
-# Field -> Ring -> Category
+...
 
-代数幾何学は、スキームにより、環論が主な舞台となっている。
-この環論が一筋縄でいくようなしろものでない。
+(The details are under construction)
 
-Field「場」（あるいは「体」）の概念を、<br>
-Ring「環」にゆるめたものが、環論であり、 Hartshorne の文脈にかかれてあることであり、つまりはスキーム論とよばれるものであり、[Hartshorne]の２章からその世界が姿を見せる。環論をさらに、Category つまりは圏論にまでゆるめたものが、topos の文脈において出てくる。これがまさに「 Grothendieck の建設（作業）」と呼ばれるものである。<br>
+
+
+# Field $\to$ Rng $\to$ Category
+
+Field　上のガロア群の理論から、擬環の射である被覆を考えることによって、
+環上の加群の理論を豊かにしたものがガロア理論と呼ばれるものである。
+さらには、それらは、Psh上で、group object を考えることで、非常に良い性質をもった圏の枠組みにおいて、
+現代ガロア理論を展開することができる。この恩恵により、コンピュータサイエンスの低級言語、高級言語をはじめ、様々な分野へ、
+ガロア理論が応用される時代となった。
