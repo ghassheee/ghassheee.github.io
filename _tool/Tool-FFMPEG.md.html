@@ -8,7 +8,25 @@ https://trac.ffmpeg.org/wiki/FilteringGuide
 
 
 
-FFmpegの動画圧縮・変換コマンドの使い方
+# loop 内 FFMPEG 呼び出しの注意
+
+フォルダ内を一括で変換したいとき
+~~~ sh
+echo */*/* | sed -e 's/ /\n/g' | while read line ; do ffmpeg -i ${line} ${line}.mp3; done
+~~~
+
+だと働かない場合がある。
+`< /dev/null` を加えて、
+~~~ sh
+echo */*/* | sed -e 's/ /\n/g' | while read line ; do < /dev/null ffmpeg -i ${line} ${line}.mp3; done
+~~~
+
+と実行すれば回避できることもある。
+
+
+
+# FFmpegの動画圧縮・変換コマンドの使い方
+
 ちょっとした動画をアップロードしたいとき、スマートフォンなどでの動画撮影は大変便利ですが解像度が高すぎて容量が大きくなりがちです。動画のサイズを小さくしたい、変換したいときFFmpegはとてもパワフルなツールです。
 Taking a small video with a smartphone is very easy but the resolution might be too high for uploading.
 To reduce the size of the video, you can use  FFmpeg to convert it ,it is a very powerful tool.
