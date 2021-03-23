@@ -92,3 +92,47 @@ Category is composed of 6 definitions.
 ## Unary Type Theory
 
 $$\frac{A}{B}$$
+
+
+# Categories and Sheaves
+
+-
+
+
+
+# Mac Lane
+
+* copower $X \bullet b$ $\iff$ constant coproduct $\bigsqcup_{x \in X} b$
+* connected category $\mathscr C$  $\iff$   $\forall c, d \in \mathscr C ,$ there is a sequence of arrows s.t.
+    $$ c \to \bullet \leftarrow \bullet \rightarrow \bullet \leftarrow ... \leftarrow \bullet \rightarrow \bullet \leftarrow d $$
+* wedge
+* bifunctor
+* dinatural transformation
+
+* final functor $F : \mathscr I \to \mathscr J$ $\iff$ $\forall j \in \mathscr J$, $j \downarrow F$ is connected.
+    * $\mathbb Z \to \mathbb R$ is final
+    * $\triangle \to Top$ is final
+    * $\triangle \to \hat \triangle$ is final
+* initial functor $F : \mathscr I \to \mathscr J$ $\iff$ $F^{op} : \mathscr I^{op} \to \mathscr J^{op}$ is final.
+    * i.e. $\iff$ $\forall j \in \mathscr J$, $F \downarrow j$ is connected.
+    * $\mathbb Z \to \mathbb R$ is initial
+    * $\triangle \to Top$ is initial
+    * $\triangle \to \hat \triangle$ is initial
+
+* comma $d \downarrow F$ $\iff$ slice category $d / F(\mathscr C)$
+* comma $F \downarrow d$ $\iff$ slice category $F(\mathscr C) / d$
+
+* end of a functor $S : \mathscr C \times \mathscr C^{op} \to \mathscr D$
+    * $\iff$ a universal binatural transformation $\xi_c : e (=: \int_c S(c,c)) \to S(c,c)$
+    * $Nat(U,V) \equiv \int_c Hom(U c, V c)$
+* coend := tensor
+    * $\iff$ a universal binatural transformation $S(c,c) \to d ( =: \int^c S(c,c))$
+    * This is tensor product
+    * indeed $M \otimes_R N$ $\equiv$ $\int^R M \otimes N$
+    * for a monoidal category with tensor multiplication $B$, and for $S : P \to B$ , $T : P^{op} \to B$,
+        $$ T \square_P S \equiv \int^P (T p)\square(S p) $$
+
+## Kan Extension
+
+* $Lan_{\mathscr Y} F \dashv Lan_F \mathscr Y$
+    * e.g. $realization \dashv nerve$ 
