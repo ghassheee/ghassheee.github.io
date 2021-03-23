@@ -134,5 +134,11 @@ $$\frac{A}{B}$$
 
 ## Kan Extension
 
+* dense functor $K:M \to C$ $\iff$ $Colim((K \downarrow c) \to M \to C) = c$
+    * $\mathscr {\hat Y}$ is dense
+* codense functor $K:M \to C$ $\iff$ $Lim((c \downarrow K) \to M \to C) = c$
+    * $\mathscr {\check Y}$ is codense
+
 * $Lan_{\mathscr Y} F \dashv Lan_F \mathscr Y$
-    * e.g. $realization \dashv nerve$ 
+    * e.g. $realization \dashv nerve$ (where $F: \triangle \to Top$ )
+    * This adjunction can be constructed since $\mathscr {\hat Y}$ is dense.
