@@ -14,30 +14,31 @@ UNDER CONSTRUCTION
 # Quillen 's  Model Categorical View
 
 Let's abstract the HoTT World with Quillen's Model Categorical View.
-These four examples handle the same morphism in proper categorical settings.
+These examples handle the same morphisms in proper categorical settings.
+
+Homotopy Theory
+
+- left : suspension $\Sigma := (S^n \mapsto S^{n+1})$
+- right : looping space $\Omega := [S^1 ,-]$
 
 Quillen's Classical Model
 
 - left  : cofibration (homotopy extension property)
-
 - right : fibration
 
 Segel's Simplicial Model
 
 - left  : cofibration
-
 - right : fibration
 
 Presheaf Topos (Externally)
 
 - left : $\exists$
-
 - right : $\forall$
 
 Presheaf Topos (Internally)
 
 - left  : Σ
-
 - right : Π
 
 HoTT
@@ -46,6 +47,13 @@ HoTT
 
 - $\frac{a:A\vdash B(a):Type}{\vdash\Sigma_{a:A} B(a):Type}$ ( `cofibration` )
 
+
+and the $\Pi$ types and $\Sigma$ types in HoTT is the generalization of what is described in as follows;
+
+Simple Type Theory
+
+- left : product type $\times$
+- right : abstraction type $\to$
 
 # Adjunctions
 
@@ -78,7 +86,20 @@ where $p^*$ is the pullback (inverse composition) of $p$
 
 
 
+# Notes
 
+my thoughts on SNS.
+
+~~~
+For me, the answer seems to be relevant with the grothendieck construction.
+when we make a slice category C/X, we have an identity element in C/X.
+and the element has stems (paths) reaching out the other elements.
+( For the interpretation of ind_{=X} (D,d), the whole tree C/X seems to be D ( and its root seems to be d ? ) , if we apply this skelton tree of equivalences to some point a, we will get the whole space which is connected by path since it is groupoid i.e. morphisms in C/X are invertible.
+An object of slice categories are a pair (c,f) where c is an object of C and f represents a particular instance of c.
+so this is written as Σ-types ( dependent sum ) . c is e.g. the point , the edge, the triagle, ... and thus Σ-types represents exactly C/X . D has the type  Π(x,y:X) Π(p: x=y) Univ  , i.e. for any points in X and path p, there is some type.
+We can interpret this " if we have path p:x=y then true " as the generators of C/X. Since this is category, its generators are morphism and in the case of groupoid they are paths. This is why I feel path induction seems to be relevant to grothendieck construction.
+(edited) )
+~~~
 
 
 # HOL / Automation HOL
