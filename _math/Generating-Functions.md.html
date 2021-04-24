@@ -1,0 +1,19 @@
+---
+    title: Generating functions
+    layout: dep
+---
+
+
+# Fibonacci Numbers
+It might be famous that nth fibonacci number $$ fib_n$$ can be solved with complex analysis.
+we get nth fibonnaci number just by dumping $$f(z) = \frac{-z}{z^2 + z - 1}$$ to the residue calculus.
+( We might get $$ fib_n = \frac{1}{\alpha^n(\alpha-\beta)} + \frac{1}{\beta^n(\beta-\alpha)} $$ where $$\alpha, \beta$$ are zeros of $$ z^2 + z - 1 $$ . )
+
+# Catalan numbers ?
+It there a way of solving $$ c(z) = \frac{1-\sqrt{1-4z}}{2z}$$ and getting the nth catalan number $$catal_n$$ in complex analysis ?
+
+I might get the instruction from [this stackexchange](https://math.stackexchange.com/questions/3052399/extract-catalan-numbers-from-generating-function-via-residues). (Excuse me for the interruption.)
+
+# Bernoulli Numbers ?
+
+I found its generating function $$b(z) = \frac{1}{z} \frac{d^2}{d(\frac{1}{z})^2} ln \Gamma(\frac{1}{z})$$ and nth Bernoulli Number $$ber_n = - n \zeta(1-n)$$ in [this wikipedia](https://en.wikipedia.org/wiki/Bernoulli_number#Generating_function)
