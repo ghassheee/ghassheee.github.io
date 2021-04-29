@@ -269,3 +269,8 @@ sat bf asst succ fail = case bf of
 solve :: BF -> Maybe (Map String Bool)
 solve bf = sat bf empty (\b asst fail -> if b then Just asst else fail) Nothing
 ~~~
+
+
+# Continuation-and-environment-passing style
+
+https://hal.inria.fr/hal-01972846/document
