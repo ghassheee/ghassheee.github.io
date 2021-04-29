@@ -7,6 +7,10 @@ layout: journal
 
 # Continuation Passiing Style
 
+CPS is a continuation monad.<br>
+CPS is a copresheaf functor on category C e.g. like Hask.<br>
+CPS transformation is just a coyoneda embedding.<br>
+
 
 * https://www.wikiwand.com/ja/継続渡しスタイル
 * https://free.cofree.io/2020/01/02/cps/
@@ -18,25 +22,29 @@ layout: journal
 `K` 上の CPS 変換　とは、圏 `Hask` 上の Copresheaf Functor です。
 
 ~~~haskell
-CPS(K)      :: A -> Hom(A,Set)
+CPS(K)      :: Hask -> Hom(Hask,Set)
 CPS(K)      =  Hom(Hom(-,K),K)
 CPS(K) f    =  - . f
 ~~~
 
+これは単に、CoYoneda Embedding と呼ばれるものです。<br>
+CPS 変換とはただの Coyoneda です。
+
 Haskell 風に書くと
 ~~~ haskell
-CPS(K) f    = \k -> k f
+CPS :: Hask -> (B->A) -> (A->K) -> (B->K)
+CPS    (K)       f    =   \k    ->  k f
 ~~~
 
 となります。<br>
-`K` に関して量化し、
+`K` に関して量化し、`B = 1` とすると、
 ~~~ haskell
 CPS A :: ∀K . (A→K)→K
 ~~~
 
 を得ます。
 
-これをそのまま STL (単純型付ラムダ計算) `t ::= x | λx.M | M N`  上で実装しますと、
+これをそのまま STL (単純型付λ計算) `t ::= x | λx.M | M N`  上で実装しますと、<br>
 `(-)* := CPS`  として、
 
 ~~~haskell
@@ -55,11 +63,11 @@ CPS A :: ∀K . (A→K)→K
 
 ## CallByValue CPS
 
-教科書で一般的な CPS 変換は少し様子が異なります。<br>
+教科書で一般的な CPS 変換は少し様子が異なるように思うかもしれませんが、本質的に同じものです。<br>
 これは、上記の二つ目の `id` を省略し、 `t == t* id` で得られるように折りたたんだために、<br>
-根源的な余前層の構造が潰れてしまっているともいえます。<br>
+根源的な余前層の構造が潰れてしまっているように見えているともいえます。<br>
 あるいは、実装の観点に立った `Object First` の見方ともいうことができます。<br>
-Reynold による `CBV version` の CPS は、
+Reynold による `CBV version` の CPS は、そのため、
 
 ~~~haskell
 (x)* k    := k x
@@ -73,6 +81,8 @@ Reynold による `CBV version` の CPS は、
 
 ## Lazy CPS
 
+Lazy な評価戦略では、λ式の中身は放っておいても良いため、以下のようになります。<br>
+本質的に上の Relynold による CPS と同じ考え方を当てはめるです。<br>
 Plotkin による `Lazy version` の CPS は、
 
 ~~~haskell
