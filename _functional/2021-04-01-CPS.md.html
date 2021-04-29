@@ -1,0 +1,271 @@
+---
+title: CPS
+layout: journal
+---
+
+
+
+# Continuation Passiing Style
+
+
+* https://www.wikiwand.com/ja/継続渡しスタイル
+* https://free.cofree.io/2020/01/02/cps/
+* https://wiki.haskell.org/MonadCont_done_right
+* https://www.haskellforall.com/2012/12/the-continuation-monad.html
+
+## CPS in Category Theory
+
+`K` 上の CPS 変換　とは、圏 `Hask` 上の Copresheaf Functor です。
+
+~~~haskell
+CPS(K)      :: A -> Hom(A,Set)
+CPS(K)      =  Hom(Hom(-,K),K)
+CPS(K) f    =  - . f
+~~~
+
+Haskell 風に書くと
+~~~ haskell
+CPS(K) f    = \k -> k f
+~~~
+
+となります。<br>
+`K` に関して量化し、
+~~~ haskell
+CPS A :: ∀K . (A→K)→K
+~~~
+
+を得ます。
+
+これをそのまま STL (単純型付ラムダ計算) `t ::= x | λx.M | M N`  上で実装しますと、
+`(-)* := CPS`  として、
+
+~~~haskell
+(x)* k    := k x
+(λx.M)* k := k (λx.M)
+           = M* (λm.k(λx.m))
+(M N)* k  := k (M N)
+           = M* (λm.k(m N))
+           = M* (λm.N* (λn.k(m n)))
+~~~
+
+となります。<br>
+`t == t* id id`　として得られます。<br>
+（ここで、一つ目の `id` は `t` の継続、二つ目の `id` は型 `1` (Unit型)の要素です。）
+
+
+## CallByValue CPS
+
+教科書で一般的な CPS 変換は少し様子が異なります。<br>
+これは、上記の二つ目の `id` を省略し、 `t == t* id` で得られるように折りたたんだために、<br>
+根源的な余前層の構造が潰れてしまっているともいえます。<br>
+あるいは、実装の観点に立った `Object First` の見方ともいうことができます。<br>
+Reynold による `CBV version` の CPS は、
+
+~~~haskell
+(x)* k    := k x
+(λx.M)* k := k (λx.M*)
+(M N)* k  := (M N) k
+           = M* (λm.(m N) k)
+           = M* (λm.N* (λn.(m n) k))
+~~~
+
+となります。
+
+## Lazy CPS
+
+Plotkin による `Lazy version` の CPS は、
+
+~~~haskell
+(x)* k    := x k
+(λx.M)* k := k (λx.M*)
+(M N)* k  := (M N) k
+           = M* (λm.(m N) k)
+~~~
+
+となります。こちらも、`t == t* id` です。
+
+
+
+
+
+
+# Haskell での実装
+
+https://wiki.haskell.org/MonadCont_done_right　
+
+Monad として、Continuation を処理するのが一般的です。<br>
+
+CPS 変換することで、
+
+1. 例外処理や、
+2. 探索の break
+3. SAT solver を全探索せずに終了させるなど、
+
+「あらかじめ想定されていた全域処理を途中で止める」という通常の再帰的な関数ではできないことを可能にします。<br>
+簡単な誤植などありますが、このことについて非常に良く述べられた記事があります。<br>
+
+https://free.cofree.io/2020/01/02/cps/
+
+
+以下の例は、実際に動作する Haskell のコードです。
+
+~~~haskell
+{-# LANGUAGE UnicodeSyntax #-}
+{-# LANGUAGE BangPatterns  #-}
+
+module Cont.CPS where
+
+
+type CPS a' =   ∀ k . (a' -> k) -> k
+
+toCPS       ::  a -> CPS a
+toCPS       =   flip ($)
+
+fromCPS     ::  CPS a -> a
+fromCPS     =   ($ id)            -- fromCPS k = k id
+
+callCC :: ((a->(b->k)->k)->(a->k)->k) -> (a->k) ->         k
+callCC              f                      h    =   f (\a _->h a) h
+~~~
+
+
+## Factorial Function in CPS
+
+~~~haskell
+fac :: Integer -> Integer
+fac 0 = 1
+fac n = n * fac (n-1)
+-- >>> fac n
+-- |->   n * (n-1) * ... * 2 * 1 * 1
+
+
+
+facCPS :: Integer -> (Integer -> k) -> k
+facCPS 0 k = k 1
+facCPS n k = facCPS (n-1) $ k . (*n)
+-- >>> facCPS 10 id
+-- |->  ((...(( id . (*n) ) . (*(n-1) )) . ... ) . (*2) ) 1
+-- |->  (*n) . ... . (*2) . (*1) $ 1
+
+
+
+facIterative :: Integer -> Integer
+facIterative = go 1
+    where
+        go !acc 0 = acc
+        go !acc n = go (acc*n) (n-1)
+-- Much Faster
+~~~
+
+## Tree Search Break in CPS
+
+二分木に6 が出れば直ちに探索を終了し、それ以外は、総和を出力する
+
+~~~haskell
+data BTree = Br BTree BTree | Lf Int
+
+
+lfSum (Lf x)        = x
+lfSum (Br l r)      = lfSum l + lfSum r
+
+lfSumCPS (Lf x) k   = k x
+lfSumCPS (Br l r) k = lfSumCPS l ( \l' -> lfSumCPS r (\r' -> k (l'+r')))
+
+
+-- if  there is a lf which has value 6, return 1000
+-- else return sum
+
+lfSumCPS' (Lf 6) k  = 1000
+lfSumCPS' (Lf x) k  = k x
+lfSumCPS' (Br l r)k = lfSumCPS' l ( \l' -> lfSumCPS' r (\r' -> k (l'+r')))
+
+-- ## CONCLUSION ##
+-- With CPS,
+-- we can quit the tree search at any points which we want .
+~~~
+
+
+## Right Associativity in CPS
+
+### Monoid
+
+
+~~~haskell
+-- #################################
+-- ##   Associativity of Monoid   ##
+-- #################################
+
+chainCPS :: ((a->k)->k) -> (a->((b->k)->k)) -> (b->k) -> k
+chainCPS s f  = s . flip f
+(<->) = chainCPS
+
+monoidToCPS :: Monoid a => a -> (()->a) -> a
+monoidToCPS a = (a <>) . ($ ())
+
+monoidFromCPS :: Monoid a => ((() -> a) -> a) -> a
+monoidFromCPS cps = cps (const mempty)
+
+-- e.g.
+sumL    = ([1,2,3] <> [4,5,6]) <> [7,8,9]
+sumR    = monoidFromCPS $ monoidToCPS [1,2,3] <-> (\_ -> monoidToCPS [4,5,6] <-> (\_ -> monoidToCPS [7,8,9]))
+sumR'   = [1,2,3] <> ([4,5,6] <> [7,8,9])
+~~~
+
+
+### Monad
+
+~~~haskell
+-- ##################################
+-- ##        Monad / CPS           ##
+-- ##################################
+
+monadToCPS :: Monad m => m a -> (forall k. (a -> m k) -> m k)
+monadToCPS ma = (ma >>=)
+
+monadFromCPS :: Monad m => (forall k. (a->m k)->m k) -> m a
+monadFromCPS cps = cps pure
+
+-- e.g.
+resL    = [1,2,3] >>= (\x -> [x+1]) >>= (\y -> [y-2])
+resL'   = [1,2,3] >>= (\x -> [x+1]) >>= (\y -> [y-2])
+resR    = [1,2,3] >>= (\x -> [x+1] >>= (\y -> [y-2]))
+resR'   = monadFromCPS $ monadToCPS [1,2,3] <-> (\x -> monadToCPS [x+1]) <-> (\y -> monadToCPS [y-2])
+~~~
+
+
+## SAT solver in CPS
+
+~~~haskell
+module Cont.Sat where
+
+import Data.Map
+
+
+data BF = Var String
+        | Not BF
+        | And BF BF
+        | Or  BF BF
+
+
+-- SAT solver can be implemented with CPS
+-- fail is continuation
+sat :: BF -> Map String Bool -> (Bool -> Map String Bool -> k -> k) -> k -> k
+sat bf asst succ fail = case bf of
+    Var v   -> case asst !? v of
+        Just b  -> succ b asst fail
+        Nothing -> let  asstT = insert v True asst
+                        asstF = insert v False asst
+                        tryT  = succ True asstT tryF
+                        tryF  = succ False asstT fail in tryT
+    Not bf' -> sat bf' asst (succ . not) fail
+    And l r -> sat l asst succAnd fail where
+                    succAnd True asstAnd failAnd    = sat r asstAnd succ failAnd
+                    succAnd False asstAnd failAnd   = succ False asstAnd failAnd
+    Or  l r -> sat l asst succOr fail where
+                    succOr True asstOr failOr       = succ True asstOr failOr
+                    succOr False asstOr failOr      = sat r asstOr succ failOr
+
+
+solve :: BF -> Maybe (Map String Bool)
+solve bf = sat bf empty (\b asst fail -> if b then Just asst else fail) Nothing
+~~~

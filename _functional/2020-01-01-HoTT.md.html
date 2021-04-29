@@ -4,11 +4,35 @@ layout  : journal
 ---
 
 
+
 UNDER CONSTRUCTION
 
 - just reading chapter 6
 - if you have been motivated to read together, feel free to contact me on twitter or gmail.
 - Why not share infomation, interpretation of various topics?
+
+# induction on equivalences are interesting
+
+I think, when type theorist says equivalence it means the morphisms in ∞-groupoid i.e. Map(X,Y) for some X and Y which are the objects in a ∞-category.
+
+So,
+let me organize in ∞-category.
+
+Datatypes : 0-morphism
+Function : 1-morphism
+Computation : 2-morphim
+
+when we define an inductive data type, say A,
+then PA also defines, A_ind which is function.
+
+A is constructed over 1,Y
+inductive A := a : A | y :  Y -> A .
+
+A_ind : forall P :A->Type, P(a)->(P(n)->(P(y(n)))->P(A)
+
+
+
+
 
 
 # Quillen 's  Model Categorical View

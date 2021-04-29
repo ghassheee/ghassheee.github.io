@@ -9,15 +9,25 @@ layout: journal
 
 # HELLO-OS
 
+`hello.img` という名のファイルを作ります。
+
+まずはじめに、`4096 byte` を `0埋め` します。
+
 ~~~
 $ vim hello.img
 $ sudo dd if=/dev/zero of=hello.img bs=4096 count=16
 ~~~
 
+
+`vim` の `binary` モードで開きます。
+
 ~~~
 $ vim -b hello.img
 :%!xxd
 ~~~
+
+
+そして、以下のように改変します。
 
 ~~~
 0000000: eb4e 9048 454c 4c4f 4950 4c00 0201 0100  .N.HELLOIPL.....
@@ -39,10 +49,15 @@ $ vim -b hello.img
 0001400: f0ff ff00 0000 0000 0000 0000 0000 0000  ................
 ~~~
 
+書き込みます。
+
 ~~~
 :%!xxd -r
 :wq!
 ~~~
+
+
+macOS の場合は、`diskutil` を使用し、デバイスを確認の上、`USB` 記憶装置に書き込みます。
 
 ~~~
 # diskutil list
@@ -50,6 +65,9 @@ $ vim -b hello.img
 # dd if=hello.img of=/dev/disk1 bs=4096
 ~~~
 
+
+これで、OS 1日目終了です。<br>
+ `USB` を BIOS から起動してください。
 <br>
 <br>
 
