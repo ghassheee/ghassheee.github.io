@@ -12,11 +12,6 @@ CPS is a copresheaf functor on category C e.g. like Hask.<br>
 CPS transformation is just a coyoneda embedding.<br>
 
 
-* https://www.wikiwand.com/ja/継続渡しスタイル
-* https://free.cofree.io/2020/01/02/cps/
-* https://wiki.haskell.org/MonadCont_done_right
-* https://www.haskellforall.com/2012/12/the-continuation-monad.html
-
 ## CPS in Category Theory
 
 `K` 上の CPS 変換　とは、圏 `Hask` 上の Copresheaf Functor です。
@@ -44,21 +39,22 @@ CPS A :: ∀K . (A→K)→K
 
 を得ます。
 
-これをそのまま STL (単純型付λ計算) `t ::= x | λx.M | M N`  上で実装しますと、<br>
+これをそのまま STL (単純型付λ計算) `t ::= x | λx.M | (M . N) `  上で実装しますと、<br>
 `(-)* := CPS`  として、
 
 ~~~haskell
-(x)* k    := k x
-(λx.M)* k := k (λx.M)
-           = M* (λm.k(λx.m))
-(M N)* k  := k (M N)
-           = M* (λm.k(m N))
-           = M* (λm.N* (λn.k(m n)))
+(x)* k    := k . x
+(λx.M)* k := k . (λx.M)
+           = M* . (λm.k(λx.m))
+(M . N)* k  := k . (M . N)
+           = M* . (λm.k . (m . N))
+           = M* . (λm.N* . (λn.k(m . n)))
 ~~~
 
 となります。<br>
 `t == t* id id`　として得られます。<br>
 （ここで、一つ目の `id` は `t` の継続、二つ目の `id` は型 `1` (Unit型)の要素です。）
+
 
 
 ## CallByValue CPS
@@ -279,6 +275,14 @@ sat bf asst succ fail = case bf of
 solve :: BF -> Maybe (Map String Bool)
 solve bf = sat bf empty (\b asst fail -> if b then Just asst else fail) Nothing
 ~~~
+
+# References
+
+
+* https://www.wikiwand.com/ja/継続渡しスタイル
+* https://free.cofree.io/2020/01/02/cps/
+* https://wiki.haskell.org/MonadCont_done_right
+* https://www.haskellforall.com/2012/12/the-continuation-monad.html
 
 
 # Continuation-and-environment-passing style
