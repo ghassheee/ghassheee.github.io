@@ -195,12 +195,12 @@ fromCPS t = t id
 
 ￼![](/image/machine2.jpg width="600")
 
-Reference : see [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
+A picture from [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 
 
 
 
-When $F$ = $List$, the Yoneda Lemma gives us the listed version of CPS transformation.
+When $F = List$, the Yoneda Lemma gives us the listed version of CPS transformation.
 
 `toCPSs` is a function which, given a list of terms, returns list of CPS terms.
 
@@ -268,13 +268,14 @@ opyoneda    :: (c→a) → (∀ k . (a→k) → (c→k))
 opyoneda        g               k   = k . g
 ~~~
 
-`opyoneda` is OpYoneda Embedding of arrow $g : C \to A$, i.e. ;
+`opyoneda` is OpYoneda Embedding $g ↦ (-∘g)$ i.e. ;
 
-$$Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),Hom_\mathscr{C}(C,-)) = Hom_\mathscr{C}(C,A)$$
+$$ \mathscr{\check y} : Hom_\mathscr{C}(C,A)  ⭇  Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),Hom_\mathscr{C}(C,-))$$
 
 or
 
-$$Hom_\mathscr{\check C}(\mathscr{\check y}(A),\mathscr{\check y}(C)) = Hom_\mathscr{C}(C,A)$$
+$$ \mathscr{\check y} : Hom_\mathscr{C}(C,A)  ⭇  Hom_\mathscr{\check C}(\mathscr{\check y}(A),\mathscr{\check y}(C))$$
+
 
 ~~~ haskell
 opyoneda_g :: ∀ k . (a→k) → (c→k)
@@ -332,6 +333,9 @@ The first argument `id` is the continuation of `t` which is the most outer conti
 The second argumennt `id` is the element of Unit Type `1` with which one can get elements in Category Theory.<br>
 
 
+# ∞-Category Theory
+
+From here, we assume the basics of ∞-category theory. Particularly, we use the theory of presheaves and Grothendieck Constructions. For more detail see [Cisinski](http://www.mathematik.uni-regensburg.de/cisinski/CatLR.pdf).
 
 
 
@@ -361,22 +365,23 @@ That is
 is a bijection.
 
 
+# Examples of Coyoneda Lemma
 
-## Closure in Coyoneda
+## Closure
 
 Think of the type of the following term;
 
 ~~~ haskell
-let x = 3 in λy -> x + y
+let x = 3 in λy → x + y
 ~~~
 
-which is clearly, say, the form of `a -> b` .<br>
+which is clearly, say, the form of `a → b` type. <br>
 
 
-Using Closure technique, this is converted into;
+Using $Closure$ technique, the above term is converted into;
 
 ~~~ haskell
-let x = 3 in ([x:3], λΓ -> λy -> let x = Γ.x in x + y )
+let x = 3 in ([x:3], λΓ → λy → let x = Γ.x in x + y )
 ~~~
 
 whose type is `∃ Γ . Γ × (Γ → a → b)`
@@ -425,7 +430,7 @@ Q.E.D.
 
 ## funny stuff
 
-Picture from [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
+From [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 
 Consider the following compiled using GHC with `-fallow-overlapping-instances -fglasgow-exts`:
 
@@ -466,3 +471,4 @@ The caron is used on an H to represent Čech cohomology and so it's also called 
 * [ghasshee: CPS](/functional/2021-04-01-CPS.md/)
 * [Closure in Coyoneda](http://prl.ccs.neu.edu/blog/2017/08/28/closure-conversion-as-coyoneda/)
 * [Kashiwara Schapira: Categories and Sheaves]
+* [Cisinski: Higher Categories and Homotopical Algebra](http://www.mathematik.uni-regensburg.de/cisinski/CatLR.pdf)
