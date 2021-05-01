@@ -5,14 +5,62 @@ layout: journal
 
 
 
-# Continuation Passiing Style
+# Continuation Passing Style
 
 CPS is a continuation monad.<br>
 CPS is a copresheaf functor on category C e.g. like Hask.<br>
 CPS transformation is just a coyoneda embedding.<br>
 
 
-## CPS in Category Theory
+## CPS in Category Theory Style
+
+The CPS Transformation on Type `K` is a Copresheaf Functor over the category `Hask`.
+
+~~~ haskell
+CPS(K)      :: Hask → Hom(Hask,Set)
+CPS(K)      :=  Hom(Hom(-,K),K)
+CPS(K) f     =  - . f
+~~~
+
+CPS transformation is just a Coyoneda.<br>
+Its preudo-Haskell-like syntax is written as follows;
+
+~~~ haskell
+CPS :: Hask → (B→A) → (A→K) → (B→K)
+CPS    [K]      f       k   = k . f
+~~~
+
+
+Taking quantification on `K`, and substituting `B = 1`, we will get;
+~~~ haskell
+CPS A :: ∀K . (A→K)→K
+~~~
+
+Now we define the Syntax of categorical version of `STL (Simply Typed Lambda Calculus)` as follows;
+~~~ haskell
+t       ::= x
+          | λx.M
+          | (M . N)
+~~~
+
+Assuming a new Notation `(-)* := CPS`, we get;
+
+~~~ haskell
+(x)* k          := k . x
+(λx.M)* k       := k . (λx.M)
+                 = M* . (λm.k(λx.m))
+(M . N)* k      := k . (M . N)
+                 = M* . (λm.k . (m . N))
+                 = M* . (λm.N* . (λn.k(m . n)))
+~~~
+
+
+Here, nonCPS term `t` is got by `t == t* id id` . <br>
+The first argument `id` is the continuation of `t` which is the most outer continuation (or the last continuation).<br>
+The second argumennt `id` is the element of Unit Type `1` with which one can get elements in Category Theory.<br>
+
+
+## [Japanese] CPS in Category Theory Style
 
 `K` 上の CPS 変換　とは、圏 `Hask` 上の Copresheaf Functor です。
 
@@ -57,7 +105,7 @@ CPS A :: ∀K . (A→K)→K
 
 
 
-## CallByValue CPS
+## [Japanese] CallByValue CPS
 
 教科書で一般的な CPS 変換は少し様子が異なるように思うかもしれませんが、本質的に同じものです。<br>
 これは、上記の二つ目の `id` を省略し、 `t == t* id` で得られるように折りたたんだために、<br>
@@ -75,7 +123,7 @@ Reynold による `CBV version` の CPS は、そのため、
 
 となります。
 
-## Lazy CPS
+## [Japanese] Lazy CPS
 
 Lazy な評価戦略では、λ式の中身は放っておいても良いため、以下のようになります。<br>
 本質的に上の Relynold による CPS と同じ考え方を当てはめるです。<br>
@@ -95,7 +143,7 @@ Plotkin による `Lazy version` の CPS は、
 
 
 
-# Haskell での実装
+# [Japanese] Haskell での実装
 
 https://wiki.haskell.org/MonadCont_done_right　
 
@@ -135,7 +183,7 @@ callCC              f                      h    =   f (\a _->h a) h
 ~~~
 
 
-## Factorial Function in CPS
+## [Japanese] Factorial Function in CPS
 
 ~~~haskell
 fac :: Integer -> Integer
@@ -163,7 +211,7 @@ facIterative = go 1
 -- Much Faster
 ~~~
 
-## Tree Search Break in CPS
+## [Japanese] Tree Search Break in CPS
 
 二分木に6 が出れば直ちに探索を終了し、それ以外は、総和を出力する
 
@@ -191,7 +239,7 @@ lfSumCPS' (Br l r)k = lfSumCPS' l ( \l' -> lfSumCPS' r (\r' -> k (l'+r')))
 ~~~
 
 
-## Right Associativity in CPS
+## [Japanese] Right Associativity in CPS
 
 ### Monoid
 
@@ -239,7 +287,7 @@ resR'   = monadFromCPS $ monadToCPS [1,2,3] <-> (\x -> monadToCPS [x+1]) <-> (\y
 ~~~
 
 
-## SAT solver in CPS
+## [Japanese] SAT solver in CPS
 
 ~~~haskell
 module Cont.Sat where

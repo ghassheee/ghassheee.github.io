@@ -3,13 +3,17 @@ title: Yoneda
 layout: journal
 ---
 
+# category theory
+
+In this post, I assume the bunch of terms in the language "category theory", or the "presheaf theory".
+
 
 
 
 # Yoneda Lemma
 
 
-Coyoneda Lemma
+(Op)Yoneda Lemma
 
 $$Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),F) = F(A)$$
 
@@ -21,9 +25,12 @@ Yoneda Lemma
 $$Hom_\mathscr{ \hat  C}(Hom_\mathscr{C}(-,A),F) = F(A)$$
 
 
-# Coyoneda Lemma in Haskell
+# Yoneda Lemma in Haskell
 
-Coyoneda Lemma is composed by a bijection $\phi : Hom_\mathscr{\check C}(Hom_C(A,-),F) \to F(A)$
+OpYoneda Lemma is composed by a bijection
+
+$$\phi : Hom_\mathscr{\check C}(Hom_C(A,-),F) \to F(A)$$
+
 such that $\phi(\theta) \in F(A)$ where $\theta$ is a natural transformation and hence its type $Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),F)$ can be rewritten by;
 
 $$\forall K. Hom_\mathscr{\check C}(Hom_C(A,K),F(K))$$
@@ -34,7 +41,7 @@ This is
                                    ∀ K . (A → K) → F K
 ~~~
 
-So in Haskell, Coyoneda Lemma is written to be that a morphism $\phi$;
+So in Haskell, Yoneda Lemma is written to be that a morphism $\phi$;
 
 ~~~ haskell
                         phi :: (∀ K . (A → K) → F K)) → F A
@@ -54,7 +61,7 @@ such that;
 ~~~
 
 
-## Implementation of Coyoneda Lemma
+## Implementation of Yoneda Lemma
 
 
 In terms of presheaf cateogry theory, Yoneda Lemma shows that `internilization` and `externalization` compose just an equivalence relation.
@@ -64,29 +71,25 @@ In terms of presheaf cateogry theory, Yoneda Lemma shows that `internilization` 
 {-# LANGUAGE UnicodeSyntax #-}
 module Yoneda where
 
-
 -- #################################
--- ##     COYONEDA LEMMA          ##
+-- ##         Yoneda Lemma        ##
 -- #################################
 
-internalize :: Functor f => (∀ k. (a->k)->f k) -> f a
+internalize :: Functor f => (∀ k. (a→k)→f k) → f a
 internalize t = t id
-externalize :: Functor f => f a -> (∀ k. (a->k)->f k)
+externalize :: Functor f => f a → (∀ k. (a→k)→f k)
 externalize a k = fmap k a
 
-~~~
+-- such that;
 
-such that;
-
-~~~ haskell
-    internalize . externalize ~~ id
-    externalize . internalize ~~ id
+--    internalize . externalize ~~ id
+--    externalize . internalize ~~ id
 ~~~
 
 where functional extentionality gives `~~` equality `==`.
 
 
-## Proof of Coyoneda Lemma
+## Proof of Yoneda Lemma
 
 The proof is given by
 
@@ -95,24 +98,27 @@ The proof is given by
 int = internalize
 ext = externalize
 
-int (ext f)
-   = (ext f) id          [defn of int]
-   = fmap id f           [defn of ext]
-   = id f                [property of fmap]
-   = f                   [defn of id]
+{--
+int (ext a)
+   = (ext a) id          [defn of int]
+   = fmap id a           [defn of ext]
+   = id a                [property of fmap]
+   = a                   [defn of id]
 
-ext (int f) a
-   = ext (f id) a        [use defn of int]
-   = fmap a (f id)       [use defn of ext]
-   = f (fmap a id)       [f natural]
-   = f (a . id)          [defn of fmap for ((>>) a)]
-   = f a                 [property of id]
+ext (int t) k
+   = ext (t id) k        [use defn of int]
+   = fmap k (t id)       [use defn of ext]
+   = k (fmap t id)       [k natural]
+   = k (t . id)          [defn of fmap for ((>>) a)]
+   = k t                 [property of id]
+--}
 ~~~
 
 I'll confirm that check f is natural, ie. that `(ext f) . (fmap g) = (fmap g) . (ext f)` ,
 although, as I mentioned above, this is automatically true for polymorphic functions without funny stuff.
 
 ~~~ haskell
+{--
 ext f (fmap g x)
    = fmap (fmap g x) f   [defn of ext]
    = fmap (g . x) f      [defn of fmap for ((->) a)]
@@ -120,13 +126,14 @@ ext f (fmap g x)
    = fmap g (fmap x f)   [defn of (.)]
    = fmap g (ext f x)    [defn of ext]
    = (fmap g . ext f) x  [defn of (.)]
+--}
 ~~~
 
 
 
-# Examples of Coyoneda Lemma
+# Examples of Yoneda Lemma
 
-Coyoneda Lemma assumes an existence of Functor $F$. <br>
+Yoneda Lemma assumes an existence of Functor $F$. <br>
 Here I provide three examples of there functors;
 
 - $Id$
@@ -153,30 +160,30 @@ instance Functor ((->) c) where
 
 ## Continuation Passing Style
 
-`CPS a` is a type of natural transformations in Coyoneda Lemma where $F = Id$
+`CPS a` is a type of natural transformations in OpYoneda Lemma where $F = Id$
 
 ~~~
-type CPS a =  forall k . (a -> k) -> k.
+type CPS a =  ∀ k . (a → k) → k.
 ~~~
 
 CPS(a) is the externalization of `Id(a)` such that;
 
-~~~
-toCPS :: a -> (forall k . (a -> k) -> k)
+~~~ haskell
+toCPS :: a → (∀ k . (a → k) → k)
 toCPS a f = f a
 ~~~
 
 while the internalization is given by
 
-~~~
-fromCPS :: (forall k . (a -> k) -> k) -> a
+~~~ haskell
+fromCPS :: (∀ k . (a → k) → k) → a
 fromCPS t = t id
 ~~~
 
 
 
 
-`toCPS` function is the yoneda embedding, and `fromCPS` is the inverse function.
+`toCPS` function is the Yoneda embedding, and `fromCPS` is the inverse function.
 
 - `toCPS` : $ \mathscr{C} \rightarrow y\mathscr{C} $
 - `fromCPS` : $ y\mathscr{C} \rightarrow \mathscr{C} $
@@ -193,25 +200,26 @@ Reference : see [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yone
 
 
 
-When $F$ = $List$, the coyoneda lemma gives us the listed version of CPS transformation.
+When $F$ = $List$, the Yoneda Lemma gives us the listed version of CPS transformation.
 
 `toCPSs` is a function which, given a list of terms, returns list of CPS terms.
 
 
-~~~hs
-toCPSs :: [a] -> (forall b . (a -> b) -> [b])
-toCPSs as f = map f as
+~~~ haskell
+toCPSs :: [a] → (∀ b . (a → b) → [b])
+toCPSs ass f = map f ass
 
-fromCPSs :: (forall b . (a -> b) -> [b]) -> [a]
+fromCPSs :: (∀ b . (a → b) → [b]) → [a]
 fromCPSs t = t id
 ~~~
 
 
 A set of CPS terms is like this;
 
-~~~hs
-CPS_as :: forall b . (a -> b) -> [b]
-CPS_as f = map f as where as = …to be determined…
+~~~ haskell
+CPS_as :: ∀ b . (a → b) → [b]
+CPS_as f = map f ass
+    where ass = undefined
 ~~~
 
 
@@ -221,16 +229,18 @@ CPS_as f = map f as where as = …to be determined…
 
 "But what about this..." you ask, suggesting an alternative definition for the machine:
 
-~~~hs
-CPS_as' :: forall b . (a -> b) -> [b]
-CPS_as' f = reverse $ map f a where a = …to be determined…
+~~~ haskell
+CPS_as' :: ∀ b . (a → b) → [b]
+CPS_as' f = reverse $ map f ass
+    where ass = (undefined)
 ~~~
 
 That has the correct type signature but it doesn't seem to have the same form as machine2. However, with a tiny bit of work we can show it's functionally equivalent to one that does. In fact we can just plug `CPS_as'` into `fromCPSs` and it will give us a list of `A`'s that can be used in `CPS_as`. Instead of reverse we could use any function `[a] -> [a]` and we'd still get a sensible result out of `toCPSs`. The reason is that if `f` is of type `forall a.[a] -> [a]` then `f $ map g a` equals `map g $ f a`. (This is a Theorem for Free!.) So we can rewrite `CPS_as'` as
 
-~~~
-CPS_as'' :: forall b . (a -> b) -> [b]
-CPS_as'' f = map f a where a = reverse $ …to be determined…
+~~~ haskell
+CPS_as'' :: ∀ b . (a → b) → [b]
+CPS_as'' f = map f ass
+    where ass = reverse $ (undefined)
 ~~~
 
 
@@ -239,26 +249,26 @@ which looks just like our `CPS_as`. So however we munge up our list to make our 
 
 <br>
 
-## Coyoneda Embedding itself $\mathscr {\check y}$
+## Yoneda Embedding itself $\mathscr {\check y}$
 
-coyoneda embedding $\mathscr {\check y}$ is represented by the situation that
+Yoneda embedding $\mathscr {\check y}$ is represented by the situation that
 
 $F$ = $Hom(C,-)$ .
 
 
-Coyoneda Embedding $\mathscr {\check y}$ is a contravatiant functor and hence,
+Yoneda Embedding $\mathscr {\check y}$ is a contravatiant functor and hence,
 it is the primitive model of CPS transformation or the Categorical Version of CPS transformation.
 ( See the following section. )
 
-~~~
-int :: (forall k . (a -> k) -> (c -> k)) -> (c -> a)
-int t = t id
+~~~ haskell
+int         :: (∀ k . (a→k) → (c→k)) → (c→a)
+int t       = t id
 
-coyoneda :: (c->a) -> (forall k . (a->k) -> (c->k))
-coyoneda       g                    k    =   k . g
+opyoneda    :: (c→a) → (∀ k . (a→k) → (c→k))
+opyoneda        g               k   = k . g
 ~~~
 
-`coyoneda` is Coyoneda Embedding of arrow $g : C \to A$, i.e. ;
+`opyoneda` is OpYoneda Embedding of arrow $g : C \to A$, i.e. ;
 
 $$Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),Hom_\mathscr{C}(C,-)) = Hom_\mathscr{C}(C,A)$$
 
@@ -266,63 +276,145 @@ or
 
 $$Hom_\mathscr{\check C}(\mathscr{\check y}(A),\mathscr{\check y}(C)) = Hom_\mathscr{C}(C,A)$$
 
-~~~
-coyoneda_g :: forall k . (a -> k) -> (c -> k)
-coyoneda_g f = f . g where g x = …to be determined…
-~~~
-
-
-
-## CPS in Category Theory
-
-`K` 上の CPS 変換　とは、圏 `Hask` 上の Copresheaf Functor です。
-
-~~~haskell
-CPS(K)      :: Hask -> Hom(Hask,Set)
-CPS(K)      =  Hom(Hom(-,K),K)
-CPS(K) f    =  - . f
-~~~
-
-これは単に、CoYoneda Embedding と呼ばれるものです。<br>
-CPS 変換とはただの Coyoneda です。
-
-Haskell 風に書くと
 ~~~ haskell
-CPS :: Hask -> (B->A) -> (A->K) -> (B->K)
-CPS    (K)       f    =   \k    ->  k f
+opyoneda_g :: ∀ k . (a→k) → (c→k)
+opyoneda_g f = f . g
+    where g x = undefined
 ~~~
 
-となります。<br>
-`K` に関して量化し、`B = 1` とすると、
+
+
+## CPS in Category Theory Style
+
+The CPS Transformation on Type `K` is a Copresheaf Functor over the category `Hask`.
+
+~~~ haskell
+CPS(K)      :: Hask → Hom(Hask,Set)
+CPS(K)      :=  Hom(Hom(-,K),K)
+CPS(K) f     =  - . f
+~~~
+
+CPS transformation is just a Yoneda.<br>
+Its preudo-Haskell-like syntax is written as follows;
+
+~~~ haskell
+CPS :: Hask → (B→A) → (A→K) → (B→K)
+CPS    [K]      f       k   = k . f
+~~~
+
+
+Taking quantification on `K`, and substituting `B = 1`, we will get;
 ~~~ haskell
 CPS A :: ∀K . (A→K)→K
 ~~~
 
-を得ます。
-
-これをそのまま STL (単純型付λ計算) `t ::= x | λx.M | (M . N) `  上で実装しますと、<br>
-`(-)* := CPS`  として、
-
-~~~haskell
-(x)* k    := k . x
-(λx.M)* k := k . (λx.M)
-           = M* . (λm.k(λx.m))
-(M . N)* k  := k . (M . N)
-           = M* . (λm.k . (m . N))
-           = M* . (λm.N* . (λn.k(m . n)))
+Now we define the Syntax of categorical version of `STL (Simply Typed Lambda Calculus)` as follows;
+~~~ haskell
+t       ::= x
+          | λx.M
+          | (M . N)
 ~~~
 
-となります。<br>
-`t == t* id id`　として得られます。<br>
-（ここで、一つ目の `id` は `t` の継続、二つ目の `id` は型 `1` (Unit型)の要素です。）
+Assuming a new Notation `(-)* := CPS`, we get;
+
+~~~ haskell
+(x)* k          := k . x
+(λx.M)* k       := k . (λx.M)
+                 = M* . (λm.k(λx.m))
+(M . N)* k      := k . (M . N)
+                 = M* . (λm.k . (m . N))
+                 = M* . (λm.N* . (λn.k(m . n)))
+~~~
+
+
+Here, nonCPS term `t` is got by `t == t* id id` . <br>
+The first argument `id` is the continuation of `t` which is the most outer continuation (or the last continuation).<br>
+The second argumennt `id` is the element of Unit Type `1` with which one can get elements in Category Theory.<br>
 
 
 
-<br>
+
+
+# CoYoneda Lemma
+
+Let $F:C\to Set$ be a covariant $C$-module ("copresheaf").<br>
+The CoYoneda Lemma is left extension along the identity:
+
+$$F \simeq \int^k F(k)\times C(k,-)$$
+
+That is
+~~~ haskell
+                    psi :: F A → (∃ K . F K × (A → K))
+~~~
+
+is a bijection.
+
+The Yoneda Lemma is right extension along the identity:
+
+$$\int_k [C(-,k),F(k)] \simeq F$$
+
+That is
+~~~ haskell
+                    phi :: (∀ K . (A → K) → F K)) → F A
+~~~
+
+is a bijection.
 
 
 
-# category theory
+## Closure in Coyoneda
+
+Reference : http://prl.ccs.neu.edu/blog/2017/08/28/closure-conversion-as-coyoneda/
+
+
+~~~ haskell
+let x = 3 in λy -> x + y
+~~~
+
+The type of this term is clearly, say, the form of `a -> b` .
+Using `closure` technique, this is converted into
+
+~~~ haskell
+let x = 3 in ([x:3], λΓ -> λy -> let x = Γ.x in x + y )
+~~~
+
+whose type is `∃ Γ . Γ × (Γ → a → b)`
+
+Now we can prove that
+
+`a -> b` ≃ `∃ Γ . Γ × (Γ → a → b)`
+
+using Coyoneda Lemma.
+
+
+## Proof
+
+Coyoneda is
+
+~~~ haskell
+                    F A ≃ (∃ Γ . (A → Γ) × F Γ)
+~~~
+
+
+now substituting
+- `F := - → a → b`
+- `A := 1`
+
+we will get;
+
+~~~ haskell
+                    1 → a → b ≃ ∃ Γ . (1 → Γ) × (Γ → a → b)
+~~~
+
+is equivalent to
+
+~~~ haskell
+                    a → b ≃ ∃ Γ . Γ × (Γ → a → b)
+~~~
+
+Q.E.D.
+
+
 
 
 
@@ -331,11 +423,11 @@ CPS A :: ∀K . (A→K)→K
 
 ## funny stuff
 
-
+Reference : see [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 
 Consider the following compiled using GHC with `-fallow-overlapping-instances -fglasgow-exts`:
 
-~~~
+~~~ haskell
 class Test a where
     f :: a -> a
 
@@ -346,11 +438,11 @@ instance Test Int where
     f x = x+1
 ~~~
 
-f is the identity for everything except for objects of type Int.
-This is an example of what I call "funny stuff".
+`f` is the identity for everything except for objects of type Int.
+This is an example of what they call "funny stuff".
 
 
-## caron
+## caron $\check C$
 
 The accent on this letter 'č' is called a caron or háček.
 The book from which I learned about the Yoneda lemma used the caron to indicate the function I call check.
@@ -364,3 +456,10 @@ The caron is used on an H to represent Čech cohomology and so it's also called 
 
 
 <br>
+
+
+## References
+
+* [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
+* [ghasshee: CPS](/functional/2021-04-01-CPS.md/)
+* [Kashiwara Schapira: Categories and Sheaves]
