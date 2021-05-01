@@ -344,7 +344,7 @@ $$F \simeq \int^k F(k)\times C(k,-)$$
 
 That is
 ~~~ haskell
-                    psi :: F A → (∃ K . F K × (A → K))
+                    F A ≃ (∃ K . F K × (A → K))
 ~~~
 
 is a bijection.
@@ -355,7 +355,7 @@ $$\int_k [C(-,k),F(k)] \simeq F$$
 
 That is
 ~~~ haskell
-                    phi :: (∀ K . (A → K) → F K)) → F A
+                    (∀ K . (A → K) → F K)) ≃ F A
 ~~~
 
 is a bijection.
@@ -364,15 +364,16 @@ is a bijection.
 
 ## Closure in Coyoneda
 
-Reference : http://prl.ccs.neu.edu/blog/2017/08/28/closure-conversion-as-coyoneda/
-
+Think of the type of the following term;
 
 ~~~ haskell
 let x = 3 in λy -> x + y
 ~~~
 
-The type of this term is clearly, say, the form of `a -> b` .
-Using `closure` technique, this is converted into
+which is clearly, say, the form of `a -> b` .<br>
+
+
+Using Closure technique, this is converted into;
 
 ~~~ haskell
 let x = 3 in ([x:3], λΓ -> λy -> let x = Γ.x in x + y )
@@ -380,36 +381,37 @@ let x = 3 in ([x:3], λΓ -> λy -> let x = Γ.x in x + y )
 
 whose type is `∃ Γ . Γ × (Γ → a → b)`
 
-Now we can prove that
+So let's prove;
 
-`a -> b` ≃ `∃ Γ . Γ × (Γ → a → b)`
+~~~ haskell
+                    a → b ≃ ∃ Γ . Γ × (Γ → a → b)
+~~~
 
-using Coyoneda Lemma.
+making use of CoYoneda Lemma.
+
+
+
+
 
 
 ## Proof
 
-Coyoneda is
+Coyoneda Lemma is
 
 ~~~ haskell
                     F A ≃ (∃ Γ . (A → Γ) × F Γ)
 ~~~
 
-
-now substituting
-- `F := - → a → b`
-- `A := 1`
-
-we will get;
+Now, substituting `F := - → a → b` and `A := 1` to the Lemma, we get;
 
 ~~~ haskell
-                    1 → a → b ≃ ∃ Γ . (1 → Γ) × (Γ → a → b)
+            1 → a → b ≃ ∃ Γ . (1 → Γ) × (Γ → a → b)
 ~~~
 
-is equivalent to
+which is equivalent to
 
 ~~~ haskell
-                    a → b ≃ ∃ Γ . Γ × (Γ → a → b)
+                a → b ≃ ∃ Γ . Γ × (Γ → a → b)
 ~~~
 
 Q.E.D.
@@ -423,7 +425,7 @@ Q.E.D.
 
 ## funny stuff
 
-Reference : see [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
+Picture from [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 
 Consider the following compiled using GHC with `-fallow-overlapping-instances -fglasgow-exts`:
 
@@ -462,4 +464,5 @@ The caron is used on an H to represent Čech cohomology and so it's also called 
 
 * [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 * [ghasshee: CPS](/functional/2021-04-01-CPS.md/)
+* [Closure in Coyoneda](http://prl.ccs.neu.edu/blog/2017/08/28/closure-conversion-as-coyoneda/)
 * [Kashiwara Schapira: Categories and Sheaves]
