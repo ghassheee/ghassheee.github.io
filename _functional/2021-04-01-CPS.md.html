@@ -9,7 +9,7 @@ layout: journal
 
 CPS is a continuation monad.<br>
 CPS is a copresheaf functor on category C e.g. like Hask.<br>
-CPS transformation is just a coyoneda embedding.<br>
+CPS transformation is just a (op)Yoneda embedding.<br>
 
 
 ## CPS in Category Theory Style
@@ -22,7 +22,7 @@ CPS(K)      :=  Hom(Hom(-,K),K)
 CPS(K) f     =  - . f
 ~~~
 
-CPS transformation is just a Coyoneda.<br>
+CPS transformation is just a (op)Yoneda.<br>
 Its preudo-Haskell-like syntax is written as follows;
 
 ~~~ haskell
@@ -70,8 +70,8 @@ CPS(K)      =  Hom(Hom(-,K),K)
 CPS(K) f    =  - . f
 ~~~
 
-これは単に、CoYoneda Embedding と呼ばれるものです。<br>
-CPS 変換とはただの Coyoneda です。
+これは単なる (op)Yoneda Embedding です。<br>
+CPS 変換とはただの (op)Yoneda です。
 
 Haskell 風に書くと
 ~~~ haskell
@@ -87,7 +87,7 @@ CPS A :: ∀K . (A→K)→K
 
 を得ます。
 
-これをそのまま STL (単純型付λ計算) `t ::= x | λx.M | (M . N) `  上で実装しますと、<br>
+これをそのまま 圏論ライクな単純型付λ計算 `t ::= x | λx.M | (M . N) `  上で実装しますと、<br>
 `(-)* := CPS`  として、
 
 ~~~haskell
