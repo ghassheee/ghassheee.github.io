@@ -134,11 +134,11 @@ ext f (fmap g x)
 # Examples of Yoneda Lemma
 
 Yoneda Lemma assumes an existence of Functor $F$. <br>
-Here I provide three examples of there functors;
+Here I provide three examples of the functor $F$;
 
-- $Id$
-- $List$
-- $Hom(C,-)$
+- $F = Id$
+- $F = List$
+- $F = Hom(C,-)$
 
 Functor $Id$ or `I` is defined as follows;
 
@@ -148,11 +148,18 @@ instance Functor I where
     fmap f (I a) = I (f a)
 ~~~
 
-Functor $List$ or `[ ]` is defined in GHC.
+Functor $List$ or `[ ]` is defined in GHC, e.g;
+
+~~~ haskell
+data [a] = [] | (:) a [a]
+instance Functor [] where
+    fmap f [] = []
+    fmap f (x:xs) = f x : fmap f xs
+~~~
 
 Functor $Hom(C,-)$ or `((->) c)` is defined as follows;
 
-~~~
+~~~ haskell
 instance Functor ((->) c) where
     fmap f = (.) f
 ~~~
@@ -217,47 +224,41 @@ fromCPSs t = t id
 A set of CPS terms is like this;
 
 ~~~ haskell
-CPS_as :: ∀ b . (a → b) → [b]
-CPS_as f = map f ass
-    where ass = undefined
+CPS_tms :: ∀ b . (a → b) → [b]
+CPS_tms f = map f tms
+    where tms = undefined
 ~~~
 
 
-
-
-### suggesting alternatives
-
-"But what about this..." you ask, suggesting an alternative definition for the machine:
+CPS transformated terms might be good when it is reversed;
 
 ~~~ haskell
-CPS_as' :: ∀ b . (a → b) → [b]
-CPS_as' f = reverse $ map f ass
-    where ass = (undefined)
+CPS_tms' :: ∀ b . (a → b) → [b]
+CPS_tms' f = reverse $ map f tms
+    where tms = (undefined)
 ~~~
 
-That has the correct type signature but it doesn't seem to have the same form as machine2. However, with a tiny bit of work we can show it's functionally equivalent to one that does. In fact we can just plug `CPS_as'` into `fromCPSs` and it will give us a list of `A`'s that can be used in `CPS_as`. Instead of reverse we could use any function `[a] -> [a]` and we'd still get a sensible result out of `toCPSs`. The reason is that if `f` is of type `forall a.[a] -> [a]` then `f $ map g a` equals `map g $ f a`. (This is a Theorem for Free!.) So we can rewrite `CPS_as'` as
+Instead of reverse we could use any function `[a] → [a]` and we'd still get a sensible result out of `toCPSs`.
 
 ~~~ haskell
-CPS_as'' :: ∀ b . (a → b) → [b]
-CPS_as'' f = map f ass
-    where ass = reverse $ (undefined)
+CPS_tms'' :: ∀ b . (a → b) → [b]
+CPS_tms'' f = map f tms
+    where tms = reverse $ (undefined)
 ~~~
 
-
-which looks just like our `CPS_as`. So however we munge up our list to make our machine unlike machine2 we can always 'commute' the munging to the right so it acts on the internal list of A's, converting into a machine like `CPS_as`.
-
+The reason is that if `f` is of type `∀ a.[a] → [a]` then `f $ map g a` equals `map g $ f a`. So we can rewrite `CPS_tms'` as
 
 <br>
 
 ## Yoneda Embedding itself $\mathscr {\check y}$
 
-Yoneda embedding $\mathscr {\check y}$ is represented by the situation that
+Yoneda embedding $\mathscr {\check y}$ is represented in the situation of
 
 $F$ = $Hom(C,-)$ .
 
 
 Yoneda Embedding $\mathscr {\check y}$ is a contravatiant functor and hence,
-it is the primitive model of CPS transformation or the Categorical Version of CPS transformation.
+it is the primitive model of CPS transformation or the Categorical Version of CPS transformation which flips the order of function applications.
 ( See the following section. )
 
 ~~~ haskell
@@ -309,7 +310,7 @@ Taking quantification on `K`, and substituting `B = 1`, we will get;
 CPS A :: ∀K . (A→K)→K
 ~~~
 
-Now we define the Syntax of categorical version of `STL (Simply Typed Lambda Calculus)` as follows;
+Now we define the Syntax of categorical version of STL (Simply Typed Lambda) Calculus as follows;
 ~~~ haskell
 t       ::= x
           | λx.M
@@ -342,6 +343,20 @@ From here, we assume the basics of ∞-category theory. Particularly, we use the
 # CoYoneda Lemma
 
 Let $F:C\to Set$ be a covariant $C$-module ("copresheaf").<br>
+
+The OpYoneda Lemma was right extension along the identity:
+
+$$\int_k [C(-,k),F(k)] \simeq F$$
+
+That is
+~~~ haskell
+                    (∀ K . (A → K) → F K)) ≃ F A
+~~~
+
+is a bijection.
+
+<br><br>
+
 The CoYoneda Lemma is left extension along the identity:
 
 $$F \simeq \int^k F(k)\times C(k,-)$$
@@ -353,16 +368,7 @@ That is
 
 is a bijection.
 
-The Yoneda Lemma is right extension along the identity:
 
-$$\int_k [C(-,k),F(k)] \simeq F$$
-
-That is
-~~~ haskell
-                    (∀ K . (A → K) → F K)) ≃ F A
-~~~
-
-is a bijection.
 
 
 # Examples of Coyoneda Lemma
