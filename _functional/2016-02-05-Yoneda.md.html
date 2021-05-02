@@ -8,32 +8,73 @@ layout: journal
 In this post, I assume the bunch of terms in the language "category theory", or the "presheaf theory".
 
 
+## The notation of presheaves
+
+let $\mathscr{C}$ be a category. I use the following conventions for presheaf theory.
+
+- $\mathscr{\hat C} := [\mathscr{C}^{op}, Set]$
+- $\mathscr{\check C} := [\mathscr{C}, Set]$
+
+We call the first functor category the category of presheaves over $\mathscr C$, while the second one the category of copresheaves over $\mathscr C$.
+In addition to this, I use the notation $\mathscr{\check y}$ for the (op)yoneda embedding $(x \mapsto Hom_\mathscr{C}(x,-))$ and $\mathscr{\hat y}$ for the yoneda embedding $(x \mapsto Hom_\mathscr{C}(-,x))$.
+
+The beginner might be careful about the sensitivity between $Hom$ functors;
+
+- $\mathscr{\check y_\mathscr C}(A) := Hom_\mathscr{C}(A,-)$ is a covariant functor
+- $\mathscr{\hat y_\mathscr C}(A) := Hom_\mathscr{C}(-,A)$ is a contravariant functor
+
+and yoneda embeddings;
+
+- $\mathscr{\check y_\mathscr C}$ is a contravariant functor
+- $\mathscr{\hat y_\mathscr C}$ is a covatiant functor
+
+When we do not need to specify $\mathscr C$ explicitly, I often use the notation $\mathscr{\hat y}$ and $\mathscr{\check y}$ for $\mathscr{\hat y_\mathscr C}$ and $\mathscr{\check y_\mathscr C}$ respectively. Also, I use $Hom(*,-)$ for $Hom_\mathscr C(*,-)$ .
+
+
+## A caution about $Hask$
+
+$Hask$ is not a category precisely.
+However, I would like $Hask$ to be a category here.
+It might be harmful to exclude from Hask all the fact that could be applied to complete version of $Hask$ .
+
+
+
+<br><br><br>
 
 
 # Yoneda Lemma
 
 
-(Op)Yoneda Lemma
+OpYoneda Lemma
 
-$$Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),F) = F(A)$$
+$$Hom_\mathscr{\check C}(\mathscr{\check y}(A),F) = F(A)$$
 
 
 
 
 Yoneda Lemma
 
-$$Hom_\mathscr{ \hat  C}(Hom_\mathscr{C}(-,A),F) = F(A)$$
+$$Hom_\mathscr{ \hat  C}(\mathscr{\hat y}(A),F) = F(A)$$
 
 
-# Yoneda Lemma in Haskell
 
-OpYoneda Lemma is composed by a bijection
+I use the convention that Yoneda Lemma refers, strictly speaking, to the Lemma that the functor $F$ is contravariant, since it inhabits the field of "presheaf" theory and not "copresheaf", i.e. the field of "homology" rather than "cohomology". The covariant Yoneda Lemma would be called "coYoneda" Lemma. However an ambiguity occurs here. The "coYoneda" Lemma is reserved for another Yoneda Lemma which is introduced with ∞-category and Grothendieck constructions later in the chapters. Here I call the covariant Yoneda as "OpYoneda" Lemma.
 
-$$\phi : Hom_\mathscr{\check C}(Hom_C(A,-),F) \to F(A)$$
+However, since OpYoneda Lemma is the trivial reverse of Yoneda Lemma, I may call the both "Yoneda" and "OpYoneda" Lemma as Yoneda Lemma later on this post.
 
-such that $\phi(\theta) \in F(A)$ where $\theta$ is a natural transformation and hence its type $Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,-),F)$ can be rewritten by;
 
-$$\forall K. Hom_\mathscr{\check C}(Hom_C(A,K),F(K))$$
+
+
+## Yoneda Lemma in Haskell
+
+Yoneda Lemma is composed by a bijection
+
+$$\phi : Hom_\mathscr{\check C}(\mathscr{\check y}(A),F) \to F(A)$$
+
+such that $\phi(\theta)$ is an element of $F(A)$ where $\theta$ is a natural transformation.<br>
+Hence its type $Hom_\mathscr{\check C}(\mathscr{\check y}(A),F)$ can be rewritten with;
+
+$$\forall K. Hom_\mathscr{\check C}(Hom_\mathscr{C}(A,K),F(K))$$
 
 This is
 
@@ -64,16 +105,23 @@ such that;
 ## Implementation of Yoneda Lemma
 
 
-In terms of presheaf cateogry theory, Yoneda Lemma shows that `internilization` and `externalization` compose just an equivalence relation.
+Given a category $\mathscr C$ and $\mathscr D$ and a functor $F : \mathscr C \to \mathscr D$, `externalization` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in category $\mathscr D$. In other words, the inside of an object $F(C)$ can be seen as a morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalization` is the inverse of `externalization`.
+So, in the trivial sense, `externalization` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more detail, see the defintion of ∞-category. )
+
+
+Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilization` and `externalization` compose an equivalence.
 
 ~~~ haskell
+{--
+#################################
+##         Yoneda Lemma        ##
+#################################
+--}
+
 
 {-# LANGUAGE UnicodeSyntax #-}
 module Yoneda where
 
--- #################################
--- ##         Yoneda Lemma        ##
--- #################################
 
 internalize :: Functor f => (∀ k. (a→k)→f k) → f a
 internalize t = t id
@@ -89,7 +137,7 @@ externalize a k = fmap k a
 where functional extentionality gives `~~` equality `==`.
 
 
-## Proof of Yoneda Lemma
+## The proof in Haskell Notation
 
 The proof is given by
 
@@ -114,33 +162,40 @@ ext (int t) k
 --}
 ~~~
 
-I'll confirm that check f is natural, ie. that `(ext f) . (fmap g) = (fmap g) . (ext f)` ,
-although, as I mentioned above, this is automatically true for polymorphic functions without funny stuff.
+I assumed the naturality of a functor `k` i.e. `(ext k) . (fmap g) = (fmap g) . (ext k)` ,
+although, this is true as the following;
+
+ext k (fmap g x)
+= fmap (fmap g x) k
 
 ~~~ haskell
 {--
-ext f (fmap g x)
-   = fmap (fmap g x) f   [defn of ext]
-   = fmap (g . x) f      [defn of fmap for ((->) a)]
-   = (fmap g . fmap x) f [property of fmap]
-   = fmap g (fmap x f)   [defn of (.)]
-   = fmap g (ext f x)    [defn of ext]
-   = (fmap g . ext f) x  [defn of (.)]
+ext k (fmap g x)
+   = fmap (fmap g x) k   [defn of ext]
+   = fmap (g . x) k      [defn of fmap for ((->) a)]
+   = (fmap g . fmap x) k [property of fmap]
+   = fmap g (fmap x k)   [defn of (.)]
+   = fmap g (ext k x)    [defn of ext]
+   = (fmap g . ext k) x  [defn of (.)]
 --}
 ~~~
 
+<br><br><br>
 
+# Examples of (Op)Yoneda Lemma
 
-# Examples of Yoneda Lemma
-
-Yoneda Lemma assumes an existence of Functor $F$. <br>
+OpYoneda Lemma assumes an existence of a covariant functor $F$. <br>
 Here I provide three examples of the functor $F$;
 
-- $F = Id$
-- $F = List$
-- $F = Hom(C,-)$
+1. $F = Id$
+2. $F = List$
+3. $F = Hom(C,-)$
 
-Functor $Id$ or `I` is defined as follows;
+<br>
+
+Let's see the definition of these functors in Haskell.
+
+1. Functor $Id$ or `I` is defined as follows;
 
 ~~~ haskell
 data I a = I a
@@ -148,7 +203,7 @@ instance Functor I where
     fmap f (I a) = I (f a)
 ~~~
 
-Functor $List$ or `[ ]` is defined in GHC, e.g;
+2. Functor $List$ or `[ ]` is defined in GHC, e.g;
 
 ~~~ haskell
 data [a] = [] | (:) a [a]
@@ -157,7 +212,7 @@ instance Functor [] where
     fmap f (x:xs) = f x : fmap f xs
 ~~~
 
-Functor $Hom(C,-)$ or `((->) c)` is defined as follows;
+3. Functor $Hom(C,-)$ or `((->) c)` is defined as follows;
 
 ~~~ haskell
 instance Functor ((->) c) where
@@ -188,13 +243,13 @@ fromCPS t = t id
 ~~~
 
 
+As we see later, `toCPS` is a variant of yoneda embedding $\mathscr{\check y}$ itself.<br>
+Thus, we have beautiful typings of CPS as the followings;
 
+- `toCPS` : $\mathscr{C} \rightarrow \mathscr{\check C}$
+- `fromCPS` : $\mathscr{\check C} \rightarrow \mathscr{C}$
 
-`toCPS` function is the Yoneda embedding, and `fromCPS` is the inverse function.
-
-- `toCPS` : $ \mathscr{C} \rightarrow y\mathscr{C} $
-- `fromCPS` : $ y\mathscr{C} \rightarrow \mathscr{C} $
-
+where $\mathscr C$ is a kind of $Hask$ .
 
 ## Reverse Engineering Machines (CPSs)
 
@@ -254,7 +309,7 @@ The reason is that if `f` is of type `∀ a.[a] → [a]` then `f $ map g a` equa
 
 Yoneda embedding $\mathscr {\check y}$ is represented in the situation of
 
-$F$ = $Hom(C,-)$ .
+$F = Hom(C,-)$ .
 
 
 Yoneda Embedding $\mathscr {\check y}$ is a contravatiant functor and hence,
@@ -286,7 +341,11 @@ opyoneda_g f = f . g
 
 
 
+
+
 ## CPS in Category Theory Style
+
+The codes in this section are pseudo-codes. So we cannot run the codes in Haskell interpreters without some modifications.
 
 The CPS Transformation on Type `K` is a Copresheaf Functor over the category `Hask`.
 
@@ -305,9 +364,11 @@ CPS    [K]      f       k   = k . f
 ~~~
 
 
+
+
 Taking quantification on `K`, and substituting `B = 1`, we will get;
 ~~~ haskell
-CPS A :: ∀K . (A→K)→K
+type CPS A = ∀K . (A→K)→K
 ~~~
 
 Now we define the Syntax of categorical version of STL (Simply Typed Lambda) Calculus as follows;
@@ -333,13 +394,13 @@ Here, nonCPS term `t` is got by `t == t* id id` . <br>
 The first argument `id` is the continuation of `t` which is the most outer continuation (or the last continuation).<br>
 The second argumennt `id` is the element of Unit Type `1` with which one can get elements in Category Theory.<br>
 
-
+<br><br><br>
 # ∞-Category Theory
 
 From here, we assume the basics of ∞-category theory. Particularly, we use the theory of presheaves and Grothendieck Constructions. For more detail see [Cisinski](http://www.mathematik.uni-regensburg.de/cisinski/CatLR.pdf).
 
 
-
+<br><br><br>
 # CoYoneda Lemma
 
 Let $F:C\to Set$ be a covariant $C$-module ("copresheaf").<br>
@@ -370,7 +431,7 @@ is a bijection.
 
 
 
-
+<br><br><br>
 # Examples of Coyoneda Lemma
 
 ## Closure
@@ -431,7 +492,7 @@ Q.E.D.
 
 
 
-
+<br><br><br><br><br><br><br><br><br><br><br><br>
 # Appendix
 
 ## funny stuff
