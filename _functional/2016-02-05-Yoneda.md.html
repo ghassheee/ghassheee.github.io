@@ -148,35 +148,34 @@ ext = externalize
 
 {--
 int (ext a)
-   = (ext a) id          [defn of int]
-   = fmap id a           [defn of ext]
-   = id a                [property of fmap]
-   = a                   [defn of id]
+   = (ext a) id             [defn of int]
+   = fmap id a              [defn of ext]
+   = id a                   [property of fmap]
+   = a                      [defn of id]
 
 ext (int t) k
-   = ext (t id) k        [use defn of int]
-   = fmap k (t id)       [use defn of ext]
-   = k (fmap t id)       [k natural]
-   = k (t . id)          [defn of fmap for ((>>) a)]
-   = k t                 [property of id]
+   = ext (t id) k           [use defn of int]
+   = fmap k (t id)          [use defn of ext]
+   = (fmap k) (t id)        [left assoc]
+   = (fmap k) ((ext t*) id) [exists t* , ext t* == t]
+   = (ext t*) (fmap k id)   [k natural]
+   = (ext t*) (k . id)      [defn of fmap for ((>>) a)]
+   = k t                    [now, defn of t*]
 --}
 ~~~
 
 I assumed the naturality of a functor `k` i.e. `(ext k) . (fmap g) = (fmap g) . (ext k)` ,
 although, this is true as the following;
 
-ext k (fmap g x)
-= fmap (fmap g x) k
-
 ~~~ haskell
 {--
 ext k (fmap g x)
-   = fmap (fmap g x) k   [defn of ext]
-   = fmap (g . x) k      [defn of fmap for ((->) a)]
-   = (fmap g . fmap x) k [property of fmap]
-   = fmap g (fmap x k)   [defn of (.)]
-   = fmap g (ext k x)    [defn of ext]
-   = (fmap g . ext k) x  [defn of (.)]
+   = fmap (fmap g x) k      [defn of ext]
+   = fmap (g . x) k         [defn of fmap for ((->) a)]
+   = (fmap g . fmap x) k    [property of fmap]
+   = fmap g (fmap x k)      [defn of (.)]
+   = fmap g (ext k x)       [defn of ext]
+   = (fmap g . ext k) x     [defn of (.)]
 --}
 ~~~
 
