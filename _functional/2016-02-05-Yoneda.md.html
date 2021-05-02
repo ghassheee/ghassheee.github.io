@@ -105,11 +105,11 @@ such that;
 ## Implementation of Yoneda Lemma
 
 
-Given a category $\mathscr C$ and $\mathscr D$ and a functor $F : \mathscr C \to \mathscr D$, `externalization` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in category $\mathscr D$. In other words, the inside of an object $F(C)$ can be seen as a morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalization` is the inverse of `externalization`.
-So, in the trivial sense, `externalization` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more detail, see the defintion of ∞-category. )
+Given a category $\mathscr C$ and a contravariant functor $F : \mathscr C^{op} \to Set$, `externalization` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in the category $Set$. In other words, the inside of a set $F(C)$ can be seen as a external morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalization` is the inverse of `externalization`. With `internalization`, an externally existing morphism out of objects in the category of presheaves can be seen as an inhabitant of a particular set.
+In the trivial sense, `externalization` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more details, see the defintion of ∞-category on the category of simplicial sets. It's the best way to feed the intuition. )
 
 
-Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilization` and `externalization` compose an equivalence.
+Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilization` and `externalization` compose an equivalence. Then let's see the `op` version of the above argument, i.e. functors are covariant living in the category of copresheves $\mathscr{\check C}$.
 
 ~~~ haskell
 {--
@@ -137,7 +137,7 @@ externalize a k = fmap k a
 where functional extentionality gives `~~` equality `==`.
 
 
-## The proof in Haskell Notation
+## The proof in Haskell like Notation
 
 The proof is given by
 
@@ -165,7 +165,7 @@ ext (int t) k
 ~~~
 
 I assumed the naturality of a functor `k` i.e. `(ext k) . (fmap g) = (fmap g) . (ext k)` ,
-although, this is true as the following;
+although, this is true as the following proof;
 
 ~~~ haskell
 {--
