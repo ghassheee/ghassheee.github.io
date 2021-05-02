@@ -10,10 +10,10 @@ In this post, I assume the bunch of terms in the language "category theory", or 
 
 ## The notation of presheaves
 
-let $\mathscr{C}$ be a category. I use the following conventions for presheaf theory.
+Let $\mathscr{C}$ be a category. I use the following conventions for presheaf theory.
 
-- $\mathscr{\hat C} := [\mathscr{C}^{op}, Set]$
-- $\mathscr{\check C} := [\mathscr{C}, Set]$
+- $\mathscr{\hat C} := [\mathscr{C}^{op}, Set] := Hom_{Cat}(\mathscr{C}^{op}, Set)$
+- $\mathscr{\check C} := [\ \mathscr{C}\ \ , Set] := Hom_{Cat}(\ \mathscr{C}\ \ , Set)$
 
 We call the first functor category the category of presheaves over $\mathscr C$, while the second one the category of copresheaves over $\mathscr C$.
 In addition to this, I use the notation $\mathscr{\check y}$ for the (op)yoneda embedding $(x \mapsto Hom_\mathscr{C}(x,-))$ and $\mathscr{\hat y}$ for the yoneda embedding $(x \mapsto Hom_\mathscr{C}(-,x))$.
