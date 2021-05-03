@@ -24,7 +24,7 @@
         max-width: 700px;
     }
 }
-@media screen and (min-width:1500px){
+@media screen and (min-width:1700px){
     body#md {
         /*
         font-weight: 400;
@@ -194,7 +194,7 @@ img.markdeep {
         white-space: nowrap;
         width: 0px;
         border-right: 1px solid #ece0cd;
-        background: #f2efea;
+        background: #f7f1dc;
         overflow-y:scroll;
         font-size: 10px;
         font-family: inherit;
@@ -225,7 +225,7 @@ img.markdeep {
         margin-left: 3%;
         right: 0px;
         overflow: auto;
-        max-width: 100%;
+        max-width: 700px;
     }
 
     .md .longTOC {
@@ -233,7 +233,7 @@ img.markdeep {
         white-space: nowrap;
         width: 160px;
         border-right: 1px solid #ece0cd;
-        background: #f2efea;
+        background: #f7f1dc;
         overflow-y:scroll;
         font-size: 10px;
         font-family: inherit;
@@ -256,7 +256,7 @@ img.markdeep {
     }
 }
 
-@media screen and (min-width: 1000px){
+@media screen and (min-width: 900px){
     body {
         position: absolute;
         left: 300px;
@@ -272,7 +272,7 @@ img.markdeep {
         white-space: nowrap;
         width: 300px;
         border-right: 1px solid #ece0cd;
-        background: #f2efea;
+        background: #f7f1dc;
         overflow-y:scroll;
         font-size: 13px;
         font-family: inherit;
@@ -295,15 +295,16 @@ img.markdeep {
     }
 }
 
-@media screen and (min-width: 1500px){
+@media screen and (min-width: 1700px){
     body {
         position: absolute;
         left: 450px;
-        margin-right: 200px;
-        margin-left:  200px;
+        margin-right: 20%;
+        margin-left:  20%;
         right: 0px;
         overflow: auto;
         max-width: 650px;
+        min-width: 400px;
     }
 
     .md .longTOC {
@@ -312,8 +313,7 @@ img.markdeep {
         width: 450px;
         border-right: 1px solid #ece0cd;
         /*background: #f2efea; */
-        background: #faf4db;
-        color: #ffffff;
+        background: #f7f1dc;
         overflow-y:scroll;
         font-size: 16px;
         font-family: inherit;
