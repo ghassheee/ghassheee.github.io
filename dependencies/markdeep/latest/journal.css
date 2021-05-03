@@ -139,7 +139,8 @@ img.markdeep {
 }
 
 .md pre.tilde {
-    background: #ebf0e9;
+    background: #f2efea;
+    /*background: #ebf0e9;   /* gray-green */ */
     border-radius: 10px;
 }
 
@@ -148,7 +149,8 @@ img.markdeep {
     font-size: 75%;
     color: #e24097;
     /* font-family: Monospace; */
-    background: #ebf0e9;
+    /* background: #ebf0e9; */
+    background: #f2efea;
     padding-left: 3px;
     padding-right: 3px;
 }
@@ -309,7 +311,9 @@ img.markdeep {
         white-space: nowrap;
         width: 450px;
         border-right: 1px solid #ece0cd;
-        background: #f2efea;
+        /*background: #f2efea; */
+        background: #faf4db;
+        color: #ffffff;
         overflow-y:scroll;
         font-size: 16px;
         font-family: inherit;
