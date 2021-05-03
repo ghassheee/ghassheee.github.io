@@ -28,7 +28,7 @@ and yoneda embeddings;
 - $\mathscr{\check y_\mathscr C}$ is a contravariant functor
 - $\mathscr{\hat y_\mathscr C}$ is a covatiant functor
 
-When we do not need to specify $\mathscr C$ explicitly, I often use the notation $\mathscr{\hat y}$ and $\mathscr{\check y}$ for $\mathscr{\hat y_\mathscr C}$ and $\mathscr{\check y_\mathscr C}$ respectively. Also, I use $Hom(*,-)$ for $Hom_\mathscr C(*,-)$ .
+When we do not need to specify $\mathscr C$ explicitly, I often use the notation $\mathscr{\hat y}$ and $\mathscr{\check y}$ for $\mathscr{\hat y_\mathscr C}$ and $\mathscr{\check y_\mathscr C}$ respectively. Also, I use $Hom(*,-)$ for $Hom_\mathscr C(*,-)$ . Although I do not introduce explicitly "internal hom" which is defined as a exponential in a proper setting, I will show how morphisms are `internalized` and objects are `externalized` in this post.
 
 
 ## A caution about $Hask$
@@ -105,11 +105,11 @@ such that;
 ## Implementation of Yoneda Lemma
 
 
-Given a category $\mathscr C$ and a contravariant functor $F : \mathscr C^{op} \to Set$, `externalization` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in the category $Set$. In other words, the inside of a set $F(C)$ can be seen as a external morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalization` is the inverse of `externalization`. With `internalization`, an externally existing morphism out of objects in the category of presheaves can be seen as an inhabitant of a particular set.
-In the trivial sense, `externalization` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more details, see the defintion of ∞-category on the category of simplicial sets. It's the best way to feed the intuition. )
+Given a category $\mathscr C$ and a contravariant functor $F : \mathscr C^{op} \to Set$, `externalize` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in the category $Set$. In other words, the inside of a set $F(C)$ can be seen as a external morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalize` is the inverse of `externalize`. With `internalize`, an externally existing morphism out of objects in the category of presheaves can be seen as an inhabitant of a particular set.
+In the trivial sense, `externalize` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more details, see the defintion of ∞-category on the category of simplicial sets. It's the best way to feed the intuition. )
 
 
-Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilization` and `externalization` compose an equivalence. Then let's see the `op` version of the above argument, i.e. functors are covariant living in the category of copresheves $\mathscr{\check C}$.
+Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilize` and `externalize` compose an equivalence. Then let's see the `op` version of the above argument, i.e. functors are covariant living in the category of copresheves $\mathscr{\check C}$.
 
 ~~~ haskell
 {--
@@ -516,6 +516,8 @@ This is an example of what they call "funny stuff".
 
 
 ## caron $\check C$
+
+From [A Neighborhood of Infinity](http://blog.sigfpe.com/2006/11/yoneda-lemma.html?m=1)
 
 The accent on this letter 'č' is called a caron or háček.
 The book from which I learned about the Yoneda lemma used the caron to indicate the function I call check.
