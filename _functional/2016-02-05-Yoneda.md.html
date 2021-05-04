@@ -18,7 +18,7 @@ Let $\mathscr{C}$ be a category. I use the following conventions for presheaf th
 We call the first functor category the category of presheaves over $\mathscr C$, while the second one the category of copresheaves over $\mathscr C$.
 In addition to this, I use the notation $\mathscr{\check y}$ for the (op)yoneda embedding $(x \mapsto Hom_\mathscr{C}(x,-))$ and $\mathscr{\hat y}$ for the yoneda embedding $(x \mapsto Hom_\mathscr{C}(-,x))$.
 
-The beginner might be careful about the sensitivity between $Hom$ functors;
+A Beginner might be careful about the sensitivity between $Hom$ functors;
 
 - $\mathscr{\check y_\mathscr C}(A) := Hom_\mathscr{C}(A,-)$ is a covariant functor
 - $\mathscr{\hat y_\mathscr C}(A) := Hom_\mathscr{C}(-,A)$ is a contravariant functor
@@ -106,7 +106,7 @@ such that;
 
 
 Given a category $\mathscr C$ and a contravariant functor $F : \mathscr C^{op} \to Set$, `externalize` is a technique of using the category of presheaves $\mathscr{\check C}$ to see the object $F(C)$ in the category $Set$. In other words, the inside of a set $F(C)$ can be seen as a external morphism in the functor category $\mathscr{\check C}$ i.e. natural transformation. The `internalize` is the inverse of `externalize`. With `internalize`, an externally existing morphism out of objects in the category of presheaves can be seen as an inhabitant of a particular set.
-In the trivial sense, `externalize` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more details, see the defintion of ∞-category on the category of simplicial sets. It's the best way to feed the intuition. )
+In a trivial case, `externalize` is yoneda embedding itself. Or, as an object, functor $F$ is precisely composed of some or many yoneda embedded objects from category $\mathscr C$. ( For more details, see the defintion of ∞-category on the category of simplicial sets. It's the best way to feed the intuition. )
 
 
 Thus, in terms of presheaf theory, Yoneda Lemma shows that `internilize` and `externalize` compose an equivalence. Then let's see the `op` version of the above argument, i.e. functors are covariant living in the category of copresheves $\mathscr{\check C}$.
