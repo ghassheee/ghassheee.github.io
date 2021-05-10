@@ -5,6 +5,106 @@ title: OCaml
 
 Reference : [Atsushi Igarashi] Programming in OCaml
 
+# SML v.s. OCaml
+
+[SML v.s. OCaml Comparison](https://people.mpi-sws.org/~rossberg/sml-vs-ocaml.html)
+
+
+## SML nj
+
+I recommend using SML/NJ's Compilation Manager (CM). It's a build system for SML code in the context of SML/NJ. It can get quite complicated if you need more advanced features, but it's easy to get started. I'll show you a barebones structure and you can adjust as needed. It already comes installed with SML/NJ, so there's no installation process.
+
+I'll use the following directory structure for this example (the file extensions are not imposed, just a convention):
+
+~~~ sh
+.
+├── build.cm
+└── src
+    ├── foo.fun
+    ├── foo.sig
+    └── main.sml
+~~~
+
+build.cm
+
+~~~ SML
+group
+  (* CM allows you to selectively export defined modules (structures,
+     signatures and functors) by listing them here. It's useful for
+     libraries. *)
+
+  source (-)       (* export all defined modules *)
+
+  structure Main   (* OR, export selectively *)
+  signature FOO
+  functor Foo
+is
+  (* Import the SML standard library, aka Basis.  *)
+  (* See: http://sml-family.org/Basis/ *)
+  $/basis.cm
+
+  (* Import the SML/NJ library *)
+  (* Provides extra data structures and algorithms. *)
+  (* See: https://www.smlnj.org/doc/smlnj-lib/Manual/toc.html *)
+  $/smlnj-lib.cm
+
+  (* List each source file you want to be considered for compilation. *)
+  src/main.sml
+  src/foo.sig
+  src/foo.fun
+~~~
+
+
+src/main.sml
+
+
+
+~~~ SML
+structure Main =
+  struct
+    (* You don't have to import the `Foo` functor. *)
+    (* It's been done in build.cm already. *)
+    structure F = Foo()
+
+    fun main () =
+      print (F.message ^ "\n")
+  end
+src/foo.sig
+
+signature FOO =
+  sig
+    val message : string
+  end
+~~~
+
+src/foo.fun
+
+~~~
+(* You don't have to import the `FOO` signature. *)
+(* It's been done in build.cm already. *)
+functor Foo() : FOO =
+  struct
+    val message = "Hello, World!"
+  end
+~~~
+
+Usage
+
+Having the structure in place, you can start compiling using CM.make and running by calling whatever functions you've defined:
+
+~~~ shell
+$ sml
+Standard ML of New Jersey v110.82 [built: Tue Jan  9 20:54:02 2018]
+- CM.make "build.cm";
+val it = true : bool
+-
+- Main.main ();
+Hello, World!
+val it = () : unit
+~~~
+
+
+
 # Prerequisity
 
 ## installation
