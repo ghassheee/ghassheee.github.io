@@ -3,6 +3,10 @@ layout: journal
 title: OCaml
 ---
 
+
+
+
+
 Reference : [Atsushi Igarashi] Programming in OCaml
 
 # SML v.s. OCaml
@@ -103,6 +107,34 @@ Hello, World!
 val it = () : unit
 ~~~
 
+## SML lexer
+
+smlnj ML-lexer
+
+https://www.smlnj.org/doc/ML-Lex/manual.html#sample
+
+
+
+# custom operators
+
+https://blog.shaynefletcher.org/2016/09/custom-operators-in-ocaml.html
+
+
+
+
+# pipeline in ocaml
+
+Another, clearer way of producing the same result in OCaml uses higher-order functions and the pipeline operator `|>`:
+
+~~~
+let square x = x*x
+let sum = List.fold_left (+) 0
+
+let sum_sq n =
+  0--n                (* [0;1;2;...;n]   *)
+  |> List.map square  (* [0;1;4;...;n*n] *)
+  |> sum              (*  0+1+4+...+n*n  *)
+~~~
 
 
 # Prerequisity
