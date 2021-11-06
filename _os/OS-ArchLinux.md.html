@@ -63,7 +63,7 @@ timedatectl set-ntp true                        ## set systemclock
 vim /etc/pacman.d/mirrorlist                    ## choose Mirror Server
 
 
-pacstrap /mnt base base-devel
+pacstrap /mnt base linux linux-firmware
 
 
 genfstab -U -p /mnt >> /mnt/etc/fstab           ## -p excludes pseudofs mounts
