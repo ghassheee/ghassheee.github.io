@@ -1,0 +1,162 @@
+---
+title: STARKs Part I
+layout: journal
+---
+
+
+This article is the Japanese translation of [STARKs, Part I: Proofs with Polynomials](https://vitalik.ca/general/2017/11/09/starks_part_1.html) originally written on 2017 Nov 09.
+
+Eli Ben-Sasson さんに多大なる手助け、説明、そして査読いただき、またこの記事で使われるいくつかの例を考えていただき、何よりこれらすべての発明いただいたことに多大なる感謝をもうしあげます。ならびに、Hsiao-wei Wang さんの査読にも感謝いたします。
+
+ZK-SNARKs についてはもう耳にしたことがあるという前提で話をしたいのですが、
+それは、ゼロ知識証明をつかった技術であり、検証計算から、プライバシー保護がなされた暗号通貨までに渡るあらゆるユースケースに備えた一般的なものです。
+
+しかし、ZK-STARKs については聞いたことがないという人もいるかもしれません。それは新しく開発されたもので、ZK-SNARKsのいとこにあたるものです。
+ZK-STARKs の T は transparent つまりは透明性を意味します。ZK-STARKs は、 ZK-SNARKs の主要な弱点、つまりプロトコルを信用しなければならない Trusted Setup 問題を見事に解決したものです。さらに暗号学的前提をさらに簡素にしてくれてもいるのです。楕円曲線や、ペアリング、the knowledge-of-exponent の前提といったものを必要とせず、その代わりに、単にハッシュと情報理論に依存するよう改善されています。
+これが意味するところは、量子コンピュータを使った攻撃にも耐えるということです。
+
+
+しかしながら、コストがかかります。
+証明のサイズは、288 byte だったものが、数百キロバイトまで膨れ上がります。
+このコストが見合わないような使用例はもちろんあるでしょうが、
+とりわけ、信用を最小化したいという、パブリックブロックチェーンの文脈では、十分コストに見合うことでしょう。
+かつ、楕円曲線が破られる、あるいは量子コンピュータの実用化に大きな進展などがあった場合などに、必ず役立つことでしょう。
+
+さて、ではどのようにして、この新しいゼロ知識証明が動いているのでしょうか。
+まずはじめに、一般的なゼロ知識証明がどのようなものだったということを復習しましょう。
+まず前提として、公開する関数と、秘密にする入力値、公開する出力値の三つを持っていることとしましょう。
+
+あなたは、 $ f(x) = y $ をみたすような、 $x$ を持っているということを証明したいのですが、 $x$ がなんであるかの情報は与えたくありません。
+さらに、f を証明の正しさを損なうことなく、より高速に計算したいような状況だったとしましょう。
+
+![](/image/vb/starks_pic1.png)
+
+いくつか使用例を見てみましょう。
+
+- $f$ が、普通のノートパソコンだと二週間かかり、データセンターにある大きいパソコンで二時間かかる計算だったとします。あなたはその $f$ つまりは走らせるコードをデータをデータセンターに送りつけ、データセンターがそれを走らせ、素の結果を証明つきで返信してくれるものとします。
+あなたは、その証明が正しいということを数ミリ秒で検証することができ、送られてきた答えが正しいということを知ることができます。
+- あなたが、次のような内容の暗号化されたトランザクションをもっているものとします。「 $X_1$ は私の古い残高だ。 $X_2$ は私の新しい残高だ。 $X_3$ はあなたの古い残高だ。 $X_4$ はあなたの新しい残高だ。」というようなものです。あなたは、このトランザクションの有効性を示す証明つまりは、古い残高と新しい残高が非負であり、自分の残高の減額とあ相手の残高の増分が一致しているということを示す証明書をひとつ作成したいとします。 $x$ は暗号鍵のペアとし、 $f$ はそのトランザクションをもう一つ入力値と公開されたものとしてもつような関数であり、鍵のペアを（秘密の）引数としてとり、検査をし、検査を通れば $1$ を返し、そうでなければ $0$ を返すようなものとなります。当然 $y$ の値は検査が通れば $1$ となります。
+- Ethereum のようなブロックチェーンをもつような状況を考えます。あなたは、例えば、ノードを Genesis Block からダウンロードを始めるのには時間がかかるので、過去のトランザクションに興味がなく、あなたの財布への入金を取り扱うような最新のブロックが正しいとという証明が欲しいとします。あなたは、フルノードに大して、そのブロックの正しさの証明が欲しいとします。 $x$ は何ギガバイトに及ぶ、全ブロックチェーンのデータであり、 $f$ はそのデータをブロック毎に処理し、その有効性を検証し、最後のブロックのハッシュ値を出力する関数です。そして、 $y$ は、フルノードからあなたがダウンロードしたブロックのハッシュ値です。（かなり大掛かりな検査に思えるかもしれませんが、同期に数日かかる現状と比べると劇的に早くなるはずです。）
+
+
+![](/image/vb/starks_pic2.png)
+
+さて、これらすべての例に対する困難とは一体なんなのでしょうか。
+ゼロ知識であること、つまりはプライバシーの確保は比較的容易に達成することができます。
+任意の計算を三色グラフ問題のようなものの一例に変換する方法は、幾通りもあります・ここでグラフを三色に色付けすることは、もとの問題の解に相応し、
+伝統的なゼロ知識証明プロトコルを使い、有効な三色グラフを持っているということをそれを明らかにすることなく、証明するのに使います。
+詳細は、この2014年の[ Mattew Green による素晴しい記事](https://blog.cryptographyengineering.com/2014/11/27/zero-knowledge-proofs-illustrated-primer/)を参照して下さい。
+
+
+本質を端的に、かつ明らかにしておくということは、より困難です。
+直感的にいうと、計算に関わることを端的かつ明示的に証明することが困難である理由は、
+計算というものがとても壊れやすく繊細なものだからです。
+もしあなたが、長くかつ複雑な計算をもっていたとし、悪魔の呪文で、計算の任意の途中過程において 0 と 1 を反転することができたとします。
+ほとんどの場合において計算結果をまったく違ったものにするには、一ヶ所さえ反転させてやれば済むのです。
+そのため、計算の正確性を計るために、ランダムにサンプリングするといったようなことは難しいのです。というのは、ランダムなサンプリングによって、その悪魔の1ビットをサンプルすることを容易く逃してしまうからです。
+しかしながら、高度かつ複雑な数学を使えば、それを可能にすることができることがわかります。
+
+一般的な考えとして、より高度な直感で伝えるとすれば、これを遂行するプロトコルは、[ erasure coding ](https://en.wikipedia.org/wiki/Erasure_code) で用いられているものに似たような数学を利用しています。 erasure coding とは、データに障害耐性を持たせるのにしばしば使われる技術です。
+もし、ひとつのデータ片をもっていて、それをひとつの直線として符号化したとすると、あなたは、その直線から4点選び取ることができます。
+これら4点のうち任意の2点があれば、もとの直線を再構成するには十分であり、それゆえ、その2点から、他の2点の情報も得ることができる、といったようなものです。
+さらに、データに対して、本の少し変化を与えたとすると、これらの4点のうち少なくとも3点が正しいということが保証されています。
+今、データを直線として符号化しましたが、データを1000000次多項式として符号化することも可能です。 2000000個の点を多項式上に選ぶことができ、1000001個のデータから、これらを復元することができます。元のデータにおけるどんな偏差が変化するには、少なくとも1000000個の点が必要となるでしょう。
+ここで紹介したアルゴリズムは、エラーの強度を持たせる目的で、多項式に深く依存していると言えるでしょう。
+
+![](/image/vb/starks_pic3.png)
+
+
+
+# A Somewhat Simple Example
+
+Suppose that you want to prove that you have a polynomial P
+such that P(x) is an integer with $ 0 \le P(x) \le 9 $ 
+for all from 1 to 1 million. This is a simple instance of the fairly common task of "range checking"; you might imagine this kind of check being used to verify, for example, that a set of account balances is still positive after applying some set of transactions. If it were
+
+, this could be part of checking that the values form a correct Sudoku solution.
+
+The "traditional" way to prove this would be to just show all 1,000,000 points, and verify it by checking the values. However, we want to see if we can make a proof that can be verified in less than 1,000,000 steps. Simply randomly checking evaluations of
+won't do; there's always the possibility that a malicious prover came up with a
+
+which satisfies the constraint in 999,999 places but does not satisfy it in the last one, and random sampling only a few values will almost always miss that value. So what can we do?
+
+
+Let's mathematically transform the problem somewhat. Let
+be a constraint checking polynomial; if and is nonzero otherwise. There's a simple way to construct :
+
+(we'll assume all of our polynomials and other values use exclusively integers, so we don't need to worry about numbers in between).
+
+
+Now, the problem becomes: prove that you know
+such that for all from 1 to 1,000,000. Let . It's a known mathematical fact that any polynomial which equals zero at all from 1 to 1,000,000 is a multiple of . Hence, the problem can now be transformed again: prove that you know and such that for all (note that if you know a suitable then dividing it by to compute
+
+is not too difficult; you can use long polynomial division or more realistically a faster algorithm based on FFTs). Now, we've converted our original statement into something that looks mathematically clean and possibly quite provable.
+
+So how does one prove this claim? We can imagine the proof process as a three-step communication between a prover and a verifier: the prover sends some information, then the verifier sends some requests, then the prover sends some more information. First, the prover commits to (ie. makes a Merkle tree and sends the verifier the root hash of) the evaluations of
+and for all from 1 to 1 billion (yes, billion). This includes the 1 million points where
+
+as well as the 999 million points where that (probably) is not the case.
+
+
+We assume the verifier already knows the evaluation of
+at all of these points; the is like a "public verification key" for this scheme that everyone must know ahead of time (clients that do not have the space to store in its entirety can simply store the Merkle root of and require the prover to also provide branches for every value that the verifier needs to query; alternatively, there are some number fields over which for certain is very easy to calculate). After receiving the commitment (ie. Merkle root) the verifier then selects a random 16 values between 1 and 1 billion, and asks the prover to provide the Merkle branches for and there. The prover provides these values, and the verifier checks that (i) the branches match the Merkle root that was provided earlier, and (ii) actually equals
+
+in all 16 cases.
+
+
+We know that this proof perfect completeness - if you actually know a suitable
+, then if you calculate and construct the proof correctly it will always pass all 16 checks. But what about soundness - that is, if a malicious prover provides a bad , what is the minimum probability that they will get caught? We can analyze as follows. Because is a degree-10 polynomial composed with a degree-1,000,000 polynomial, its degree will be at most 10,000,000. In general, we know that two different degree- polynomials agree on at most points; hence, a degree-10,000,000 polynomial which is not equal to any polynomial which always equals for some will necessarily disagree with them all at at least 990,000,000 points. Hence, the probability that a bad will get caught in even one round is already 99%; with 16 checks, the probability of getting caught goes up to
+
+; that is to say, the scheme is about as hard to spoof as it is to compute a hash collision.
+
+So... what did we just do? We used polynomials to "boost" the error in any bad solution, so that any incorrect solution to the original problem, which would have required a million checks to find directly, turns into a solution to the verification protocol that can get flagged as erroneous at 99% of the time with even a single check.
+
+We can convert this three-step mechanism into a non-interactive proof, which can be broadcasted by a single prover once and then verified by anyone, using the Fiat-Shamir heuristic. The prover first builds up a Merkle tree of the
+and
+
+values, and computes the root hash of the tree. The root itself is then used as the source of entropy that determines what branches of the tree the prover needs to provide. The prover then broadcasts the Merkle root and the branches together as the proof. The computation is all done on the prover side; the process of computing the Merkle root from the data, and then using that to select the branches that get audited, effectively substitutes the need for an interactive verifier.
+
+The only thing a malicious prover without a valid
+can do is try to make a valid proof over and over again until eventually they get extremely lucky with the branches that a Merkle root that they compute selects, but with a soundness of (ie. probability of at least
+
+that a given attempted fake proof will fail the check) it would take a malicious prover billions of years to make a passable proof.
+
+
+Going Further
+
+To illustrate the power of this technique, let's use it to do something a little less trivial: prove that you know the millionth Fibonacci number. To accomplish this, we'll prove that you have knowledge of a polynomial which represents a computation tape, with
+representing the th Fibonacci number. The constraint checking polynomial will now hop across three x-coordinates: (notice how if for all then
+
+represents a Fibonacci sequence).
+
+
+The translated problem becomes: prove that you know
+and such that . For each of the 16 indices that the proof audits, the prover will need to provide Merkle branches for , , and . The prover will additionally need to provide Merkle branches to show that
+
+. Otherwise, the entire process is the same.
+
+Now, to accomplish this in reality there are two problems that need to be resolved. The first problem is that if we actually try to work with regular numbers the solution would not be efficient in practice, because the numbers themselves very easily get extremely large. The millionth Fibonacci number, for example, has 208988 digits. If we actually want to achieve succinctness in practice, instead of doing these polynomials with regular numbers, we need to use finite fields - number systems that still follow the same arithmetic laws we know and love, like
+and
+
+, but where each number is guaranteed to take up a constant amount of space. Proving claims about the millionth Fibonacci number would then require a more complicated design that implements big-number arithmetic on top of this finite field math.
+
+The simplest possible finite field is modular arithmetic; that is, replace every instance of
+with for some prime , do the same for subtraction and multiplication, and for division use modular inverses (eg. if , then , , , and
+
+). You can learn more about these kinds of number systems from my description on prime fields here (search "prime field" in the page) or this Wikipedia article on modular arithmetic (the articles that you'll find by searching directly for "finite fields" and "prime fields" unfortunately tend to be very complicated and go straight into abstract algebra, don't bother with those).
+
+Second, you might have noticed that in my above proof sketch for soundness I neglected to cover one kind of attack: what if, instead of a plausible degree-1,000,000
+and degree-9,000,000 , the attacker commits to some values that are not on any such relatively-low-degree polynomial? Then, the argument that an invalid must differ from any valid on at least 990 million points does not apply, and so different and much more effective kinds of attacks are possible. For example, an attacker could generate a random value for every , then compute and commit to these values in place of and
+
+. These values would not be on any kind of low-degree polynomial, but they would pass the test.
+
+It turns out that this possibility can be effectively defended against, though the tools for doing so are fairly complex, and so you can quite legitimately say that they make up the bulk of the mathematical innovation in STARKs. Also, the solution has a limitation: you can weed out commitments to data that are very far from any degree-1,000,000 polynomial (eg. you would need to change 20% of all the values to make it a degree-1,000,000 polynomial), but you cannot weed out commitments to data that only differ from a polynomial in only one or two coordinates. Hence, what these tools will provide is proof of proximity - proof that most of the points on
+and
+
+correspond to the right kind of polynomial.
+
+As it turns out, this is sufficient to make a proof, though there are two "catches". First, the verifier needs to check a few more indices to make up for the additional room for error that this limitation introduces. Second, if we are doing "boundary constraint checking" (eg. verifying
+
+in the Fibonacci example above), then we need to extend the proof of proximity to not only prove that most points are on the same polynomial, but also prove that those two specific points (or whatever other number of specific points you want to check) are on that polynomial.
+
+In the next part of this series, I will describe the solution to proximity checking in much more detail, and in the third part I will describe how more complex constraint functions can be constructed to check not just Fibonacci numbers and ranges, but also arbitrary computation.
