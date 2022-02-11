@@ -33,8 +33,7 @@ ZK-STARKs の T は transparent つまりは透明性を意味します。ZK-STA
 
 いくつか使用例を見てみましょう。
 
-- $f$ が、普通のノートパソコンだと二週間かかり、データセンターにある大きいパソコンで二時間かかる計算だったとします。あなたはその $f$ つまりは走らせるコードをデータをデータセンターに送りつけ、データセンターがそれを走らせ、素の結果を証明つきで返信してくれるものとします。
-あなたは、その証明が正しいということを数ミリ秒で検証することができ、送られてきた答えが正しいということを知ることができます。
+- $f$ が、普通のノートパソコンだと二週間かかり、データセンターにある大きいパソコンで二時間かかる計算だったとします。あなたはその $f$ つまりは走らせるコードをデータをデータセンターに送りつけ、データセンターがそれを走らせ、素の結果を証明つきで返信してくれるものとします。あなたは、その証明が正しいということを数ミリ秒で検証することができ、送られてきた答えが正しいということを知ることができます。
 - あなたが、次のような内容の暗号化されたトランザクションをもっているものとします。「 $X_1$ は私の古い残高だ。 $X_2$ は私の新しい残高だ。 $X_3$ はあなたの古い残高だ。 $X_4$ はあなたの新しい残高だ。」というようなものです。あなたは、このトランザクションの有効性を示す証明つまりは、古い残高と新しい残高が非負であり、自分の残高の減額とあ相手の残高の増分が一致しているということを示す証明書をひとつ作成したいとします。 $x$ は暗号鍵のペアとし、 $f$ はそのトランザクションをもう一つ入力値と公開されたものとしてもつような関数であり、鍵のペアを（秘密の）引数としてとり、検査をし、検査を通れば $1$ を返し、そうでなければ $0$ を返すようなものとなります。当然 $y$ の値は検査が通れば $1$ となります。
 - Ethereum のようなブロックチェーンをもつような状況を考えます。あなたは、例えば、ノードを Genesis Block からダウンロードを始めるのには時間がかかるので、過去のトランザクションに興味がなく、あなたの財布への入金を取り扱うような最新のブロックが正しいとという証明が欲しいとします。あなたは、フルノードに大して、そのブロックの正しさの証明が欲しいとします。 $x$ は何ギガバイトに及ぶ、全ブロックチェーンのデータであり、 $f$ はそのデータをブロック毎に処理し、その有効性を検証し、最後のブロックのハッシュ値を出力する関数です。そして、 $y$ は、フルノードからあなたがダウンロードしたブロックのハッシュ値です。（かなり大掛かりな検査に思えるかもしれませんが、同期に数日かかる現状と比べると劇的に早くなるはずです。）
 
@@ -69,94 +68,148 @@ ZK-STARKs の T は transparent つまりは透明性を意味します。ZK-STA
 
 # A Somewhat Simple Example
 
-Suppose that you want to prove that you have a polynomial P
-such that P(x) is an integer with $ 0 \le P(x) \le 9 $ 
-for all from 1 to 1 million. This is a simple instance of the fairly common task of "range checking"; you might imagine this kind of check being used to verify, for example, that a set of account balances is still positive after applying some set of transactions. If it were
+あなたが今、多項式 $P$ に対して、任意の $x$ が、 $1$ から $1000000$ までの整数であるとき、 $ 0 \le P(x) \le 9 $ をみたしていることを証明したいとします。
+これは、『値域検査』のシンプルなタスクです。『値域検査』というのは、例えば口座の集合に対して、トランザクションの集合を適用したとき、すべての口座の残高が非負整数であるかどうかなどの検査に使われるようなものです。
+もし、値域が  $ 0 \le P(x) \le 9 $ の範囲内ならば、値が正しい数独パズルを構成していることの部分的な検証ととれるでしょう。
+伝統的なこれの証明方法は、1000000個の点全てを表示し、検証するというものです。
+しかしながら、われわれは、1000000ステップより小さいステップで証明できるのかということを知りたいのです。
+単にランダムな検査を多項式 $P$ の評価に対して適用するだけではできません。
+常に、悪意ある証明者が、999999箇所では制約を満たすものの、最後の一つだけ制約を満たさないようなものを思いつく危険性があり、
+いくつかの値に対するサンプリングでは必ず、その問題の値を捕捉できません。
+では、われわれに何ができるのでしょうか。
 
-, this could be part of checking that the values form a correct Sudoku solution.
+![](/image/vb/starks_pic4.png)
 
-The "traditional" way to prove this would be to just show all 1,000,000 points, and verify it by checking the values. However, we want to see if we can make a proof that can be verified in less than 1,000,000 steps. Simply randomly checking evaluations of
-won't do; there's always the possibility that a malicious prover came up with a
+問題を数学上で、少し変形してみましょう。
+ $ C(x) $ を多項式を検査するための制約条件とします。もし、 $ 0 \le x \le 9 $ ならば $C(x) = 0$ をとり、それ以外の場合は、非零の数となるものとします。
+これは、単に $C(x) = x(x-1)(x-2) ... (x-9) $ とすることで構築することができます。
+（今は、 $x$ は整数であり、それ以外の場合は考慮に入れる必要はありません。）
 
-which satisfies the constraint in 999,999 places but does not satisfy it in the last one, and random sampling only a few values will almost always miss that value. So what can we do?
+![](/image/vb/starks_pic5.png)
 
-
-Let's mathematically transform the problem somewhat. Let
-be a constraint checking polynomial; if and is nonzero otherwise. There's a simple way to construct :
-
-(we'll assume all of our polynomials and other values use exclusively integers, so we don't need to worry about numbers in between).
-
-
-Now, the problem becomes: prove that you know
-such that for all from 1 to 1,000,000. Let . It's a known mathematical fact that any polynomial which equals zero at all from 1 to 1,000,000 is a multiple of . Hence, the problem can now be transformed again: prove that you know and such that for all (note that if you know a suitable then dividing it by to compute
-
-is not too difficult; you can use long polynomial division or more realistically a faster algorithm based on FFTs). Now, we've converted our original statement into something that looks mathematically clean and possibly quite provable.
-
-So how does one prove this claim? We can imagine the proof process as a three-step communication between a prover and a verifier: the prover sends some information, then the verifier sends some requests, then the prover sends some more information. First, the prover commits to (ie. makes a Merkle tree and sends the verifier the root hash of) the evaluations of
-and for all from 1 to 1 billion (yes, billion). This includes the 1 million points where
-
-as well as the 999 million points where that (probably) is not the case.
+さて、問題は今、次のように変形され、
+『任意の $1$ から $1000000$ の整数 $x$ に対し、 $C(P(x)) = 0$ を与えるような $P$ をあなたが知っているということを証明してください。』となります。
+ $Z(x) = (x-1)(x-2) ... (x-1000000) $ とすると、多項式 $Z$ は、任意の $1$ から $1000000$ の整数 $x$ に対し、 $0$ をとることは数学的事実として知られており、つまりは、『 $C(P(x)) = Z(x)D(x)$ となるような、 $P(x)$ と $(D(x))$ を知っている』とさらに置き換えることができます。
+ここで、 $C(P(x))$ さえ知っていれば、 $D(x)$ を求めるのは簡単です。単に[長い多項式の割り算](https://www.purplemath.com/modules/polydiv2.htm)を行うか、
+[高速フーリエ変換](https://en.wikipedia.org/wiki/Fast_Fourier_transform)を使って速く解くこともできます。
+さて、これで、もとの問題を、数学的に明快で、解くのが簡単にみえる問題に変形することができました。
 
 
-We assume the verifier already knows the evaluation of
-at all of these points; the is like a "public verification key" for this scheme that everyone must know ahead of time (clients that do not have the space to store in its entirety can simply store the Merkle root of and require the prover to also provide branches for every value that the verifier needs to query; alternatively, there are some number fields over which for certain is very easy to calculate). After receiving the commitment (ie. Merkle root) the verifier then selects a random 16 values between 1 and 1 billion, and asks the prover to provide the Merkle branches for and there. The prover provides these values, and the verifier checks that (i) the branches match the Merkle root that was provided earlier, and (ii) actually equals
 
-in all 16 cases.
+さてこれをどのようにして証明しましょう。
+証明のプロセスを、証明者と検証者間の３ステップのコミュニケーションとして捉えてみましょう。
+つまり、証明者が、ある情報を送信し、検証者があるリクエストを送信し、さらに証明者が情報をおくる、というようなコミュニケーションです。
 
-
-We know that this proof perfect completeness - if you actually know a suitable
-, then if you calculate and construct the proof correctly it will always pass all 16 checks. But what about soundness - that is, if a malicious prover provides a bad , what is the minimum probability that they will get caught? We can analyze as follows. Because is a degree-10 polynomial composed with a degree-1,000,000 polynomial, its degree will be at most 10,000,000. In general, we know that two different degree- polynomials agree on at most points; hence, a degree-10,000,000 polynomial which is not equal to any polynomial which always equals for some will necessarily disagree with them all at at least 990,000,000 points. Hence, the probability that a bad will get caught in even one round is already 99%; with 16 checks, the probability of getting caught goes up to
-
-; that is to say, the scheme is about as hard to spoof as it is to compute a hash collision.
-
-So... what did we just do? We used polynomials to "boost" the error in any bad solution, so that any incorrect solution to the original problem, which would have required a million checks to find directly, turns into a solution to the verification protocol that can get flagged as erroneous at 99% of the time with even a single check.
-
-We can convert this three-step mechanism into a non-interactive proof, which can be broadcasted by a single prover once and then verified by anyone, using the Fiat-Shamir heuristic. The prover first builds up a Merkle tree of the
-and
-
-values, and computes the root hash of the tree. The root itself is then used as the source of entropy that determines what branches of the tree the prover needs to provide. The prover then broadcasts the Merkle root and the branches together as the proof. The computation is all done on the prover side; the process of computing the Merkle root from the data, and then using that to select the branches that get audited, effectively substitutes the need for an interactive verifier.
-
-The only thing a malicious prover without a valid
-can do is try to make a valid proof over and over again until eventually they get extremely lucky with the branches that a Merkle root that they compute selects, but with a soundness of (ie. probability of at least
-
-that a given attempted fake proof will fail the check) it would take a malicious prover billions of years to make a passable proof.
+まず最初に、証明者は、Merkle 木を作成し、1 から 10億　(10億です)　の任意の整数 $x$ に対して、 $P(x)$ と $D(x)$ の評価をコミットし、
+そのルートハッシュを検証者に送信します。
+これは、100万個の点を含み、のこり9億9900万個の点の点をも含んでいます。
+This includes the 1 million points where
 
 
-Going Further
-
-To illustrate the power of this technique, let's use it to do something a little less trivial: prove that you know the millionth Fibonacci number. To accomplish this, we'll prove that you have knowledge of a polynomial which represents a computation tape, with
-representing the th Fibonacci number. The constraint checking polynomial will now hop across three x-coordinates: (notice how if for all then
-
-represents a Fibonacci sequence).
+![](/image/vb/starks_pic6.png)
 
 
-The translated problem becomes: prove that you know
-and such that . For each of the 16 indices that the proof audits, the prover will need to provide Merkle branches for , , and . The prover will additionally need to provide Merkle branches to show that
+我々は、検証者が、これら全ての点における多項式 $Z(x)$ を評価した値をすでに知っているものと仮定します。
+$Z(x)$ は、このスキームに関していえば、皆が計算の前に知っていなければならない公開鍵のような役割を果たします。
+（そのすべてを保管するスペースがないようなクライアントであれば、単にそのマークルルートを保存すればよく、
+検証者が探索しなければいけないすべての値のブランチをも提供するように要求すればよいでしょう。
+代替的方法としては、ある $x$ に対して $Z(x)$ の計算がとても簡単になるような、有限体を選ぶことができます。）
 
-. Otherwise, the entire process is the same.
 
-Now, to accomplish this in reality there are two problems that need to be resolved. The first problem is that if we actually try to work with regular numbers the solution would not be efficient in practice, because the numbers themselves very easily get extremely large. The millionth Fibonacci number, for example, has 208988 digits. If we actually want to achieve succinctness in practice, instead of doing these polynomials with regular numbers, we need to use finite fields - number systems that still follow the same arithmetic laws we know and love, like
-and
+そのコミットを受信したあとで、検証者は、1 から 10億までの値のなかから、任意の 16 個の値を取り出し、
+P(x) と D(x) の Merkle 枝を提供するよう依頼します。
+証明者は、これらの値を提供し、検証者は 1. 前もって提供されている Merkle ルートに、その Merkle ブランチが適合するかを検証し、 2. 16 個のすべてのケースにおいて、
+$C(P(x)) = Z(x)D(x)$ が成立するかを検証します。
 
-, but where each number is guaranteed to take up a constant amount of space. Proving claims about the millionth Fibonacci number would then require a more complicated design that implements big-number arithmetic on top of this finite field math.
+![](/image/vb/starks_pic7.png)
 
-The simplest possible finite field is modular arithmetic; that is, replace every instance of
-with for some prime , do the same for subtraction and multiplication, and for division use modular inverses (eg. if , then , , , and
 
-). You can learn more about these kinds of number systems from my description on prime fields here (search "prime field" in the page) or this Wikipedia article on modular arithmetic (the articles that you'll find by searching directly for "finite fields" and "prime fields" unfortunately tend to be very complicated and go straight into abstract algebra, don't bother with those).
+我々は、この証明が『完全性』をみたしているということはわかります。
+つまり、もし、あなたが適切な証明をしっているならば、計算し証明を正しく構築すれば必ず16個のチェックを通ることが保証されます。
+しかし、『健全性』の方はどうでしょう。
+つまり、もし、悪意のある証明者が、壊れた $P(x)$ を提供したとしましょう。その壊れた箇所を捕捉するのに必要な最小の確率とは一体どれくらいになるのでしょうか。
+次のように計算できます。
+　$C(P(x))$ は、1,000,000次多項式が、10次多項式に入り込んだものですから、10,000,000次多項式となります。
+一般論として、異なる二つの $N$ 次数多項式があれば、両者の一致する点の個数は高々 $N$ 個だということを知っています。
+つまり、
+ある x に対して、Z(x)D(X) と常に等しくなるようなどんな多項式とも一致しないような10,000,000次多項式があれば、
+つまりは、多項式が異なってしまえば、必然的に、少なくとも 990,000,000 個の点の全てで、不一致となります。
 
-Second, you might have noticed that in my above proof sketch for soundness I neglected to cover one kind of attack: what if, instead of a plausible degree-1,000,000
-and degree-9,000,000 , the attacker commits to some values that are not on any such relatively-low-degree polynomial? Then, the argument that an invalid must differ from any valid on at least 990 million points does not apply, and so different and much more effective kinds of attacks are possible. For example, an attacker could generate a random value for every , then compute and commit to these values in place of and
+そのため、１ラウンドであっても、不一致する値を得る可能性は、99%となり、
+16 回検査することで、不一致を捕捉する可能性は、 $1 - 10^{32}$ まで膨れ上がります。
+つなり、証明者が嘘の多項式を提供するということは、ハッシュの衝突を計算する問題と同様に、困難なものであることがわかります。
 
-. These values would not be on any kind of low-degree polynomial, but they would pass the test.
+さて、我々は今一体何をしたのでしょうか。
+多項式を使って、嘘の解におけるエラーを増殖させ、元の問題で見つけるには直接検査すれば100万回検査する必要があった解を、たったの1回で99%エラーを発見できるような検査プロトコルの解へと変貌させたのです。
 
-It turns out that this possibility can be effectively defended against, though the tools for doing so are fairly complex, and so you can quite legitimately say that they make up the bulk of the mathematical innovation in STARKs. Also, the solution has a limitation: you can weed out commitments to data that are very far from any degree-1,000,000 polynomial (eg. you would need to change 20% of all the values to make it a degree-1,000,000 polynomial), but you cannot weed out commitments to data that only differ from a polynomial in only one or two coordinates. Hence, what these tools will provide is proof of proximity - proof that most of the points on
-and
 
-correspond to the right kind of polynomial.
+われわれは、この３ステップコミュニケーションのメカニズムを、証明者と検証者のやり取りが必要でない証明へと変換することができます。
+一回証明者が発信し、それを検証者が検証するだけで良いというものです。これには、 [Fiat-Shamir heuristic](https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic) が用いられます。
+証明者は、最初に $P(x)$ と $D(x)$ の値をもったマークル木を作成し、そのルートハッシュを計算します。
+ルートそれ自体は、証明者が提供する必要のあるブランチを決定するためのエントロピー源となります。
+計算は、すべて証明者の側で行われます。データからマークル木のルートの計算プロセスと、そのルートをつかって監査されるマークル木の枝を選び出すプロセスによって、効率性が向上し、検証者とのやりとりの必要性がなくなります。
 
-As it turns out, this is sufficient to make a proof, though there are two "catches". First, the verifier needs to check a few more indices to make up for the additional room for error that this limitation introduces. Second, if we are doing "boundary constraint checking" (eg. verifying
+悪意のある証明者ができる唯一の悪事とは、 $1-10^{32}$ の確率で健全な証明を繰り返し計算したあげく、幸運により見つけ出すこととなります。
+つまりは、少なくとも $1-10^{32}$ の確率で与えられた嘘の証明が検査にひっかかります。
+悪意ある証明者が、嘘の証明をつくろうとすれば数十億年かかることになるでしょう。
 
-in the Fibonacci example above), then we need to extend the proof of proximity to not only prove that most points are on the same polynomial, but also prove that those two specific points (or whatever other number of specific points you want to check) are on that polynomial.
+![](/image/vb/starks_pic8.png)
 
-In the next part of this series, I will describe the solution to proximity checking in much more detail, and in the third part I will describe how more complex constraint functions can be constructed to check not just Fibonacci numbers and ranges, but also arbitrary computation.
+
+
+# Going Further
+
+
+この技術の持つ力について、描写するために、少し非自明なことをやってみましょう。
+100万番目のフィボナッチ数を知っていることを証明してみましょう。
+これを遂行するために、ひとつの計算テープを表現する多項式に関する知識をあなたが持っているということを証明します。
+$P(x)$ は、 $x$ 番目のフィボナッチ数を表現するものとします。
+
+
+多項式を検査する制約は三つのx座標の変数を引数にとり、 $C(x_1,x_2,x_3) := x_3 - x_2 - x_1$ とします。
+つまりは、もし $P(x)$ がフィボナッチ数を表現するとしたら、 $C(P(x),P(x+1),P(x+2)) = 0$ となることを理解しておいてください。
+
+![](/image/vb/starks_pic9.png)
+
+問題を翻訳すると、『 $C(P(x),P(x+1),P(x+2)) = Z(x)D(x)$ を満たすような、 $P$ と $D$ を知っているということを証明します。』となります。
+証明の監査の対象となる16個の要素に対して、それぞれ $P(x)$ 、 $P(x+1)$ 、 $P(x+2)$ と $D(x)$ のマークル木の枝を提供する必要があります。
+証明者は、さらに、 $P(1) = P(0) = 1$ を証明するのに必要なマークル枝も提供する必要があります。
+その他の場合は、すべて先ほどと同じようにします。
+
+
+さて、これを実際に遂行するには、二つ解決しなければならない問題があります。
+ひとつめの問題は通常の数でこれをやると、『解』は実践的に効率的なものとはならないということです。
+通常の数は、容易く計算到達が困難な巨大数となってしまうからです。
+100万番目のフィボナッチ数は、208988 桁あります。
+もし、実践で、端的かつ明確なものを求めるのならば、
+通常の数で多項式を取り扱うのでなく、有限体を使う必要があります。
+有限体とは、数の体系で、我々が好む $a(b+c) = ab + ac$ や $(a^2-b^2) = (a+b)(a-b)$ といったようなものを満たすようなものですが、
+それぞれの数は、データとしてある定数量の空間しか使わないことが保証されています。
+そうすると、100万番目のフィボナッチ数に関する証明には、巨大な数の演算を有限体上で行うためにさらに複雑な設計が必要となります。
+
+もっとも簡素かつ可能な有限体は、合同演算により定義される体です。
+つまり、任意の計算式 $a + b$ を $a + b mod N$ で置き換えます。減算や乗算に対しても同様で、除算に対しては、[合同逆元](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse) を用います。
+例えば、$N=7$ とすると、$3+4=0, 2+6=1, 3\times4=5, 4/2=2$ となります。
+もう少し学習したい方は、私の[この記事](https://medium.com/@VitalikButerin/exploring-elliptic-curve-pairings-c73c1864e627)で、"prime field" あるいは、"finite field" と検索してみてください。
+
+二つ目の問題として、上で描いた健全性の証明のスケッチでは、ある一種の攻撃を無視しています。
+1000000次多項式 $P(x)$ と 9000000次多項式 $D(x)$ の代わりに、攻撃者が、相対的に次数の低いそれら多項式上にないような値をコミットしたならばどうなるでしょうか。すると、「無効なC(P(x))は、有効なC(P(X))と比べて、少なくとも 9億9000万点で異なる」というロジックが使えなくなり、攻撃がより簡単になってしまいます。
+例えば、攻撃者はすべての x に対し、乱数 p を生成し、  $d = C(p)/Z(x)$ を計算し、これらの値を P(x) と D(x) の代わりにコミットします。
+これらの値は、100万次以下の低次元の多項式のものではないであろうが、テストを通り抜けてしまうことでしょう。
+
+この可能性というのは、やや難解かつ複雑な道具を使って、効率よく防御できることがわかっています。
+そしてこの道具を使って、あなたは STARKs という名における数学的革命を構築を述べることができるのです。
+また、その解決には制限があります。どんな1000000次多項式からも離れたデータのコミットを取り除くことができます。
+（つまり、そのデータを1000000次多項式にするためには、すべての値の20%を変える必要があります。）
+しかしながら、一つや二つの座標でのみ異なる値をとるような多項式を取り除くことはできません。
+つまり、これらの道具が提供していることは『近接の証明』です。
+つまり、 正しい多項式を表す $P$ や $D$ の大部分の点における正しさです。
+
+
+これまででわかったように、これは証明をつくるのには十分ではあるが、二つの『捕捉』があります。
+一つ目は、この制限が導入するエラーに対する余地を広げ、少ない要素で検証ができるようにするということです。
+二つ目は、もし『境界条件の検査』を行っていたとすると、（フィボナッチの例では、 $P(1)=P(0)=1$ ）『近接の証明』を拡張して、大部分がおなじ多項式上にあるということだけでなく、これら二つの指定された点が、その多項式上にあるということを証明する必要があります。
+
+
+このシリーズの次のパートでは、『近接の検査 proximity checking』に対する解についてより詳細に描写し、
+三つ目のパートでは、より複雑な制約条件の関数をフィボナッチ数や値域の問題のような例ばかりでなく、より一般的な任意の計算に対して、どのようにして構築していくのか見ていこうと思います。
