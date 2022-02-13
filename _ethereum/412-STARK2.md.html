@@ -269,11 +269,12 @@ x の次数の上限が小さい定数であるような 2引数多項式へ落�
 
 
 もし元の多項式が、n次未満多項式だとすれば、行は2次多項式となり、列は n/2 次となります。
-
-Hence, what we now have is a linear-time process for converting a problem of proving proximity to a polynomial of degree into a problem of proving proximity to a polynomial of degree .
-Furthermore, the number of points that need to be committed to, and thus the prover's computational complexity, goes down by a factor of 2 each time (Eli Ben-Sasson likes to compare this aspect of FRI to fast fourier transforms, with the key difference that unlike with FFTs, each step of recursion only introduces one new sub-problem instead of branching out into two). Hence, we can simply keep using the protocol on the column created in the previous round of the protocol, until the column becomes so small that we can simply check it directly;
-
-計算複雑度はトータルすると、 $n + \frac{n}{2} + \frac{n}{4} + ... \approx 2n$ となります。
+さてこのようにして、n次未満の多項式への近接を証明する問題を、n/2次未満の多項式への近接を証明する問題へと変換することができました。
+さらに、コミットする必要のある点の数は、つまりは証明者の計算量は、さらに 2 で割ることができます。
+（Eli Ben-Sasson はこの性質をもつ FRI と 高速フーリエ変換 FFT を好んで比較しています。違いとして鍵となるのは、FFT と異なり、
+再帰の過程で、二つに部分問題に分岐するのでなく、一つの部分問題をもたらすだけだということです）
+このようにして、列を再帰計算により、十分に小さくなるまで、どんどん小さくすることが可能であり、
+計算複雑度はトータルで、 $n + \frac{n}{2} + \frac{n}{4} + ... \approx 2n$ となります。
 
 
 ![](/image/vb/fri8.png)
