@@ -1,0 +1,1538 @@
+---
+title: STARKs Part III
+layout: journal
+---
+
+
+
+This article is the Japanese translation of
+[STARKs, Part III: Into the Weeds](https://vitalik.ca/general/2018/07/21/starks_part_3.html) originally written on 2018 Jul 21.
+
+Eli Ben-Sasson さんに、やさしく補助していたき、いつも通り多大なる感謝をもうしあげます。ならびに、Chih-Cheng Liang さんと Justin Drake さんの査読にも感謝いたします。また Ben Fisch さんの reverse MIMC 技術の提案にも感謝いたします。
+
+警告：数学 と python コードをたくさん含みます。
+
+前回と前々回の投稿に続き、この記事は実際に STARK を実装するとどうなるかどうか、python を使って実装していきましょう。
+STARKs とは、Scalabel Transparent Argument of Knowledge の略称で、f(x) = y を満たすことの証明をつくる技術です。
+ここで、f を計算することは、潜在的に長い時間を要しやすいのですが、検証は素早く終えることがきます。
+
+STARK は『二重にスケーラブル』です。
+というのは、t ステップの計算の証明をひとつ作るのに、およそ $O(t \cdot log(t))$ ステップかかり、ほぼ最適化されています。
+かつ、検証にはおよそ $~ O(log(log(t)))$ ステップを要し、t の値が適度に大きくなろうと、元の計算と比べるととても速いことがわかります。
+STARKs には『ゼロ知識』というプライバシー保護の性質もあり、
+使用例などはこの記事に書くつもりではあるが、
+検証可能な遅延関数をつくることには、この性質は必要なく、
+そのことについて心配する必要はありません。
+
+最初にいくつか注意点を挙げておきます。
+
+- このコードは細部まで監査されたものではなく、プロダクションでの使用におけるプロトコルの健全性は保証されていません。
+- このコードの最適化は部分的なものです。（ python で書かれています。何を期待できましょうか。）
+- 実際のSTARK（つまり Eli や co さんによる実装）は、効率性の観点から有限二進数体（例えば、 $\mathbb{F}_2[X]/(x^n+x+1)$ ）上でプロトコルを展開していますが、彼らは、ここで用いる素数位数有限体によるアプローチをしても法則が破られないことを強調しています。
+- STARK を実装する『真の方法』はありません。STARK は暗号学的かつ数学的構築のある幅広いカテゴリを指しており、異なるアプリケーション間では違う設定が採用されます。また証明者と検証者の複雑度を減らしたり健全性を証明するといった研究目的としても使われており、一つの実装はまだ存在していません。
+- この記事は、合同算術と素数位数有限体の仕組みに関する前提知識と、ラグランジュ補間や評価に関する多項式についての基本知識を要します。これらについて、知らなければ[前回の記事]()や以前の[二次算術プログラム]()の記事を参照してください。
+
+
+
+それでは、はじめましょう！
+
+
+# MIMC
+
+我々の STARK では次の関数をつかうことにしましょう。
+
+~~~python
+def mimc(inp, steps, k):
+    start_time = time.time()
+    for i in range(steps-1):
+        inp = (inp**3 + k[i % len(k)]) % modulus
+    print("MIMC computed in %.4f sec" % (time.time() - start_time))
+    return inp
+~~~
+
+この MiMC 関数（[論文](https://eprint.iacr.org/2016/492.pdf)）を選んだ理由は、シンプルで理解しやすく、かつ実際に使えるほどには興味深いものであることの二つです。この関数は視覚化すると次のようになります。
+
+
+![MiMCの多くの議論で、+ の代わりに XOR が使われていることには注意されたい。MIMC は典型的には有限二進数体上で加算をXORで定義する。](/image/vb/stark3_1.png)
+
+
+我々の例では、round定数 `k` は比較的小さな（例えば 64 つの）リストとし、何度も巡回して使用されます。
+つまり `k[63]` の次は `k[0]` を使います。
+
+ここでやるように、とても大きな数のラウンドを用いた MIMC は、検証可能な遅延関数として役に立ちます。
+それは、計算するのが難しく、特に並列計算するのが難しいような関数であるが、検証は容易いような関数を指します。
+MIMC は、出力から入力を復元するような、逆向き計算が可能ですが、それは前向きの計算のおよそ100倍の時間を要します。
+そのような理由から、MIMC はある程度、検証可能な遅延関数としての性質を満たします。
+逆向き計算を、並列化不能な PoW の採掘計算として、前向き計算を PoW の検証作業のようなものだとして捉えることが可能です。
+
+
+![[フェルマーの小定理](https://en.wikipedia.org/wiki/Fermat%27s_little_theorem)より $x \mapsto x^3$ の逆数は $x \mapsto x^{\frac{2p−1}{3}}$ です
+](/image/vb/stark3_2.png)
+
+
+
+ここでの課題は、STARK を使った検証の効率化です。
+検証者が、前向き計算のMIMC をする代わりに、
+証明者が、逆向き計算の完了後に、前向き計算における STARK を計算します。
+検証者は、このSTARK を検証するだけ、という形にしてみましょう。
+
+嬉しいことに、STARK の計算は、逆向き計算と前向き計算の計算速度差よりも小さい計算量ですみます。
+そのため、証明者は逆向きの計算に多くの時間を取れらますが、STARK の計算に費やす時間はほとんどありません。
+元の計算がどれほど長くとも、STARK の検証は、比較的に速く終わります（我々の python 実装では、~0.05-0.3秒ほどです。）
+
+全ての計算は、$2^{256} - 351 \cdot 2^{32} + 1$ で除した有限体で行われます。
+この素数位数有限体を使うのは、$2^{256}$ 以下の有限体で、位数 $2^{32}$ の乗法部分群を含んでいる最大の有限体であり、
+かつ6で除した余りが5である（つまりある k があって 6k+5 と表される）という理由からです。
+
+一つ目は、我々のFFT と FRI アルゴリズムを効率よく使うための条件であり、
+二つ目は、逆計算を可能にするための制約です。つまりは、$x \mapsto x^{\frac{2p−1}{3}}$ において、$\frac{2p−1}{3} = \frac{12k+10-1}{3} = 4k+3$
+とすることが可能であるように選んでいます。
+
+
+
+
+# Prime field operations
+
+有限体上の計算に便利なクラスを一つ定義するとこから始めましょう。
+もちろんその上の多項式計算にも使えます。コードは次の通りです。
+
+~~~python
+class PrimeField():
+    def __init__(self, modulus):
+        # Quick primality test
+        assert pow(2, modulus, modulus) == 2
+        self.modulus = modulus
+
+    def add(self, x, y):
+        return (x+y) % self.modulus
+
+    def sub(self, x, y):
+        return (x-y) % self.modulus
+
+    def mul(self, x, y):
+        return (x*y) % self.modulus
+~~~
+
+合同算術上の逆数を求める関数も定義します。
+
+~~~py
+# Modular inverse using the extended Euclidean algorithm
+def inv(self, a):
+    if a == 0:
+        return 0
+    lm, hm = 1, 0
+    low, high = a % self.modulus, self.modulus
+    while low > 1:
+        r = high//low
+        nm, new = hm-lm*r, high-low*r
+        lm, low, hm, high = nm, new, lm, low
+    return lm % self.modulus
+~~~
+
+このアルゴリズムは比較的高価です
+幸いなことに多くの逆数計算を一度に計算する数学的なトリックがあります、
+それは [Montgomery batch inversion](https://books.google.com/books?id=kGu4lTznRdgC&pg=PA54&lpg=PA54&dq=montgomery+batch+inversion&source=bl&ots=tPJcPPOrCe&sig=Z3p_6YYwYloRU-f1K-nnv2D8lGw&hl=en&sa=X&ved=0ahUKEwjO8sumgJjcAhUDd6wKHWGNA9cQ6AEIRDAE#v=onepage&q=montgomery%20batch%20inversion&f=false) と呼ばれるものです。
+
+![Montgomery batch inversion を使用した同時逆数計算。黒□は乗算で、赤□が唯一の逆数計算となる](/image/vb/stark3_3.png)
+
+
+以下のコードはこのアルゴリズムを実装したものです。
+逆数を求める集合に零が含まれている場合も加味したため、少しだけ読みにくいコードとなっています。
+
+~~~py
+def multi_inv(self, values):
+    partials = [1]
+    for i in range(len(values)):
+        partials.append(self.mul(partials[-1], values[i] or 1))
+    inv = self.inv(partials[-1])
+    outputs = [0] * len(values)
+    for i in range(len(values), 0, -1):
+        outputs[i-1] = self.mul(partials[i-1], inv) if values[i-1] else 0
+        inv = self.mul(inv, values[i-1] or 1)
+    return outputs
+~~~
+
+このアルゴリズムは後々、評価した多項式の割り算を行う時に重要となります。
+さてある多項式演算を考えましょう。
+我々は多項式を配列として、扱います。
+つまり、 $x^3+2x+1$ は、`[1,2,0,1]` と次数の低い係数から表現することとします。
+
+~~~py
+# Evaluate a polynomial at a point
+
+def eval_poly_at(self, p, x):
+    y = 0
+    power_of_x = 1
+    for i, p_coeff in enumerate(p):
+        y += power_of_x * p_coeff
+        power_of_x = (power_of_x * x) % self.modulus
+    return y % self.modulus
+~~~
+
+
+多項式の加減乗除の実装は、課題とします。
+非自明な実装のひとつは、ラグランジュ補間です。
+x座標とy座標の組の集合を入力として取り、それら全ての点を通る最小多項式を返します。
+（これを多項式評価の逆プロセスと捉えることができます）
+
+~~~py
+# Build a polynomial that returns 0 at all specified xs
+def zpoly(self, xs):
+    root = [1]
+    for x in xs:
+        root.insert(0, 0)
+        for j in range(len(root)-1):
+            root[j] -= root[j+1] * x
+    return [x % self.modulus for x in root]
+
+def lagrange_interp(self, xs, ys):
+    # Generate master numerator polynomial, eg. (x - x1) * (x - x2) * ... * (x - xn)
+    root = self.zpoly(xs)
+
+    # Generate per-value numerator polynomials, eg. for x=x2,
+    # (x - x1) * (x - x3) * ... * (x - xn), by dividing the master
+    # polynomial back by each x coordinate
+    nums = [self.div_polys(root, [-x, 1]) for x in xs]
+
+    # Generate denominators by evaluating numerator polys at each x
+    denoms = [self.eval_poly_at(nums[i], xs[i]) for i in range(len(xs))]
+    invdenoms = self.multi_inv(denoms)
+
+    # Generate output polynomial, which is the sum of the per-value numerator
+    # polynomials rescaled to have the right y values
+    b = [0 for y in ys]
+    for i in range(len(xs)):
+        yslice = self.mul(ys[i], invdenoms[i])
+        for j in range(len(ys)):
+            if nums[i][j] and ys[i]:
+                b[j] += nums[i][j] * yslice
+    return [x % self.modulus for x in b]
+~~~
+
+ここでの数学については、[こちらの記事](https://blog.ethereum.org/2014/08/16/secret-sharing-erasure-coding-guide-aspiring-dropbox-decentralizer/)の M of N の節をみてください。
+
+我々は、かなり頻繁に生じる２次未満多項式と４次未満多項式のラグランジュ補間の速度をあげるために、
+`lagrange_interp_4` と `lagrange_interp_2` という二つのメソッドも持っていることに注意してください。
+
+
+
+
+# Fast Fourier Transforms
+
+
+If you read the above algorithms carefully, you might notice that Lagrange interpolation and multi-point evaluation (that is, evaluating a degree < N polynomial at N points) both take quadratic time to execute, so for example doing a Lagrange interpolation of one thousand points takes a few million steps to execute, and a Lagrange interpolation of one million points takes a few trillion. This is an unacceptably high level of inefficiency, so we will use a more efficient algorithm, the Fast Fourier Transform.
+
+The FFT only takes O(n⋅log(n)) time (ie. ~10,000 steps for 1,000 points, ~20 million steps for 1 million points), though it is more restricted in scope; the x coordinates must be a complete set of roots of unity of some order N
+=
+2
+k
+. That is, if there are
+N
+ points, the x coordinates must be successive powers
+1
+,
+p
+,
+p
+2
+,
+p
+3
+... of some
+p
+ where
+p
+N
+=
+1
+. The algorithm can, surprisingly enough, be used for multi-point evaluation or interpolation, with one small parameter tweak.
+
+
+Challenge Find a 16th root of unity mod 337 that is not an 8th root of unity.
+
+Mouseover below for answer
+59, 146, 30, 297, 278, 191, 307, 40
+
+You could have gotten this list by doing something like [print(x) for x in range(337) if pow(x, 16, 337) == 1 and pow(x, 8, 337) != 1], though there is a smarter way that works for much larger moduluses: first, identify a single primitive root mod 337 (that is, not a perfect square), by looking for a value x such that pow(x, 336 // 2, 337) != 1 (these are easy to find; one answer is 5), and then taking the (336 / 16)'th power of it.
+Here's the algorithm (in a slightly simplified form; see code here for something slightly more optimized):
+
+~~~py
+def fft(vals, modulus, root_of_unity):
+    if len(vals) == 1:
+        return vals
+    L = fft(vals[::2], modulus, pow(root_of_unity, 2, modulus))
+    R = fft(vals[1::2], modulus, pow(root_of_unity, 2, modulus))
+    o = [0 for i in vals]
+    for i, (x, y) in enumerate(zip(L, R)):
+        y_times_root = y*pow(root_of_unity, i, modulus)
+        o[i] = (x+y_times_root) % modulus
+        o[i+len(L)] = (x-y_times_root) % modulus
+    return o
+
+def inv_fft(vals, modulus, root_of_unity):
+    f = PrimeField(modulus)
+    # Inverse FFT
+    invlen = f.inv(len(vals))
+    return [(x*invlen) % modulus for x in
+            fft(vals, modulus, f.inv(root_of_unity))]
+~~~
+
+
+You can try running it on a few inputs yourself and check that it gives results that, when you use eval_poly_at on them, give you the answers you expect to get. For example:
+
+~~~py
+>>> fft.fft([3,1,4,1,5,9,2,6], 337, 85, inv=True)
+[46, 169, 29, 149, 126, 262, 140, 93]
+>>> f = poly_utils.PrimeField(337)
+>>> [f.eval_poly_at([46, 169, 29, 149, 126, 262, 140, 93], f.exp(85, i)) for i in range(8)]
+[3, 1, 4, 1, 5, 9, 2, 6]
+~~~
+
+A Fourier transform takes as input `[x[0] .... x[n-1]]`, and its goal is to output `x[0] + x[1] + ... + x[n-1]` as the first element, `x[0] + x[1] * 2 + ... + x[n-1] * w**(n-1)` as the second element, etc etc; a fast Fourier transform accomplishes this by splitting the data in half, doing an FFT on both halves, and then gluing the result back together.
+
+
+
+A diagram of how information flows through the FFT computation. Notice how the FFT consists of a "gluing" step followed by two copies of the FFT on two halves of the data, and so on recursively until you're down to one element.
+
+
+I recommend this for more intuition on how or why the FFT works and polynomial math in general, and this thread for some more specifics on DFT vs FFT, though be warned that most literature on Fourier transforms talks about Fourier transforms over real and complex numbers, not prime fields. If you find this too hard and don't want to understand it, just treat it as weird spooky voodoo that just works because you ran the code a few times and verified that it works, and you'll be fine too.
+
+# Thank Goodness It's FRI-day
+
+(that's "Fast Reed-Solomon Interactive Oracle Proofs of Proximity")
+
+Reminder: now may be a good time to review and re-read Part 2
+
+Now, we'll get into the code for making a low-degree proof. To review, a low-degree proof is a (probabilistic) proof that at least some high percentage (eg. 80%) of a given set of values represent the evaluations of some specific polynomial whose degree is much lower than the number of values given. Intuitively, just think of it as a proof that "some Merkle root that we claim represents a polynomial actually does represent a polynomial, possibly with a few errors". As input, we have:
+
+A set of values that we claim are the evaluation of a low-degree polynomial
+A root of unity; the x coordinates at which the polynomial is evaluated are successive powers of this root of unity
+A value
+N
+ such that we are proving the degree of the polynomial is strictly less than
+N
+The modulus
+Our approach is a recursive one, with two cases. First, if the degree is low enough, we just provide the entire list of values as a proof; this is the "base case". Verification of the base case is trivial: do an FFT or Lagrange interpolation or whatever else to interpolate the polynomial representing those values, and verify that its degree is
+<
+N
+. Otherwise, if the degree is higher than some set minimum, we do the vertical-and-diagonal trick described at the bottom of Part 2.
+
+We start off by putting the values into a Merkle tree and using the Merkle root to select a pseudo-random x coordinate (special_x). We then calculate the "column":
+
+~~~py
+# Calculate the set of x coordinates
+xs = get_power_cycle(root_of_unity, modulus)
+
+column = []
+for i in range(len(xs)//4):
+    x_poly = f.lagrange_interp_4(
+        [xs[i+len(xs)*j//4] for j in range(4)],
+        [values[i+len(values)*j//4] for j in range(4)],
+    )
+    column.append(f.eval_poly_at(x_poly, special_x))
+~~~
+
+This packs a lot into a few lines of code. The broad idea is to re-interpret the polynomial
+P
+(
+x
+)
+ as a polynomial
+Q
+(
+x
+,
+y
+)
+, where
+P
+(
+x
+)
+=
+Q
+(
+x
+,
+x
+4
+)
+. If
+P
+ has degree
+<
+N
+, then
+P
+′
+(
+y
+)
+=
+Q
+(
+s
+p
+e
+c
+i
+a
+l
+_
+x
+,
+y
+)
+ will have degree
+<
+N
+4
+. Since we don't want to take the effort to actually compute
+Q
+ in coefficient form (that would take a still-relatively-nasty-and-expensive FFT!), we instead use another trick. For any given value of
+x
+4
+, there are 4 corresponding values of
+x
+:
+x
+,
+m
+o
+d
+u
+l
+u
+s
+−
+x
+, and
+x
+ multiplied by the two modular square roots of
+−
+1
+. So we already have four values of
+Q
+(
+?
+,
+x
+4
+)
+, which we can use to interpolate the polynomial
+R
+(
+x
+)
+=
+Q
+(
+x
+,
+x
+4
+)
+, and from there calculate
+R
+(
+s
+p
+e
+c
+i
+a
+l
+_
+x
+)
+=
+Q
+(
+s
+p
+e
+c
+i
+a
+l
+_
+x
+,
+x
+4
+)
+=
+P
+′
+(
+x
+4
+)
+. There are
+N
+4
+ possible values of
+x
+4
+, and this lets us easily calculate all of them.
+
+
+
+A diagram from part 2; it helps to keep this in mind when understanding what's going on here
+
+
+Our proof consists of some number (eg. 40) of random queries from the list of values of
+x
+4
+(using the Merkle root of the column as a seed), and for each query we provide Merkle branches of the five values of
+Q
+(
+?
+,
+x
+4
+)
+:
+
+~~~py
+m2 = merkelize(column)
+
+# Pseudo-randomly select y indices to sample
+# (m2[1] is the Merkle root of the column)
+ys = get_pseudorandom_indices(m2[1], len(column), 40)
+
+# Compute the Merkle branches for the values in the polynomial and the column
+branches = []
+for y in ys:
+    branches.append([mk_branch(m2, y)] +
+                    [mk_branch(m, y + (len(xs) // 4) * j) for j in range(4)])
+~~~
+
+The verifier's job will be to verify that these five values actually do lie on the same degree
+<
+4
+polynomial. From there, we recurse and do an FRI on the column, verifying that the column actually does have degree
+<
+N
+4
+. That really is all there is to FRI.
+
+As a challenge exercise, you could try creating low-degree proofs of polynomial evaluations that have errors in them, and see how many errors you can get away passing the verifier with (hint, you'll need to modify the prove_low_degree function; with the default prover, even one error will balloon up and cause verification to fail).
+
+# The STARK
+
+Reminder: now may be a good time to review and re-read Part 1
+
+Now, we get to the actual meat that puts all of these pieces together: def mk_mimc_proof(inp, steps, round_constants) (code here), which generates a proof of the execution result of running the MIMC function with the given input for some number of steps. First, some asserts:
+
+assert steps <= 2**32 // extension_factor
+assert is_a_power_of_2(steps) and is_a_power_of_2(len(round_constants))
+assert len(round_constants) < steps
+The extension factor is the extent to which we will be "stretching" the computational trace (the set of "intermediate values" of executing the MIMC function). We need the step count multiplied by the extension factor to be at most
+2
+32
+, because we don't have roots of unity of order
+2
+k
+ for
+k
+>
+32
+.
+
+Our first computation will be to generate the computational trace; that is, all of the intermediate values of the computation, from the input going all the way to the output.
+
+~~~py
+# Generate the computational trace
+computational_trace = [inp]
+for i in range(steps-1):
+    computational_trace.append((computational_trace[-1]**3 + round_constants[i % len(round_constants)]) % modulus)
+output = computational_trace[-1]
+~~~
+
+We then convert the computation trace into a polynomial, "laying down" successive values in the trace on successive powers of a root of unity
+g
+ where
+g
+s
+t
+e
+p
+s
+ = 1, and we then evaluate the polynomial in a larger set, of successive powers of a root of unity
+g
+2
+ where
+(
+g
+2
+)
+s
+t
+e
+p
+s
+⋅
+8
+=
+1
+ (note that
+(
+g
+2
+)
+8
+=
+g
+).
+
+~~~py
+computational_trace_polynomial = inv_fft(computational_trace, modulus, subroot)
+p_evaluations = fft(computational_trace_polynomial, modulus, root_of_unity)
+~~~
+
+
+Black: powers of
+g
+1
+. Purple: powers of
+g
+2
+. Orange: 1. You can look at successive roots of unity as being arranged in a circle in this way. We are "laying" the computational trace along powers of
+g
+1
+, and then extending it compute the values of the same polynomial at the intermediate values (ie. the powers of
+g
+2
+).
+
+
+We can convert the round constants of MIMC into a polynomial. Because these round constants loop around very frequently (in our tests, every 64 steps), it turns out that they form a degree-64 polynomial, and we can fairly easily compute its expression, and its extension:
+
+~~~py
+skips2 = steps // len(round_constants)
+constants_mini_polynomial = fft(round_constants, modulus, f.exp(subroot, skips2), inv=True)
+constants_polynomial = [0 if i % skips2 else constants_mini_polynomial[i//skips2] for i in range(steps)]
+constants_mini_extension = fft(constants_mini_polynomial, modulus, f.exp(root_of_unity, skips2))
+~~~
+
+Suppose there are 8192 steps of execution and 64 round constants. Here is what we are doing: we are doing an FFT to compute the round constants as a function of
+(
+g
+1
+)
+128
+. We then add zeroes in between the constants to make it a function of
+g
+1
+ itself. Because
+(
+g
+1
+)
+128
+ loops around every 64 steps, we know this function of
+g
+1
+ will as well. We only compute 512 steps of the extension, because we know that the extension repeats after 512 steps as well.
+
+We now, as in the Fibonacci example in Part 1, calculate
+C
+(
+P
+(
+x
+)
+)
+, except this time it's
+C
+(
+P
+(
+x
+)
+,
+P
+(
+g
+1
+⋅
+x
+)
+,
+K
+(
+x
+)
+)
+:
+
+
+~~~py
+# Create the composed polynomial such that
+# C(P(x), P(g1*x), K(x)) = P(g1*x) - P(x)**3 - K(x)
+c_of_p_evaluations = [(p_evaluations[(i+extension_factor)%precision] -
+                          f.exp(p_evaluations[i], 3) -
+                          constants_mini_extension[i % len(constants_mini_extension)])
+                      % modulus for i in range(precision)]
+print('Computed C(P, K) polynomial')
+~~~
+
+
+Note that here we are no longer working with polynomials in coefficient form; we are working with the polynomials in terms of their evaluations at successive powers of the higher-order root of unity.
+
+c_of_p is intended to be
+Q
+(
+x
+)
+=
+C
+(
+P
+(
+x
+)
+,
+P
+(
+g
+1
+⋅
+x
+)
+,
+K
+(
+x
+)
+)
+=
+P
+(
+g
+1
+⋅
+x
+)
+−
+P
+(
+x
+)
+3
+−
+K
+(
+x
+)
+; the goal is that for every
+x
+ that we are laying the computational trace along (except for the last step, as there's no step "after" the last step), the next value in the trace is equal to the previous value in the trace cubed, plus the round constant. Unlike the Fibonacci example in Part 1, where if one computational step was at coordinate
+k
+, the next step is at coordinate
+k
++
+1
+, here we are laying down the computational trace along successive powers of the lower-order root of unity
+g
+1
+, so if one computational step is located at
+x
+=
+(
+g
+1
+)
+i
+, the "next" step is located at
+(
+g
+1
+)
+i
++
+1
+ =
+(
+g
+1
+)
+i
+⋅
+g
+1
+=
+x
+⋅
+g
+1
+. Hence, for every power of the lower-order root of unity
+g
+1
+ (except the last), we want it to be the case that
+P
+(
+x
+⋅
+g
+1
+)
+=
+P
+(
+x
+)
+3
++
+K
+(
+x
+)
+, or
+P
+(
+x
+⋅
+g
+1
+)
+−
+P
+(
+x
+)
+3
+−
+K
+(
+x
+)
+=
+Q
+(
+x
+)
+=
+0
+. Thus,
+Q
+(
+x
+)
+ will be equal to zero at all successive powers of the lower-order root of unity
+g
+ (except the last).
+
+There is an algebraic theorem that proves that if
+Q
+(
+x
+)
+ is equal to zero at all of these x coordinates, then it is a multiple of the minimal polynomial that is equal to zero at all of these x coordinates:
+Z
+(
+x
+)
+=
+(
+x
+−
+x
+1
+)
+⋅
+(
+x
+−
+x
+2
+)
+⋅
+.
+.
+.
+⋅
+(
+x
+−
+x
+n
+)
+. Since proving that
+Q
+(
+x
+)
+ is equal to zero at every single coordinate we want to check is too hard (as verifying such a proof would take longer than just running the original computation!), instead we use an indirect approach to (probabilistically) prove that
+Q
+(
+x
+)
+ is a multiple of
+Z
+(
+x
+)
+. And how do we do that? By providing the quotient
+D
+(
+x
+)
+=
+Q
+(
+x
+)
+Z
+(
+x
+)
+ and using FRI to prove that it's an actual polynomial and not a fraction, of course!
+
+We chose the particular arrangement of lower and higher order roots of unity (rather than, say, laying the computational trace along the first few powers of the higher order root of unity) because it turns out that computing
+Z
+(
+x
+)
+ (the polynomial that evaluates to zero at all points along the computational trace except the last), and dividing by
+Z
+(
+x
+)
+ is trivial there: the expression of
+Z
+ is a fraction of two terms.
+
+~~~py
+# Compute D(x) = Q(x) / Z(x)
+# Z(x) = (x^steps - 1) / (x - x_atlast_step)
+z_num_evaluations = [xs[(i * steps) % precision] - 1 for i in range(precision)]
+z_num_inv = f.multi_inv(z_num_evaluations)
+z_den_evaluations = [xs[i] - last_step_position for i in range(precision)]
+d_evaluations = [cp * zd * zni % modulus for cp, zd, zni in zip(c_of_p_evaluations, z_den_evaluations, z_num_inv)]
+print('Computed D polynomial')
+~~~
+
+Notice that we compute the numerator and denominator of
+Z
+ directly in "evaluation form", and then use the batch modular inversion to turn dividing by
+Z
+ into a multiplication (
+⋅
+z
+d
+⋅
+z
+n
+i
+), and then pointwise multiply the evaluations of
+Q
+(
+x
+)
+ by these inverses of
+Z
+(
+x
+)
+. Note that at the powers of the lower-order root of unity except the last (ie. along the portion of the low-degree extension that is part of the original computational trace),
+Z
+(
+x
+)
+=
+0
+, so this computation involving its inverse will break. This is unfortunate, though we will plug the hole by simply modifying the random checks and FRI algorithm to not sample at those points, so the fact that we calculated them wrong will never matter.
+
+Because
+Z
+(
+x
+)
+ can be expressed so compactly, we get another benefit: the verifier can compute
+Z
+(
+x
+)
+ for any specific
+x
+ extremely quickly, without needing any precomputation. It's okay for the prover to have to deal with polynomials whose size equals the number of steps, but we don't want to ask the verifier to do the same, as we want verification to be succinct (ie. ultra-fast, with proofs as small as possible).
+
+Probabilistically checking
+D
+(
+x
+)
+⋅
+Z
+(
+x
+)
+=
+Q
+(
+x
+)
+ at a few randomly selected points allows us to verify the transition constraints - that each computational step is a valid consequence of the previous step. But we also want to verify the boundary constraints - that the input and the output of the computation is what the prover says they are. Just asking the prover to provide evaluations of
+P
+(
+1
+)
+,
+D
+(
+1
+)
+,
+P
+(
+l
+a
+s
+t
+_
+s
+t
+e
+p
+)
+ and
+D
+(
+l
+a
+s
+t
+_
+s
+t
+e
+p
+)
+ (where
+l
+a
+s
+t
+_
+s
+t
+e
+p
+ (or
+g
+s
+t
+e
+p
+s
+−
+1
+) is the coordinate corresponding to the last step in the computation) is too fragile; there's no proof that those values are on the same polynomial as the rest of the data. So instead we use a similar kind of polynomial division trick:
+
+~~~py
+# Compute interpolant of ((1, input), (x_atlast_step, output))
+interpolant = f.lagrange_interp_2([1, last_step_position], [inp, output])
+i_evaluations = [f.eval_poly_at(interpolant, x) for x in xs]
+
+zeropoly2 = f.mul_polys([-1, 1], [-last_step_position, 1])
+inv_z2_evaluations = f.multi_inv([f.eval_poly_at(quotient, x) for x in xs])
+
+# B = (P - I) / Z2
+b_evaluations = [((p - i) * invq) % modulus for p, i, invq in zip(p_evaluations, i_evaluations, inv_z2_evaluations)]
+print('Computed B polynomial')
+~~~
+
+The argument is as follows. The prover wants to prove
+P
+(
+1
+)
+=
+i
+n
+p
+u
+t
+ and
+P
+(
+l
+a
+s
+t
+_
+s
+t
+e
+p
+)
+=
+o
+u
+t
+p
+u
+t
+. If we take
+I
+(
+x
+)
+ as the interpolant - the line that crosses the two points
+(
+1
+,
+i
+n
+p
+u
+t
+)
+ and
+(
+l
+a
+s
+t
+_
+s
+t
+e
+p
+,
+o
+u
+t
+p
+u
+t
+)
+, then
+P
+(
+x
+)
+−
+I
+(
+x
+)
+ would be equal to zero at those two points. Thus, it suffices to prove that
+P
+(
+x
+)
+−
+I
+(
+x
+)
+ is a multiple of
+(
+x
+−
+1
+)
+⋅
+(
+x
+−
+l
+a
+s
+t
+_
+s
+t
+e
+p
+)
+, and we do that by... providing the quotient!
+
+
+
+Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at
+x
+=
+g
+s
+t
+e
+p
+s
+−
+1
+. Red:
+P
+−
+I
+. Yellow: the minimal polynomial that equals
+0
+ at
+x
+=
+1
+ and
+x
+=
+g
+s
+t
+e
+p
+s
+−
+1
+ (that is,
+Z
+2
+). Pink:
+P
+−
+I
+Z
+2
+.
+
+
+
+Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that?
+Mouseover below for answer
+Set
+I
+(
+x
+)
+ to be the interpolant of
+(
+1
+,
+i
+n
+p
+u
+t
+)
+,
+(
+g
+703
+,
+8018284612598740
+)
+,
+(
+l
+a
+s
+t
+_
+s
+t
+e
+p
+,
+o
+u
+t
+p
+u
+t
+)
+, and make a proof by providing the quotient
+B
+(
+x
+)
+=
+P
+(
+x
+)
+−
+I
+(
+x
+)
+(
+x
+−
+1
+)
+⋅
+(
+x
+−
+g
+703
+)
+⋅
+(
+x
+−
+l
+a
+s
+t
+_
+s
+t
+e
+p
+)
+
+Now, we commit to the Merkle root of
+P
+,
+D
+ and
+B
+ combined together.
+
+~~~py
+# Compute their Merkle roots
+mtree = merkelize([pval.to_bytes(32, 'big') +
+                   dval.to_bytes(32, 'big') +
+                   bval.to_bytes(32, 'big') for
+                   pval, dval, bval in zip(p_evaluations, d_evaluations, b_evaluations)])
+print('Computed hash root')
+~~~
+
+Now, we need to prove that
+P
+,
+D
+ and
+B
+ are all actually polynomials, and of the right max-degree. But FRI proofs are big and expensive, and we don't want to have three FRI proofs. So instead, we compute a pseudorandom linear combination of
+P
+,
+D
+ and
+B
+ (using the Merkle root of
+P
+,
+D
+ and
+B
+as a seed), and do an FRI proof on that:
+
+~~~py
+k1 = int.from_bytes(blake(mtree[1] + b'\x01'), 'big')
+k2 = int.from_bytes(blake(mtree[1] + b'\x02'), 'big')
+k3 = int.from_bytes(blake(mtree[1] + b'\x03'), 'big')
+k4 = int.from_bytes(blake(mtree[1] + b'\x04'), 'big')
+
+# Compute the linear combination. We don't even bother calculating it
+# in coefficient form; we just compute the evaluations
+root_of_unity_to_the_steps = f.exp(root_of_unity, steps)
+powers = [1]
+for i in range(1, precision):
+    powers.append(powers[-1] * root_of_unity_to_the_steps % modulus)
+
+l_evaluations = [(d_evaluations[i] +
+                  p_evaluations[i] * k1 + p_evaluations[i] * k2 * powers[i] +
+                  b_evaluations[i] * k3 + b_evaluations[i] * powers[i] * k4) % modulus
+                  for i in range(precision)]
+~~~
+
+Unless all three of the polynomials have the right low degree, it's almost impossible that a randomly selected linear combination of them will (you have to get extremely lucky for the terms to cancel), so this is sufficient.
+
+We want to prove that the degree of D is less than
+2
+⋅
+s
+t
+e
+p
+s
+, and that of
+P
+ and
+B
+ are less than
+s
+t
+e
+p
+s
+, so we actually make a random linear combination of
+P
+,
+P
+⋅
+x
+s
+t
+e
+p
+s
+,
+B
+,
+B
+s
+t
+e
+p
+s
+ and
+D
+, and check that the degree of this combination is less than
+2
+⋅
+s
+t
+e
+p
+s
+.
+
+Now, we do some spot checks of all of the polynomials. We generate some random indices, and provide the Merkle branches of the polynomial evaluated at those indices:
+
+~~~py
+# Do some spot checks of the Merkle tree at pseudo-random coordinates, excluding
+# multiples of `extension_factor`
+branches = []
+samples = spot_check_security_factor
+positions = get_pseudorandom_indices(l_mtree[1], precision, samples,
+                                     exclude_multiples_of=extension_factor)
+for pos in positions:
+    branches.append(mk_branch(mtree, pos))
+    branches.append(mk_branch(mtree, (pos + skips) % precision))
+    branches.append(mk_branch(l_mtree, pos))
+print('Computed %d spot checks' % samples)
+~~~
+
+
+The get_pseudorandom_indices function returns some random indices in the range [0...precision-1], and the exclude_multiples_of parameter tells it to not give values that are multiples of the given parameter (here, extension_factor). This ensures that we do not sample along the original computational trace, where we are likely to get wrong answers.
+
+The proof (~250-500 kilobytes altogether) consists of a set of Merkle roots, the spot-checked branches, and a low-degree proof of the random linear combination:
+
+~~~py
+o = [mtree[1],
+     l_mtree[1],
+     branches,
+     prove_low_degree(l_evaluations, root_of_unity, steps * 2, modulus, exclude_multiples_of=extension_factor)]
+~~~
+
+The largest parts of the proof in practice are the Merkle branches, and the FRI proof, which consists of even more branches. And here's the "meat" of the verifier:
+
+~~~py
+for i, pos in enumerate(positions):
+    x = f.exp(G2, pos)
+    x_to_the_steps = f.exp(x, steps)
+    mbranch1 =  verify_branch(m_root, pos, branches[i*3])
+    mbranch2 =  verify_branch(m_root, (pos+skips)%precision, branches[i*3+1])
+    l_of_x = verify_branch(l_root, pos, branches[i*3 + 2], output_as_int=True)
+
+    p_of_x = int.from_bytes(mbranch1[:32], 'big')
+    p_of_g1x = int.from_bytes(mbranch2[:32], 'big')
+    d_of_x = int.from_bytes(mbranch1[32:64], 'big')
+    b_of_x = int.from_bytes(mbranch1[64:], 'big')
+
+    zvalue = f.div(f.exp(x, steps) - 1,
+                   x - last_step_position)
+    k_of_x = f.eval_poly_at(constants_mini_polynomial, f.exp(x, skips2))
+
+    # Check transition constraints Q(x) = Z(x) * D(x)
+    assert (p_of_g1x - p_of_x ** 3 - k_of_x - zvalue * d_of_x) % modulus == 0
+
+    # Check boundary constraints B(x) * Z2(x) + I(x) = P(x)
+    interpolant = f.lagrange_interp_2([1, last_step_position], [inp, output])
+    zeropoly2 = f.mul_polys([-1, 1], [-last_step_position, 1])
+    assert (p_of_x - b_of_x * f.eval_poly_at(zeropoly2, x) -
+            f.eval_poly_at(interpolant, x)) % modulus == 0
+
+    # Check correctness of the linear combination
+    assert (l_of_x - d_of_x -
+            k1 * p_of_x - k2 * p_of_x * x_to_the_steps -
+            k3 * b_of_x - k4 * b_of_x * x_to_the_steps) % modulus == 0
+~~~
+
+At every one of the positions that the prover provides a Merkle proof for, the verifier checks the Merkle proof, and checks that
+C
+(
+P
+(
+x
+)
+,
+P
+(
+g
+1
+⋅
+x
+)
+,
+K
+(
+x
+)
+)
+=
+Z
+(
+x
+)
+⋅
+D
+(
+x
+)
+ and
+B
+(
+x
+)
+⋅
+Z
+2
+(
+x
+)
++
+I
+(
+x
+)
+=
+P
+(
+x
+)
+(reminder: for
+x
+ that are not along the original computation trace,
+Z
+(
+x
+)
+ will not be zero, and so
+C
+(
+P
+(
+x
+)
+,
+P
+(
+g
+1
+⋅
+x
+)
+,
+K
+(
+x
+)
+)
+ likely will not evaluate to zero). The verifier also checks that the linear combination is correct, and calls verify_low_degree_proof(l_root, root_of_unity, fri_proof, steps * 2, modulus, exclude_multiples_of=extension_factor) to verify the FRI proof. And we're done!
+
+Well, not really; soundness analysis to prove how many spot-checks for the cross-polynomial checking and for the FRI are necessary is really tricky. But that's all there is to the code, at least if you don't care about making even crazier optimizations. When I run the code above, we get a STARK proving "overhead" of about 300-400x (eg. a MIMC computation that takes 0.2 seconds to calculate takes 60 second to prove), suggesting that with a 4-core machine computing the STARK of the MIMC computation in the forward direction could actually be faster than computing MIMC in the backward direction. That said, these are both relatively inefficient implementations in python, and the proving to running time ratio for properly optimized implementations may be different. Also, it's worth pointing out that the STARK proving overhead for MIMC is remarkably low, because MIMC is almost perfectly "arithmetizable" - it's mathematical form is very simple. For "average" computations, which contain less arithmetically clean operations (eg. checking if a number is greater or less than another number), the overhead is likely much higher, possibly around 10000-50000x.
