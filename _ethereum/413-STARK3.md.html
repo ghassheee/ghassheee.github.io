@@ -28,7 +28,7 @@ STARKs には『ゼロ知識』というプライバシー保護の性質もあ�
 
 - このコードは細部まで監査されたものではなく、プロダクションでの使用におけるプロトコルの健全性は保証されていません。
 - このコードの最適化は部分的なものです。（ python で書かれています。何を期待できましょうか。）
-- 実際のSTARK（つまり Eli や co さんによる実装）は、効率性の観点から有限二進数体（例えば、 $\mathbb{F}_2[X]/(x^n+x+1)$ ）上でプロトコルを展開していますが、彼らは、ここで用いる素数位数有限体によるアプローチをしても法則が破られないことを強調しています。
+- 実際のSTARK（つまり Eli や co さんによる実装）は、効率性の観点から有限二進数体（簡単なものだと例えば、 $\mathbb{F}_2[X]/(x^3+x+1)$ は位数8の体となります。）上でプロトコルを展開していますが、彼らは、ここで用いる素数位数有限体によるアプローチをしても法則が破られないことを強調しています。$\mathbb{F}_2[X]/(f)$ が体となるには、f が既約多項式でないといけませんが、有限体上の既約性判定は、例えば、[Berlekamp Algorithm](https://www.kurims.kyoto-u.ac.jp/~kyodo/kokyuroku/contents/pdf/1930-02.pdf) などが使えます。）
 - STARK を実装する『真の方法』はありません。STARK は暗号学的かつ数学的構築のある幅広いカテゴリを指しており、異なるアプリケーション間では違う設定が採用されます。また証明者と検証者の複雑度を減らしたり健全性を証明するといった研究目的としても使われており、一つの実装はまだ存在していません。
 - この記事は、合同算術と素数位数有限体の仕組みに関する前提知識と、ラグランジュ補間や評価に関する多項式についての基本知識を要します。これらについて、知らなければ[前回の記事]()や以前の[二次算術プログラム]()の記事を参照してください。
 
@@ -219,42 +219,40 @@ def lagrange_interp(self, xs, ys):
 
 # Fast Fourier Transforms
 
+上のアルゴリズムを注意深く観察すると、
+ラグランジュ補間と多項式多点評価（つまりは、N次未満多項式をN点で評価すること）の両者共に実行に、二乗時間かかることがわかります。
+つまり、1000個の点に対するラグランジュ補間であれば、実行に数百万ステップ費やし、もし1000000個の点であれば、数兆ステップかかることとなります。
+効率性の観点でこれは許容しがいため、より効率的なアルゴリズムつまりは、
+高速フーリエ変換 FFT を使用してみましょう。
 
-If you read the above algorithms carefully, you might notice that Lagrange interpolation and multi-point evaluation (that is, evaluating a degree < N polynomial at N points) both take quadratic time to execute, so for example doing a Lagrange interpolation of one thousand points takes a few million steps to execute, and a Lagrange interpolation of one million points takes a few trillion. This is an unacceptably high level of inefficiency, so we will use a more efficient algorithm, the Fast Fourier Transform.
+FFT は $O(n⋅log(n))$ しかかかりません（つまり、1000個の点に対し、高々10000ステップで、1000000個の点では、高々2000万ステップです）。
+しかし、スコープ内では、さらに制限されます。
 
-The FFT only takes O(n⋅log(n)) time (ie. ~10,000 steps for 1,000 points, ~20 million steps for 1 million points), though it is more restricted in scope; the x coordinates must be a complete set of roots of unity of some order N
-=
-2
-k
-. That is, if there are
-N
- points, the x coordinates must be successive powers
-1
-,
-p
-,
-p
-2
-,
-p
-3
-... of some
-p
- where
-p
-N
-=
-1
-. The algorithm can, surprisingly enough, be used for multi-point evaluation or interpolation, with one small parameter tweak.
+The FFT only takes  time (ie. ~10,000 steps for 1,000 points, ~20 million steps for 1 million points),
+though it is more restricted in scope;
+x 軸は、ある位数 $N=2^k$ に対して、[１の $N$ 乗根]となっていなければなりません。
+つまりは、 $N$ 個の点があり、x軸は、ある $p^N = 1$ を満たす $p$ に対して乗数の列 $1,p,p^2,p^3, ... $ となっていなければなりません。
+アルゴリズムは、
 
+このアルゴリズムは、驚くことに、パラメータを少し調整するだけで、多点評価や補間に利用することができます。
 
-Challenge Find a 16th root of unity mod 337 that is not an 8th root of unity.
+~~~py
+課題
+mod 337 における　1の16乗根であって、1の8乗根でないものを見つけよ。
 
-Mouseover below for answer
+答え
 59, 146, 30, 297, 278, 191, 307, 40
+~~~
 
-You could have gotten this list by doing something like [print(x) for x in range(337) if pow(x, 16, 337) == 1 and pow(x, 8, 337) != 1], though there is a smarter way that works for much larger moduluses: first, identify a single primitive root mod 337 (that is, not a perfect square), by looking for a value x such that pow(x, 336 // 2, 337) != 1 (these are easy to find; one answer is 5), and then taking the (336 / 16)'th power of it.
-Here's the algorithm (in a slightly simplified form; see code here for something slightly more optimized):
+
+このリストは、`print(x) for x in range(337) if pow(x, 16, 337) == 1 and pow(x, 8, 337) != 1` のようにすることで得ることができますが、
+より大きい除数をももつ合同算術に対してはより賢い方法があります。
+まず、`pow(x, 336 // 2, 337) != 1`となる値xを探して、
+位数 337 の有限体上で、1 の原始根を一つ探します。
+ (これは簡単に見つかります。一つの答えは5です)
+そして、その(336 / 16)'th powerを取ります。
+以下はそのアルゴリズムです（少し簡略化した形です；もう少し最適化したものはこちらのコードを参照してください。
+
 
 ~~~py
 def fft(vals, modulus, root_of_unity):
@@ -278,7 +276,8 @@ def inv_fft(vals, modulus, root_of_unity):
 ~~~
 
 
-You can try running it on a few inputs yourself and check that it gives results that, when you use eval_poly_at on them, give you the answers you expect to get. For example:
+自分でいくつかの入力に対して実行してみて、その結果が得られるかどうかを確認することができます。
+その上で `eval_poly_at` を使うと、期待通りの答えが得られます。例えば
 
 ~~~py
 >>> fft.fft([3,1,4,1,5,9,2,6], 337, 85, inv=True)
@@ -288,36 +287,50 @@ You can try running it on a few inputs yourself and check that it gives results 
 [3, 1, 4, 1, 5, 9, 2, 6]
 ~~~
 
-A Fourier transform takes as input `[x[0] .... x[n-1]]`, and its goal is to output `x[0] + x[1] + ... + x[n-1]` as the first element, `x[0] + x[1] * 2 + ... + x[n-1] * w**(n-1)` as the second element, etc etc; a fast Fourier transform accomplishes this by splitting the data in half, doing an FFT on both halves, and then gluing the result back together.
+フーリエ変換は、入力として `[x[0] ... x[n-1]]` を受け取ります。
+その目的は、`x[0] + x[1] + ...+ x[n-1]` を最初の要素とし、
+`x[0] + x[1] * 2 + ... + x[n-1] * w**(n-1)` を２番目の要素とし、と言った風にこれらを繰り返し、出力を行います。
+高速フーリエ変換は、データを半分に分割することでこれを実現し、双方においてFFTを行い、
+そして、その結果をつなぎ合わせます。
 
 
+![FFT計算における情報の流れを示した図。FFTは、データの半分ずつに対し2回 FFT を行った後で「接着」ステップを行い、これを1つの要素になるまで再帰的に繰り返します。](/image/vb/stark3_4.png)
 
-A diagram of how information flows through the FFT computation. Notice how the FFT consists of a "gluing" step followed by two copies of the FFT on two halves of the data, and so on recursively until you're down to one element.
+FFTの仕組みや理由、多項式計算一般について、より直感的に理解するために、[こちら](https://web.cecs.pdx.edu/~maier/cs584/Lectures/lect07b-11-MG.pdf)をお勧めします。
+また、DFTとFFTの比較については、[このスレッド](https://dsp.stackexchange.com/questions/41558/what-are-some-of-the-differences-between-dft-and-fft-that-make-fft-so-fast?rq=1)で詳しく説明しています。
+ただし、フーリエ変換に関するほとんどの文献は、実数および複素数上のフーリエ変換について述べているので、注意が必要です。
+素数有限体上の話ではありません。
+
+もし、これが難しすぎて理解したくないと思うのであれば、奇妙な呪文か何かのように扱ってください。
+何度かコードを実行して動作することを確認したならば、視界がクリアになることでしょう。
 
 
-I recommend this for more intuition on how or why the FFT works and polynomial math in general, and this thread for some more specifics on DFT vs FFT, though be warned that most literature on Fourier transforms talks about Fourier transforms over real and complex numbers, not prime fields. If you find this too hard and don't want to understand it, just treat it as weird spooky voodoo that just works because you ran the code a few times and verified that it works, and you'll be fine too.
 
 # Thank Goodness It's FRI-day
 
 (that's "Fast Reed-Solomon Interactive Oracle Proofs of Proximity")
 
-Reminder: now may be a good time to review and re-read Part 2
+注意：今こそ、[第2部](https://ghassheee.github.io/ethereum/412-STARK2.md/)を読み直す良い機会かもしれません。
 
-Now, we'll get into the code for making a low-degree proof. To review, a low-degree proof is a (probabilistic) proof that at least some high percentage (eg. 80%) of a given set of values represent the evaluations of some specific polynomial whose degree is much lower than the number of values given. Intuitively, just think of it as a proof that "some Merkle root that we claim represents a polynomial actually does represent a polynomial, possibly with a few errors". As input, we have:
 
-A set of values that we claim are the evaluation of a low-degree polynomial
-A root of unity; the x coordinates at which the polynomial is evaluated are successive powers of this root of unity
-A value
-N
- such that we are proving the degree of the polynomial is strictly less than
-N
-The modulus
-Our approach is a recursive one, with two cases. First, if the degree is low enough, we just provide the entire list of values as a proof; this is the "base case". Verification of the base case is trivial: do an FFT or Lagrange interpolation or whatever else to interpolate the polynomial representing those values, and verify that its degree is
-<
-N
-. Otherwise, if the degree is higher than some set minimum, we do the vertical-and-diagonal trick described at the bottom of Part 2.
+さて、ここからは低次の証明を作るための[コード](https://github.com/ethereum/research/blob/master/mimc_stark/fri.py)に入ります。
+低次証明とは、与えられた値の集合のうち、少なくともある高い割合（例えば80％）が、
+与えられた値の数よりもはるかに低い次数を持つ特定の多項式の評価を表していることを（確率的に）証明することである。
+直感的には、「多項式を表すと主張するある Merkle ルートが、少しの誤差はあるが、実際に多項式を表している」という証明だと思えばよい。
 
-We start off by putting the values into a Merkle tree and using the Merkle root to select a pseudo-random x coordinate (special_x). We then calculate the "column":
+入力として、次の4つを取ります。
+
+- 低次多項式を評価した値の集合
+- 累乗根。多項式が評価されるx座標はこの根の累乗により連続する列となる
+- 多項式次数が厳密に N 未満である証明をするための値 N
+- 合同算術の除数
+
+我々のアプローチは再帰的なものであり、2つのケースがある。
+まず、次数が十分に低い場合は、値のリスト全体を証明として提供するだけです。
+これは「基本的ケース」である。
+基本的ケースの検証は簡単で、FFTあるいはラグランジュ補間などでそれらの値を表す多項式を補間し、その次数が N 未満であることを検証すればよいのです。
+そうでない場合は、次数がある設定された最小値よりも高ければ、第2部の下部で説明した垂直・対角線のトリックを行います。
+まず、値をMerkle木に入れ、Merkleルートを使って擬似的にランダムな x 座標（special_x）を選択することから始める。その後、「列」を計算する。
 
 ~~~py
 # Calculate the set of x coordinates
@@ -332,167 +345,21 @@ for i in range(len(xs)//4):
     column.append(f.eval_poly_at(x_poly, special_x))
 ~~~
 
-This packs a lot into a few lines of code. The broad idea is to re-interpret the polynomial
-P
-(
-x
-)
- as a polynomial
-Q
-(
-x
-,
-y
-)
-, where
-P
-(
-x
-)
-=
-Q
-(
-x
-,
-x
-4
-)
-. If
-P
- has degree
-<
-N
-, then
-P
-′
-(
-y
-)
-=
-Q
-(
-s
-p
-e
-c
-i
-a
-l
-_
-x
-,
-y
-)
- will have degree
-<
-N
-4
-. Since we don't want to take the effort to actually compute
-Q
- in coefficient form (that would take a still-relatively-nasty-and-expensive FFT!), we instead use another trick. For any given value of
-x
-4
-, there are 4 corresponding values of
-x
-:
-x
-,
-m
-o
-d
-u
-l
-u
-s
-−
-x
-, and
-x
- multiplied by the two modular square roots of
-−
-1
-. So we already have four values of
-Q
-(
-?
-,
-x
-4
-)
-, which we can use to interpolate the polynomial
-R
-(
-x
-)
-=
-Q
-(
-x
-,
-x
-4
-)
-, and from there calculate
-R
-(
-s
-p
-e
-c
-i
-a
-l
-_
-x
-)
-=
-Q
-(
-s
-p
-e
-c
-i
-a
-l
-_
-x
-,
-x
-4
-)
-=
-P
-′
-(
-x
-4
-)
-. There are
-N
-4
- possible values of
-x
-4
-, and this lets us easily calculate all of them.
+これは、数行のコードに多くのことを詰め込んでいます。
+大まかなアイデアは、多項式を再解釈することです。
+$P(x)$ は多項式 $Q(x,y)$ であり、 $P(x)=Q(x,x^4)$ となります。
+$P$ が次数 $\lt N$ ならば $P'(y)=Q(specal_x,y)$ は次数 $\lt N^4$ となります。
+Qを実際に係数形式で計算するのは面倒なので（まだ比較的厄介で高価なFFTが必要！）代わりに別のトリックを使用します。
+$Q(x,x^4)$ の引数となる任意の与えられた $x^4$ に対して、4つxの値を与えてやることができます。
+`x`、`modulus - x` と、今の合同算術体系内に二つ存在する $\sqrt{-1}$ をかけた `sqrt(-1) * x` です。ですので、今既に 4 つの $Q(?,x^4)$ の値を持っていることになり、 $R(x)=Q(x,x^4)$ の補間を行うことができます。そして、 $R(special_x) = Q(specal_x,x^4) = P'(x^4)$ を計算すれば良いのです。 $x^4$ の取りうる値は $\frac{N}{4}$ 個あり、それらすべてを計算するのは容易いことです。
+
+
+![前回の記事から引用](/image/vb/stark3_5.png)
 
 
 
-A diagram from part 2; it helps to keep this in mind when understanding what's going on here
+我々の証明では、$x^4$ の値をマークルルートのハッシュをシードとして利用した疑似乱数による探索により、例えば 40　個選び出して検証します。各探索に対して、 $Q(?,x^4)$ の五つの値のマークルブランチを提供します。
 
-
-Our proof consists of some number (eg. 40) of random queries from the list of values of
-x
-4
-(using the Merkle root of the column as a seed), and for each query we provide Merkle branches of the five values of
-Q
-(
-?
-,
-x
-4
-)
-:
 
 ~~~py
 m2 = merkelize(column)
@@ -508,39 +375,36 @@ for y in ys:
                     [mk_branch(m, y + (len(xs) // 4) * j) for j in range(4)])
 ~~~
 
-The verifier's job will be to verify that these five values actually do lie on the same degree
-<
-4
-polynomial. From there, we recurse and do an FRI on the column, verifying that the column actually does have degree
-<
-N
-4
-. That really is all there is to FRI.
+検証者の仕事は、これら5つの値が実際にある一つの４次未満多項式に乗っているかどうかを検証します。
+そこから、 列に対して、FRI を適用し、それを繰り返し、列が実際に $\frac{N}{4}$ 次未満であることを検証します。FRI に対してはそれで全てです。
 
-As a challenge exercise, you could try creating low-degree proofs of polynomial evaluations that have errors in them, and see how many errors you can get away passing the verifier with (hint, you'll need to modify the prove_low_degree function; with the default prover, even one error will balloon up and cause verification to fail).
+課題として、エラーがある多項式評価の低次証明を作ってみて、いくつのエラーで検証機を通せるか試してみるのもいいでしょう（ヒント：prove_low_degree 関数を修正する必要があります；デフォルトの証明機では、1つのエラーでも膨らんで検証が失敗します）。
+
+
 
 # The STARK
 
-Reminder: now may be a good time to review and re-read Part 1
+リマインダー：今こそ、第1部を見直す良い機会かもしれません。
 
-Now, we get to the actual meat that puts all of these pieces together: def mk_mimc_proof(inp, steps, round_constants) (code here), which generates a proof of the execution result of running the MIMC function with the given input for some number of steps. First, some asserts:
 
+さて、ここからは、これらのピースをまとめる実際の肉付けに入ります。
+`def mk_mimc_proof(inp, steps, round_constants)`(コードは[こちら](https://github.com/ethereum/research/blob/master/mimc_stark/mimc_stark.py))は、
+ある数のステップを入力として、MIMC関数を実行した結果の証明を生成します。
+
+まず、いくつかの前提条件を与えます。
+
+~~~py
 assert steps <= 2**32 // extension_factor
 assert is_a_power_of_2(steps) and is_a_power_of_2(len(round_constants))
 assert len(round_constants) < steps
-The extension factor is the extent to which we will be "stretching" the computational trace (the set of "intermediate values" of executing the MIMC function). We need the step count multiplied by the extension factor to be at most
-2
-32
-, because we don't have roots of unity of order
-2
-k
- for
-k
->
-32
-.
+~~~
 
-Our first computation will be to generate the computational trace; that is, all of the intermediate values of the computation, from the input going all the way to the output.
+この extension factor というのは、我々がどこまで計算トレース（MIMC 関数の実行による中間的な値の集合）を伸ばしていくのかという量です。
+われわれは、$k>32$ となる k に対して、1 の $2^k$ 乗根を持たないため、
+extension factor を掛けた step 数は高々 $2^32$ であることを必要とします。
+
+最初の計算は、計算トレースを生成することです。
+つまりは、入力から、計算のすべての中間的値を、出力まで集めてきたものです。
 
 ~~~py
 # Generate the computational trace
@@ -550,64 +414,19 @@ for i in range(steps-1):
 output = computational_trace[-1]
 ~~~
 
-We then convert the computation trace into a polynomial, "laying down" successive values in the trace on successive powers of a root of unity
-g
- where
-g
-s
-t
-e
-p
-s
- = 1, and we then evaluate the polynomial in a larger set, of successive powers of a root of unity
-g
-2
- where
-(
-g
-2
-)
-s
-t
-e
-p
-s
-⋅
-8
-=
-1
- (note that
-(
-g
-2
-)
-8
-=
-g
-).
+そして、その計算トレースを多項式に変換します。トレースにおける $g^{steps} = 1$ となるような累乗根 $g$ の後継冪数の上でのトレースにおいて、その後継となる数を順に並べていきます。
+次に $g_2^{steps\cdot 8} = 1$ をみたす累乗根 $g_2$ の後継冪数からなるより大きな集合のもとで多項式を評価します。（つまりは $g_2^8 = g$ となります。）
+
 
 ~~~py
 computational_trace_polynomial = inv_fft(computational_trace, modulus, subroot)
 p_evaluations = fft(computational_trace_polynomial, modulus, root_of_unity)
 ~~~
 
-
-Black: powers of
-g
-1
-. Purple: powers of
-g
-2
-. Orange: 1. You can look at successive roots of unity as being arranged in a circle in this way. We are "laying" the computational trace along powers of
-g
-1
-, and then extending it compute the values of the same polynomial at the intermediate values (ie. the powers of
-g
-2
-).
-
+Black: powers of g 1 . Purple: powers of g 2 . Orange: 1. You can look at successive roots of unity as being arranged in a circle in this way. We are “laying” the computational trace along powers of g 1 , and then extending it compute the values of the same polynomial at the intermediate values (ie. the powers of g 2 ).
 
 We can convert the round constants of MIMC into a polynomial. Because these round constants loop around very frequently (in our tests, every 64 steps), it turns out that they form a degree-64 polynomial, and we can fairly easily compute its expression, and its extension:
+
 
 ~~~py
 skips2 = steps // len(round_constants)
@@ -616,57 +435,9 @@ constants_polynomial = [0 if i % skips2 else constants_mini_polynomial[i//skips2
 constants_mini_extension = fft(constants_mini_polynomial, modulus, f.exp(root_of_unity, skips2))
 ~~~
 
-Suppose there are 8192 steps of execution and 64 round constants. Here is what we are doing: we are doing an FFT to compute the round constants as a function of
-(
-g
-1
-)
-128
-. We then add zeroes in between the constants to make it a function of
-g
-1
- itself. Because
-(
-g
-1
-)
-128
- loops around every 64 steps, we know this function of
-g
-1
- will as well. We only compute 512 steps of the extension, because we know that the extension repeats after 512 steps as well.
+Suppose there are 8192 steps of execution and 64 round constants. Here is what we are doing: we are doing an FFT to compute the round constants as a function of ( g 1 ) 128 . We then add zeroes in between the constants to make it a function of g 1 itself. Because ( g 1 ) 128 loops around every 64 steps, we know this function of g 1 will as well. We only compute 512 steps of the extension, because we know that the extension repeats after 512 steps as well.
 
-We now, as in the Fibonacci example in Part 1, calculate
-C
-(
-P
-(
-x
-)
-)
-, except this time it's
-C
-(
-P
-(
-x
-)
-,
-P
-(
-g
-1
-⋅
-x
-)
-,
-K
-(
-x
-)
-)
-:
-
+We now, as in the Fibonacci example in Part 1, calculate C ( P ( x ) ) , except this time it's C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) :
 
 ~~~py
 # Create the composed polynomial such that
@@ -678,231 +449,13 @@ c_of_p_evaluations = [(p_evaluations[(i+extension_factor)%precision] -
 print('Computed C(P, K) polynomial')
 ~~~
 
-
 Note that here we are no longer working with polynomials in coefficient form; we are working with the polynomials in terms of their evaluations at successive powers of the higher-order root of unity.
 
-c_of_p is intended to be
-Q
-(
-x
-)
-=
-C
-(
-P
-(
-x
-)
-,
-P
-(
-g
-1
-⋅
-x
-)
-,
-K
-(
-x
-)
-)
-=
-P
-(
-g
-1
-⋅
-x
-)
-−
-P
-(
-x
-)
-3
-−
-K
-(
-x
-)
-; the goal is that for every
-x
- that we are laying the computational trace along (except for the last step, as there's no step "after" the last step), the next value in the trace is equal to the previous value in the trace cubed, plus the round constant. Unlike the Fibonacci example in Part 1, where if one computational step was at coordinate
-k
-, the next step is at coordinate
-k
-+
-1
-, here we are laying down the computational trace along successive powers of the lower-order root of unity
-g
-1
-, so if one computational step is located at
-x
-=
-(
-g
-1
-)
-i
-, the "next" step is located at
-(
-g
-1
-)
-i
-+
-1
- =
-(
-g
-1
-)
-i
-⋅
-g
-1
-=
-x
-⋅
-g
-1
-. Hence, for every power of the lower-order root of unity
-g
-1
- (except the last), we want it to be the case that
-P
-(
-x
-⋅
-g
-1
-)
-=
-P
-(
-x
-)
-3
-+
-K
-(
-x
-)
-, or
-P
-(
-x
-⋅
-g
-1
-)
-−
-P
-(
-x
-)
-3
-−
-K
-(
-x
-)
-=
-Q
-(
-x
-)
-=
-0
-. Thus,
-Q
-(
-x
-)
- will be equal to zero at all successive powers of the lower-order root of unity
-g
- (except the last).
+c_of_p is intended to be Q ( x ) = C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) = P ( g 1 ⋅ x ) − P ( x ) 3 − K ( x ) ; the goal is that for every x that we are laying the computational trace along (except for the last step, as there's no step “after” the last step), the next value in the trace is equal to the previous value in the trace cubed, plus the round constant. Unlike the Fibonacci example in Part 1, where if one computational step was at coordinate k , the next step is at coordinate k + 1 , here we are laying down the computational trace along successive powers of the lower-order root of unity g 1 , so if one computational step is located at x = ( g 1 ) i , the “next” step is located at ( g 1 ) i + 1 = ( g 1 ) i ⋅ g 1 = x ⋅ g 1 . Hence, for every power of the lower-order root of unity g 1 (except the last), we want it to be the case that P ( x ⋅ g 1 ) = P ( x ) 3 + K ( x ) , or P ( x ⋅ g 1 ) − P ( x ) 3 − K ( x ) = Q ( x ) = 0 . Thus, Q ( x ) will be equal to zero at all successive powers of the lower-order root of unity g (except the last).
 
-There is an algebraic theorem that proves that if
-Q
-(
-x
-)
- is equal to zero at all of these x coordinates, then it is a multiple of the minimal polynomial that is equal to zero at all of these x coordinates:
-Z
-(
-x
-)
-=
-(
-x
-−
-x
-1
-)
-⋅
-(
-x
-−
-x
-2
-)
-⋅
-.
-.
-.
-⋅
-(
-x
-−
-x
-n
-)
-. Since proving that
-Q
-(
-x
-)
- is equal to zero at every single coordinate we want to check is too hard (as verifying such a proof would take longer than just running the original computation!), instead we use an indirect approach to (probabilistically) prove that
-Q
-(
-x
-)
- is a multiple of
-Z
-(
-x
-)
-. And how do we do that? By providing the quotient
-D
-(
-x
-)
-=
-Q
-(
-x
-)
-Z
-(
-x
-)
- and using FRI to prove that it's an actual polynomial and not a fraction, of course!
+There is an algebraic theorem that proves that if Q ( x ) is equal to zero at all of these x coordinates, then it is a multiple of the minimal polynomial that is equal to zero at all of these x coordinates: Z ( x ) = ( x − x 1 ) ⋅ ( x − x 2 ) ⋅ . . . ⋅ ( x − x n ) . Since proving that Q ( x ) is equal to zero at every single coordinate we want to check is too hard (as verifying such a proof would take longer than just running the original computation!), instead we use an indirect approach to (probabilistically) prove that Q ( x ) is a multiple of Z ( x ) . And how do we do that? By providing the quotient D ( x ) = Q ( x ) Z ( x ) and using FRI to prove that it's an actual polynomial and not a fraction, of course!
 
-We chose the particular arrangement of lower and higher order roots of unity (rather than, say, laying the computational trace along the first few powers of the higher order root of unity) because it turns out that computing
-Z
-(
-x
-)
- (the polynomial that evaluates to zero at all points along the computational trace except the last), and dividing by
-Z
-(
-x
-)
- is trivial there: the expression of
-Z
- is a fraction of two terms.
+We chose the particular arrangement of lower and higher order roots of unity (rather than, say, laying the computational trace along the first few powers of the higher order root of unity) because it turns out that computing Z ( x ) (the polynomial that evaluates to zero at all points along the computational trace except the last), and dividing by Z ( x ) is trivial there: the expression of Z is a fraction of two terms.
 
 ~~~py
 # Compute D(x) = Q(x) / Z(x)
@@ -913,123 +466,11 @@ z_den_evaluations = [xs[i] - last_step_position for i in range(precision)]
 d_evaluations = [cp * zd * zni % modulus for cp, zd, zni in zip(c_of_p_evaluations, z_den_evaluations, z_num_inv)]
 print('Computed D polynomial')
 ~~~
+Notice that we compute the numerator and denominator of Z directly in “evaluation form”, and then use the batch modular inversion to turn dividing by Z into a multiplication ( ⋅ z d ⋅ z n i ), and then pointwise multiply the evaluations of Q ( x ) by these inverses of Z ( x ) . Note that at the powers of the lower-order root of unity except the last (ie. along the portion of the low-degree extension that is part of the original computational trace), Z ( x ) = 0 , so this computation involving its inverse will break. This is unfortunate, though we will plug the hole by simply modifying the random checks and FRI algorithm to not sample at those points, so the fact that we calculated them wrong will never matter.
 
-Notice that we compute the numerator and denominator of
-Z
- directly in "evaluation form", and then use the batch modular inversion to turn dividing by
-Z
- into a multiplication (
-⋅
-z
-d
-⋅
-z
-n
-i
-), and then pointwise multiply the evaluations of
-Q
-(
-x
-)
- by these inverses of
-Z
-(
-x
-)
-. Note that at the powers of the lower-order root of unity except the last (ie. along the portion of the low-degree extension that is part of the original computational trace),
-Z
-(
-x
-)
-=
-0
-, so this computation involving its inverse will break. This is unfortunate, though we will plug the hole by simply modifying the random checks and FRI algorithm to not sample at those points, so the fact that we calculated them wrong will never matter.
+Because Z ( x ) can be expressed so compactly, we get another benefit: the verifier can compute Z ( x ) for any specific x extremely quickly, without needing any precomputation. It's okay for the prover to have to deal with polynomials whose size equals the number of steps, but we don't want to ask the verifier to do the same, as we want verification to be succinct (ie. ultra-fast, with proofs as small as possible).
 
-Because
-Z
-(
-x
-)
- can be expressed so compactly, we get another benefit: the verifier can compute
-Z
-(
-x
-)
- for any specific
-x
- extremely quickly, without needing any precomputation. It's okay for the prover to have to deal with polynomials whose size equals the number of steps, but we don't want to ask the verifier to do the same, as we want verification to be succinct (ie. ultra-fast, with proofs as small as possible).
-
-Probabilistically checking
-D
-(
-x
-)
-⋅
-Z
-(
-x
-)
-=
-Q
-(
-x
-)
- at a few randomly selected points allows us to verify the transition constraints - that each computational step is a valid consequence of the previous step. But we also want to verify the boundary constraints - that the input and the output of the computation is what the prover says they are. Just asking the prover to provide evaluations of
-P
-(
-1
-)
-,
-D
-(
-1
-)
-,
-P
-(
-l
-a
-s
-t
-_
-s
-t
-e
-p
-)
- and
-D
-(
-l
-a
-s
-t
-_
-s
-t
-e
-p
-)
- (where
-l
-a
-s
-t
-_
-s
-t
-e
-p
- (or
-g
-s
-t
-e
-p
-s
-−
-1
-) is the coordinate corresponding to the last step in the computation) is too fragile; there's no proof that those values are on the same polynomial as the rest of the data. So instead we use a similar kind of polynomial division trick:
+Probabilistically checking D ( x ) ⋅ Z ( x ) = Q ( x ) at a few randomly selected points allows us to verify the transition constraints - that each computational step is a valid consequence of the previous step. But we also want to verify the boundary constraints - that the input and the output of the computation is what the prover says they are. Just asking the prover to provide evaluations of P ( 1 ) , D ( 1 ) , P ( l a s t _ s t e p ) and D ( l a s t _ s t e p ) (where l a s t _ s t e p (or g s t e p s − 1 ) is the coordinate corresponding to the last step in the computation) is too fragile; there's no proof that those values are on the same polynomial as the rest of the data. So instead we use a similar kind of polynomial division trick:
 
 ~~~py
 # Compute interpolant of ((1, input), (x_atlast_step, output))
@@ -1043,253 +484,13 @@ inv_z2_evaluations = f.multi_inv([f.eval_poly_at(quotient, x) for x in xs])
 b_evaluations = [((p - i) * invq) % modulus for p, i, invq in zip(p_evaluations, i_evaluations, inv_z2_evaluations)]
 print('Computed B polynomial')
 ~~~
+The argument is as follows. The prover wants to prove P ( 1 ) = i n p u t and P ( l a s t _ s t e p ) = o u t p u t . If we take I ( x ) as the interpolant - the line that crosses the two points ( 1 , i n p u t ) and ( l a s t _ s t e p , o u t p u t ) , then P ( x ) − I ( x ) would be equal to zero at those two points. Thus, it suffices to prove that P ( x ) − I ( x ) is a multiple of ( x − 1 ) ⋅ ( x − l a s t _ s t e p ) , and we do that by... providing the quotient!
 
-The argument is as follows. The prover wants to prove
-P
-(
-1
-)
-=
-i
-n
-p
-u
-t
- and
-P
-(
-l
-a
-s
-t
-_
-s
-t
-e
-p
-)
-=
-o
-u
-t
-p
-u
-t
-. If we take
-I
-(
-x
-)
- as the interpolant - the line that crosses the two points
-(
-1
-,
-i
-n
-p
-u
-t
-)
- and
-(
-l
-a
-s
-t
-_
-s
-t
-e
-p
-,
-o
-u
-t
-p
-u
-t
-)
-, then
-P
-(
-x
-)
-−
-I
-(
-x
-)
- would be equal to zero at those two points. Thus, it suffices to prove that
-P
-(
-x
-)
-−
-I
-(
-x
-)
- is a multiple of
-(
-x
-−
-1
-)
-⋅
-(
-x
-−
-l
-a
-s
-t
-_
-s
-t
-e
-p
-)
-, and we do that by... providing the quotient!
+Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at x = g s t e p s − 1 . Red: P − I . Yellow: the minimal polynomial that equals 0 at x = 1 and x = g s t e p s − 1 (that is, Z 2 ). Pink: P − I Z 2 .
 
+Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that? Mouseover below for answer Set I ( x ) to be the interpolant of ( 1 , i n p u t ) , ( g 703 , 8018284612598740 ) , ( l a s t _ s t e p , o u t p u t ) , and make a proof by providing the quotient B ( x ) = P ( x ) − I ( x ) ( x − 1 ) ⋅ ( x − g 703 ) ⋅ ( x − l a s t _ s t e p )
 
-
-Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at
-x
-=
-g
-s
-t
-e
-p
-s
-−
-1
-. Red:
-P
-−
-I
-. Yellow: the minimal polynomial that equals
-0
- at
-x
-=
-1
- and
-x
-=
-g
-s
-t
-e
-p
-s
-−
-1
- (that is,
-Z
-2
-). Pink:
-P
-−
-I
-Z
-2
-.
-
-
-
-Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that?
-Mouseover below for answer
-Set
-I
-(
-x
-)
- to be the interpolant of
-(
-1
-,
-i
-n
-p
-u
-t
-)
-,
-(
-g
-703
-,
-8018284612598740
-)
-,
-(
-l
-a
-s
-t
-_
-s
-t
-e
-p
-,
-o
-u
-t
-p
-u
-t
-)
-, and make a proof by providing the quotient
-B
-(
-x
-)
-=
-P
-(
-x
-)
-−
-I
-(
-x
-)
-(
-x
-−
-1
-)
-⋅
-(
-x
-−
-g
-703
-)
-⋅
-(
-x
-−
-l
-a
-s
-t
-_
-s
-t
-e
-p
-)
-
-Now, we commit to the Merkle root of
-P
-,
-D
- and
-B
- combined together.
+Now, we commit to the Merkle root of P , D and B combined together.
 
 ~~~py
 # Compute their Merkle roots
@@ -1300,25 +501,8 @@ mtree = merkelize([pval.to_bytes(32, 'big') +
 print('Computed hash root')
 ~~~
 
-Now, we need to prove that
-P
-,
-D
- and
-B
- are all actually polynomials, and of the right max-degree. But FRI proofs are big and expensive, and we don't want to have three FRI proofs. So instead, we compute a pseudorandom linear combination of
-P
-,
-D
- and
-B
- (using the Merkle root of
-P
-,
-D
- and
-B
-as a seed), and do an FRI proof on that:
+Now, we need to prove that P , D and B are all actually polynomials, and of the right max-degree. But FRI proofs are big and expensive, and we don't want to have three FRI proofs. So instead, we compute a pseudorandom linear combination of P , D and B (using the Merkle root of P , D and B as a seed), and do an FRI proof on that:
+
 
 ~~~py
 k1 = int.from_bytes(blake(mtree[1] + b'\x01'), 'big')
@@ -1339,59 +523,13 @@ l_evaluations = [(d_evaluations[i] +
                   for i in range(precision)]
 ~~~
 
+
 Unless all three of the polynomials have the right low degree, it's almost impossible that a randomly selected linear combination of them will (you have to get extremely lucky for the terms to cancel), so this is sufficient.
 
-We want to prove that the degree of D is less than
-2
-⋅
-s
-t
-e
-p
-s
-, and that of
-P
- and
-B
- are less than
-s
-t
-e
-p
-s
-, so we actually make a random linear combination of
-P
-,
-P
-⋅
-x
-s
-t
-e
-p
-s
-,
-B
-,
-B
-s
-t
-e
-p
-s
- and
-D
-, and check that the degree of this combination is less than
-2
-⋅
-s
-t
-e
-p
-s
-.
+We want to prove that the degree of D is less than 2 ⋅ s t e p s , and that of P and B are less than s t e p s , so we actually make a random linear combination of P , P ⋅ x s t e p s , B , B s t e p s and D , and check that the degree of this combination is less than 2 ⋅ s t e p s .
 
 Now, we do some spot checks of all of the polynomials. We generate some random indices, and provide the Merkle branches of the polynomial evaluated at those indices:
+
 
 ~~~py
 # Do some spot checks of the Merkle tree at pseudo-random coordinates, excluding
@@ -1453,86 +591,6 @@ for i, pos in enumerate(positions):
             k3 * b_of_x - k4 * b_of_x * x_to_the_steps) % modulus == 0
 ~~~
 
-At every one of the positions that the prover provides a Merkle proof for, the verifier checks the Merkle proof, and checks that
-C
-(
-P
-(
-x
-)
-,
-P
-(
-g
-1
-⋅
-x
-)
-,
-K
-(
-x
-)
-)
-=
-Z
-(
-x
-)
-⋅
-D
-(
-x
-)
- and
-B
-(
-x
-)
-⋅
-Z
-2
-(
-x
-)
-+
-I
-(
-x
-)
-=
-P
-(
-x
-)
-(reminder: for
-x
- that are not along the original computation trace,
-Z
-(
-x
-)
- will not be zero, and so
-C
-(
-P
-(
-x
-)
-,
-P
-(
-g
-1
-⋅
-x
-)
-,
-K
-(
-x
-)
-)
- likely will not evaluate to zero). The verifier also checks that the linear combination is correct, and calls verify_low_degree_proof(l_root, root_of_unity, fri_proof, steps * 2, modulus, exclude_multiples_of=extension_factor) to verify the FRI proof. And we're done!
+At every one of the positions that the prover provides a Merkle proof for, the verifier checks the Merkle proof, and checks that C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) = Z ( x ) ⋅ D ( x ) and B ( x ) ⋅ Z 2 ( x ) + I ( x ) = P ( x ) (reminder: for x that are not along the original computation trace, Z ( x ) will not be zero, and so C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) likely will not evaluate to zero). The verifier also checks that the linear combination is correct, and calls verify_low_degree_proof(l_root, root_of_unity, fri_proof, steps * 2, modulus, exclude_multiples_of=extension_factor) to verify the FRI proof. And we're done!
 
-Well, not really; soundness analysis to prove how many spot-checks for the cross-polynomial checking and for the FRI are necessary is really tricky. But that's all there is to the code, at least if you don't care about making even crazier optimizations. When I run the code above, we get a STARK proving "overhead" of about 300-400x (eg. a MIMC computation that takes 0.2 seconds to calculate takes 60 second to prove), suggesting that with a 4-core machine computing the STARK of the MIMC computation in the forward direction could actually be faster than computing MIMC in the backward direction. That said, these are both relatively inefficient implementations in python, and the proving to running time ratio for properly optimized implementations may be different. Also, it's worth pointing out that the STARK proving overhead for MIMC is remarkably low, because MIMC is almost perfectly "arithmetizable" - it's mathematical form is very simple. For "average" computations, which contain less arithmetically clean operations (eg. checking if a number is greater or less than another number), the overhead is likely much higher, possibly around 10000-50000x.
+Well, not really; soundness analysis to prove how many spot-checks for the cross-polynomial checking and for the FRI are necessary is really tricky. But that's all there is to the code, at least if you don't care about making even crazier optimizations. When I run the code above, we get a STARK proving “overhead” of about 300-400x (eg. a MIMC computation that takes 0.2 seconds to calculate takes 60 second to prove), suggesting that with a 4-core machine computing the STARK of the MIMC computation in the forward direction could actually be faster than computing MIMC in the backward direction. That said, these are both relatively inefficient implementations in python, and the proving to running time ratio for properly optimized implementations may be different. Also, it's worth pointing out that the STARK proving overhead for MIMC is remarkably low, because MIMC is almost perfectly “arithmetizable” - it's mathematical form is very simple. For “average” computations, which contain less arithmetically clean operations (eg. checking if a number is greater or less than another number), the overhead is likely much higher, possibly around 10000-50000x.
