@@ -455,10 +455,8 @@ constants_mini_extension =
 $(g_1)^{128}$ は、64 ステップでループするので、$g_1$ もまた同様にループすることがわかります。
 この拡張は 512 ステップを計算するだけです。なぜらなば、512 ステップで同じことを繰り返すことがわかっているからです。
 
-
-We now, as in the Fibonacci example in Part 1,
-calculate $C(P(x))$ ,
-except this time it's $C(P(x), P(g_1 \cdot x),K(x))$ :
+さて、では パート１でのフィボナッチ数の例でみた $C(P(x))$ を計算しようと思いますが、
+今回は、 $C(P(x))$ の代わりに $C(P(x), P(g_1 \cdot x),K(x))$ を使います。
 
 ~~~py
 # Create the composed polynomial such that
@@ -507,6 +505,7 @@ inv_z2_evaluations = f.multi_inv([f.eval_poly_at(quotient, x) for x in xs])
 b_evaluations = [((p - i) * invq) % modulus for p, i, invq in zip(p_evaluations, i_evaluations, inv_z2_evaluations)]
 print('Computed B polynomial')
 ~~~
+
 The argument is as follows. The prover wants to prove P ( 1 ) = i n p u t and P ( l a s t _ s t e p ) = o u t p u t . If we take I ( x ) as the interpolant - the line that crosses the two points ( 1 , i n p u t ) and ( l a s t _ s t e p , o u t p u t ) , then P ( x ) − I ( x ) would be equal to zero at those two points. Thus, it suffices to prove that P ( x ) − I ( x ) is a multiple of ( x − 1 ) ⋅ ( x − l a s t _ s t e p ) , and we do that by... providing the quotient!
 
 Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at x = g s t e p s − 1 . Red: P − I . Yellow: the minimal polynomial that equals 0 at x = 1 and x = g s t e p s − 1 (that is, Z 2 ). Pink: P − I Z 2 .
@@ -584,27 +583,26 @@ The largest parts of the proof in practice are the Merkle branches, and the FRI 
 
 ~~~py
 for i, pos in enumerate(positions):
-    x = f.exp(G2, pos)
-    x_to_the_steps = f.exp(x, steps)
-    mbranch1 =  verify_branch(m_root, pos, branches[i*3])
-    mbranch2 =  verify_branch(m_root, (pos+skips)%precision, branches[i*3+1])
-    l_of_x = verify_branch(l_root, pos, branches[i*3 + 2], output_as_int=True)
+    x               = f.exp(G2, pos)
+    x_to_the_steps  = f.exp(x, steps)
+    mbranch1        =  verify_branch(m_root, pos, branches[i*3])
+    mbranch2        =  verify_branch(m_root, (pos+skips)%precision, branches[i*3+1])
+    l_of_x          = verify_branch(l_root, pos, branches[i*3 + 2], output_as_int=True)
 
-    p_of_x = int.from_bytes(mbranch1[:32], 'big')
-    p_of_g1x = int.from_bytes(mbranch2[:32], 'big')
-    d_of_x = int.from_bytes(mbranch1[32:64], 'big')
-    b_of_x = int.from_bytes(mbranch1[64:], 'big')
+    p_of_x          = int.from_bytes(mbranch1[:32], 'big')
+    p_of_g1x        = int.from_bytes(mbranch2[:32], 'big')
+    d_of_x          = int.from_bytes(mbranch1[32:64], 'big')
+    b_of_x          = int.from_bytes(mbranch1[64:], 'big')
 
-    zvalue = f.div(f.exp(x, steps) - 1,
-                   x - last_step_position)
-    k_of_x = f.eval_poly_at(constants_mini_polynomial, f.exp(x, skips2))
+    zvalue          = f.div(f.exp(x, steps) - 1, x - last_step_position)
+    k_of_x          = f.eval_poly_at(constants_mini_polynomial, f.exp(x, skips2))
 
     # Check transition constraints Q(x) = Z(x) * D(x)
     assert (p_of_g1x - p_of_x ** 3 - k_of_x - zvalue * d_of_x) % modulus == 0
 
     # Check boundary constraints B(x) * Z2(x) + I(x) = P(x)
-    interpolant = f.lagrange_interp_2([1, last_step_position], [inp, output])
-    zeropoly2 = f.mul_polys([-1, 1], [-last_step_position, 1])
+    interpolant     = f.lagrange_interp_2([1, last_step_position], [inp, output])
+    zeropoly2       = f.mul_polys([-1, 1], [-last_step_position, 1])
     assert (p_of_x - b_of_x * f.eval_poly_at(zeropoly2, x) -
             f.eval_poly_at(interpolant, x)) % modulus == 0
 
