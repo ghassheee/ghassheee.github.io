@@ -12,7 +12,7 @@ Eli Ben-Sasson さんに、やさしく補助していたき、いつも通り�
 
 警告：数学 と python コードをたくさん含みます。
 
-前回と前々回の投稿に続き、この記事は実際に STARK を実装するとどうなるかどうか、python を使って実装していきましょう。
+[前回](/ethereum/412-STARK2.md/)と[前々回](/ethereum/411-STARK1.md/)の投稿に続き、この記事は実際に STARK を実装するとどうなるかどうか、python を使って実装していきましょう。
 STARKs とは、Scalabel Transparent Argument of Knowledge の略称で、f(x) = y を満たすことの証明をつくる技術です。
 ここで、f を計算することは、潜在的に長い時間を要しやすいのですが、検証は素早く終えることがきます。
 
@@ -227,32 +227,39 @@ def lagrange_interp(self, xs, ys):
 
 FFT は $O(n⋅log(n))$ しかかかりません（つまり、1000個の点に対し、高々10000ステップで、1000000個の点では、高々2000万ステップです）。
 しかし、スコープ内では、さらに制限されます。
-
-The FFT only takes  time (ie. ~10,000 steps for 1,000 points, ~20 million steps for 1 million points),
-though it is more restricted in scope;
 x 軸は、ある位数 $N=2^k$ に対して、[１の $N$ 乗根]となっていなければなりません。
-つまりは、 $N$ 個の点があり、x軸は、ある $p^N = 1$ を満たす $p$ に対して乗数の列 $1,p,p^2,p^3, ... $ となっていなければなりません。
-アルゴリズムは、
+つまりは、 $N$ 個の点があり、x軸は、ある $p^N = 1$ を満たす $p$ に対して乗数の列 $1,p,p^2,p^3,...$ となっていなければなりません。
+
+
 
 このアルゴリズムは、驚くことに、パラメータを少し調整するだけで、多点評価や補間に利用することができます。
 
 ~~~py
+
 課題
 mod 337 における　1の16乗根であって、1の8乗根でないものを見つけよ。
 
 答え
 59, 146, 30, 297, 278, 191, 307, 40
+
+
+
+このリストは
+
+print(x) for x in range(337)
+    if pow(x, 16, 337) == 1 and pow(x, 8, 337) != 1
+
+のようにすることで得ることができますが、
+より大きい除数をももつ合同算術に対してはより賢い方法があります。
+まず pow(x, 336 // 2, 337) != 1 となる値 x を探して、
+位数 337 の有限体上で、1 の原始根を一つ探します。
+これは簡単に見つかり、一つの答えは 5 となります
+そして、その (336/16) th powerを取ります
+
 ~~~
 
 
-このリストは、`print(x) for x in range(337) if pow(x, 16, 337) == 1 and pow(x, 8, 337) != 1` のようにすることで得ることができますが、
-より大きい除数をももつ合同算術に対してはより賢い方法があります。
-まず、`pow(x, 336 // 2, 337) != 1`となる値xを探して、
-位数 337 の有限体上で、1 の原始根を一つ探します。
- (これは簡単に見つかります。一つの答えは5です)
-そして、その(336 / 16)'th powerを取ります。
-以下はそのアルゴリズムです（少し簡略化した形です；もう少し最適化したものはこちらのコードを参照してください。
-
+以下は FFT のアルゴリズムです（少し簡略化した形です；もう少し最適化したものはこちらのコードを参照してください。
 
 ~~~py
 def fft(vals, modulus, root_of_unity):
@@ -310,7 +317,7 @@ FFTの仕組みや理由、多項式計算一般について、より直感的�
 
 (that's "Fast Reed-Solomon Interactive Oracle Proofs of Proximity")
 
-注意：今こそ、[第2部](https://ghassheee.github.io/ethereum/412-STARK2.md/)を読み直す良い機会かもしれません。
+注意：今こそ、[第2部](/ethereum/412-STARK2.md/)を読み直す良い機会かもしれません。
 
 
 さて、ここからは低次の証明を作るための[コード](https://github.com/ethereum/research/blob/master/mimc_stark/fri.py)に入ります。
@@ -327,10 +334,10 @@ FFTの仕組みや理由、多項式計算一般について、より直感的�
 
 我々のアプローチは再帰的なものであり、2つのケースがある。
 まず、次数が十分に低い場合は、値のリスト全体を証明として提供するだけです。
-これは「基本的ケース」である。
-基本的ケースの検証は簡単で、FFTあるいはラグランジュ補間などでそれらの値を表す多項式を補間し、その次数が N 未満であることを検証すればよいのです。
-そうでない場合は、次数がある設定された最小値よりも高ければ、第2部の下部で説明した垂直・対角線のトリックを行います。
-まず、値をMerkle木に入れ、Merkleルートを使って擬似的にランダムな x 座標（special_x）を選択することから始める。その後、「列」を計算する。
+これは「基底の場合」です。
+基底の場合の検証は簡単で、FFTあるいはラグランジュ補間などでそれらの値を表す多項式を補間し、その次数が N 未満であることを検証すればよいのです。
+そうでない場合は、次数がある設定された最小値よりも高ければ、[第2部](/ethereum/412-STARK2.md/)の下部で説明した垂直・対角線のトリックを行います。
+まず始めに、`values` （つまりは）を Merkle 木に入れ、 $x$ 座標としては Merkle ルートを使って得られる疑似乱数 `special_x` を選択します。その後「列」を計算します。
 
 ~~~py
 # Calculate the set of x coordinates
@@ -348,10 +355,10 @@ for i in range(len(xs)//4):
 これは、数行のコードに多くのことを詰め込んでいます。
 大まかなアイデアは、多項式を再解釈することです。
 $P(x)$ は多項式 $Q(x,y)$ であり、 $P(x)=Q(x,x^4)$ となります。
-$P$ が次数 $\lt N$ ならば $P'(y)=Q(specal_x,y)$ は次数 $\lt N^4$ となります。
+$P$ が次数 $\lt N$ ならば $P'(y)=Q(specal\_x,y)$ は次数 $\lt N^4$ となります。
 Qを実際に係数形式で計算するのは面倒なので（まだ比較的厄介で高価なFFTが必要！）代わりに別のトリックを使用します。
-$Q(x,x^4)$ の引数となる任意の与えられた $x^4$ に対して、4つxの値を与えてやることができます。
-`x`、`modulus - x` と、今の合同算術体系内に二つ存在する $\sqrt{-1}$ をかけた `sqrt(-1) * x` です。ですので、今既に 4 つの $Q(?,x^4)$ の値を持っていることになり、 $R(x)=Q(x,x^4)$ の補間を行うことができます。そして、 $R(special_x) = Q(specal_x,x^4) = P'(x^4)$ を計算すれば良いのです。 $x^4$ の取りうる値は $\frac{N}{4}$ 個あり、それらすべてを計算するのは容易いことです。
+$Q(x,x^4)$ の引数となる任意の与えられた $x^4$ に対して、 $x$ の値を4つ与えてやることができます。
+`x`、`modulus - x` と、今の合同算術体系内に二つ存在する $\sqrt{-1}$ をかけた `sqrt(-1) * x` です。ですので、今既に 4 つの $Q(?,x^4)$ の値を持っていることになり、 $R(x)=Q(x,x^4)$ の補間を行うことができます。そして、 $R(special\_x) = Q(specal_x,x^4) = P'(x^4)$ を計算すれば良いのです。 $x^4$ の取りうる値は $\frac{N}{4}$ 個あり、またそれらすべてを計算するのは容易いことです。
 
 
 ![前回の記事から引用](/image/vb/stark3_5.png)
@@ -384,7 +391,7 @@ for y in ys:
 
 # The STARK
 
-リマインダー：今こそ、第1部を見直す良い機会かもしれません。
+リマインダー：今こそ、[第1部](/ethereum/411-STARK1.md/)を見直す良い機会かもしれません。
 
 
 さて、ここからは、これらのピースをまとめる実際の肉付けに入ります。
@@ -414,8 +421,8 @@ for i in range(steps-1):
 output = computational_trace[-1]
 ~~~
 
-そして、その計算トレースを多項式に変換します。トレースにおける $g^{steps} = 1$ となるような累乗根 $g$ の後継冪数の上でのトレースにおいて、その後継となる数を順に並べていきます。
-次に $g_2^{steps\cdot 8} = 1$ をみたす累乗根 $g_2$ の後継冪数からなるより大きな集合のもとで多項式を評価します。（つまりは $g_2^8 = g$ となります。）
+そして、その計算トレースを多項式に変換します。トレースにおける $g_1^{steps} = 1$ となるような累乗根 $g_1$ の後継冪数の上でのトレースにおいて、その後継となる数を順に並べていきます。
+次に $g_2^{steps\cdot 8} = 1$ をみたす累乗根 $g_2$ の後継冪数からなるより大きな集合のもとで多項式を評価します。（つまりは $g_2^8 = g_1$ となります。）
 
 
 ~~~py
@@ -423,21 +430,35 @@ computational_trace_polynomial = inv_fft(computational_trace, modulus, subroot)
 p_evaluations = fft(computational_trace_polynomial, modulus, root_of_unity)
 ~~~
 
-Black: powers of g 1 . Purple: powers of g 2 . Orange: 1. You can look at successive roots of unity as being arranged in a circle in this way. We are “laying” the computational trace along powers of g 1 , and then extending it compute the values of the same polynomial at the intermediate values (ie. the powers of g 2 ).
 
-We can convert the round constants of MIMC into a polynomial. Because these round constants loop around very frequently (in our tests, every 64 steps), it turns out that they form a degree-64 polynomial, and we can fairly easily compute its expression, and its extension:
+![黒: $g_1$ の冪 . 紫: $g_2$ の冪. 橙: $1$ . 一連の 1 の累乗根を図のように見ることができます。 $g_1$ の冪に沿って、計算トレースを置いていき、それを拡張して $g_2$ の冪に対して、同じ多項式を与え計算します。](/image/vb/stark3_6.png)
 
+MIMC のラウンド定数を多項式に変換することができます。
+これらラウンド定数のループは頻繁に、我々のテストでは64ステップ毎に、回されるため、64次多項式を構成することがわかります。
+このことにより、その式や、その式を用いた別の式を評価するのが非常に容易になります。
 
 ~~~py
 skips2 = steps // len(round_constants)
-constants_mini_polynomial = fft(round_constants, modulus, f.exp(subroot, skips2), inv=True)
-constants_polynomial = [0 if i % skips2 else constants_mini_polynomial[i//skips2] for i in range(steps)]
-constants_mini_extension = fft(constants_mini_polynomial, modulus, f.exp(root_of_unity, skips2))
+constants_mini_polynomial =
+    fft(round_constants, modulus, f.exp(subroot, skips2), inv=True)
+constants_polynomial =
+    [0 if i % skips2 else constants_mini_polynomial[i//skips2] for i in range(steps)]
+constants_mini_extension =
+    fft(constants_mini_polynomial, modulus, f.exp(root_of_unity, skips2))
 ~~~
 
-Suppose there are 8192 steps of execution and 64 round constants. Here is what we are doing: we are doing an FFT to compute the round constants as a function of ( g 1 ) 128 . We then add zeroes in between the constants to make it a function of g 1 itself. Because ( g 1 ) 128 loops around every 64 steps, we know this function of g 1 will as well. We only compute 512 steps of the extension, because we know that the extension repeats after 512 steps as well.
 
-We now, as in the Fibonacci example in Part 1, calculate C ( P ( x ) ) , except this time it's C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) :
+実行ステップ数が8192、ラウンド定数が64であるとします。
+我々は FFT を使って、ラウンド定数である $g_2 = (g_1)^{128}$ から生成される 64 点を多項式へ変換する計算をします。
+そして、ラウンド定数の間を $0$ で埋めて、 $g_1$ で生成される8192点を表す多項式へ拡張する計算をします。
+
+$(g_1)^{128}$ は、64 ステップでループするので、$g_1$ もまた同様にループすることがわかります。
+この拡張は 512 ステップを計算するだけです。なぜらなば、512 ステップで同じことを繰り返すことがわかっているからです。
+
+
+We now, as in the Fibonacci example in Part 1,
+calculate $C(P(x))$ ,
+except this time it's $C(P(x), P(g_1 \cdot x),K(x))$ :
 
 ~~~py
 # Create the composed polynomial such that
@@ -449,7 +470,9 @@ c_of_p_evaluations = [(p_evaluations[(i+extension_factor)%precision] -
 print('Computed C(P, K) polynomial')
 ~~~
 
-Note that here we are no longer working with polynomials in coefficient form; we are working with the polynomials in terms of their evaluations at successive powers of the higher-order root of unity.
+ここで注意したいのが、もはや我々は多項式を係数形式のデータとして扱っていないということです。
+我々は、多項式を累乗根の冪の列の上の評価の列という形式のデータとして扱っています。
+
 
 c_of_p is intended to be Q ( x ) = C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) = P ( g 1 ⋅ x ) − P ( x ) 3 − K ( x ) ; the goal is that for every x that we are laying the computational trace along (except for the last step, as there's no step “after” the last step), the next value in the trace is equal to the previous value in the trace cubed, plus the round constant. Unlike the Fibonacci example in Part 1, where if one computational step was at coordinate k , the next step is at coordinate k + 1 , here we are laying down the computational trace along successive powers of the lower-order root of unity g 1 , so if one computational step is located at x = ( g 1 ) i , the “next” step is located at ( g 1 ) i + 1 = ( g 1 ) i ⋅ g 1 = x ⋅ g 1 . Hence, for every power of the lower-order root of unity g 1 (except the last), we want it to be the case that P ( x ⋅ g 1 ) = P ( x ) 3 + K ( x ) , or P ( x ⋅ g 1 ) − P ( x ) 3 − K ( x ) = Q ( x ) = 0 . Thus, Q ( x ) will be equal to zero at all successive powers of the lower-order root of unity g (except the last).
 
@@ -488,7 +511,7 @@ The argument is as follows. The prover wants to prove P ( 1 ) = i n p u t and P 
 
 Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at x = g s t e p s − 1 . Red: P − I . Yellow: the minimal polynomial that equals 0 at x = 1 and x = g s t e p s − 1 (that is, Z 2 ). Pink: P − I Z 2 .
 
-Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that? Mouseover below for answer Set I ( x ) to be the interpolant of ( 1 , i n p u t ) , ( g 703 , 8018284612598740 ) , ( l a s t _ s t e p , o u t p u t ) , and make a proof by providing the quotient B ( x ) = P ( x ) − I ( x ) ( x − 1 ) ⋅ ( x − g 703 ) ⋅ ( x − l a s t _ s t e p )
+Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that? Mouseover below for answer Set I ( x ) to be the interpolant of ( 1 , i n p u t ) , ( g 703 , 8018284612598740 ) , ( l a s t _ s t e p , o u t p u t ) , and make a proof by providing the quotient $B ( x ) = P ( x ) − I ( x ) ( x − 1 ) ⋅ ( x − g 703 ) ⋅ ( x − l a s t _ s t e p )$
 
 Now, we commit to the Merkle root of P , D and B combined together.
 
