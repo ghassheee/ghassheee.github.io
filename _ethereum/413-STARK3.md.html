@@ -471,12 +471,26 @@ print('Computed C(P, K) polynomial')
 ここで注意したいのが、もはや我々は多項式を係数形式のデータとして扱っていないということです。
 我々は、多項式を累乗根の冪の列の上の評価の列という形式のデータとして扱っています。
 
+`c_of_p` は、 $Q(x) = C(P(x), P(g_1\cdot x), K(x)) = P(g_1 \cdot x) − P(x)^3 − K(x)$ となるように意図しています。
 
-c_of_p is intended to be Q ( x ) = C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) = P ( g 1 ⋅ x ) − P ( x ) 3 − K ( x ) ; the goal is that for every x that we are laying the computational trace along (except for the last step, as there's no step “after” the last step), the next value in the trace is equal to the previous value in the trace cubed, plus the round constant. Unlike the Fibonacci example in Part 1, where if one computational step was at coordinate k , the next step is at coordinate k + 1 , here we are laying down the computational trace along successive powers of the lower-order root of unity g 1 , so if one computational step is located at x = ( g 1 ) i , the “next” step is located at ( g 1 ) i + 1 = ( g 1 ) i ⋅ g 1 = x ⋅ g 1 . Hence, for every power of the lower-order root of unity g 1 (except the last), we want it to be the case that P ( x ⋅ g 1 ) = P ( x ) 3 + K ( x ) , or P ( x ⋅ g 1 ) − P ( x ) 3 − K ( x ) = Q ( x ) = 0 . Thus, Q ( x ) will be equal to zero at all successive powers of the lower-order root of unity g (except the last).
+この計算のゴールは、我々が計算トレースとして輪状に配置した任意の $x$ に対して、（最後の次のステップはないので最後だけは除きますが）
+トレースの次の値は、前の値の３乗 + ラウンド定数 に等しくなるということです。
 
-There is an algebraic theorem that proves that if Q ( x ) is equal to zero at all of these x coordinates, then it is a multiple of the minimal polynomial that is equal to zero at all of these x coordinates: Z ( x ) = ( x − x 1 ) ⋅ ( x − x 2 ) ⋅ . . . ⋅ ( x − x n ) . Since proving that Q ( x ) is equal to zero at every single coordinate we want to check is too hard (as verifying such a proof would take longer than just running the original computation!), instead we use an indirect approach to (probabilistically) prove that Q ( x ) is a multiple of Z ( x ) . And how do we do that? By providing the quotient D ( x ) = Q ( x ) Z ( x ) and using FRI to prove that it's an actual polynomial and not a fraction, of course!
+パート１で見たフィボナッチ数の例では座標 k の次は k+１でしたが、それとは異なり、ここでは累乗根 $g_1$ の冪を継続数としてとることで計算トレースを並べています。
+ですので、ある一つの計算ステップの x 座標は $x = (g_1)^i$ の形で表現され、次のステップの座標は、$(g_1)^{i+1} = (g_1)^i \cdot g_1 = x \cdot g_1$ となります。
+従って、最後を除く全ての $(g_1)$ の冪に対して、 $P(x \cdot g_1) = P(x)^3+K(x)$ あるいは $P(x \cdot g_1)−P(x)^3−K(x) = Q(x) = 0$ が成立します。
+このように $Q(x)$ は最後を除くすべての累乗根 $g_1$ の冪の後続数の列に対して、 $0$ と等しくなるでしょう。
 
-We chose the particular arrangement of lower and higher order roots of unity (rather than, say, laying the computational trace along the first few powers of the higher order root of unity) because it turns out that computing Z ( x ) (the polynomial that evaluates to zero at all points along the computational trace except the last), and dividing by Z ( x ) is trivial there: the expression of Z is a fraction of two terms.
+「Q(x) がこれら全ての x 座標で零と等しいならば、Q(x) は　Z(x) で割り切れる」という代数学の定理があります。
+ここで、$Z(x) = (x−x_1) \cdot (x−x_2) \cdot ... \cdot (x−x_n)$ です。
+
+我々が検査したいすべての点において $Q(x)$ が零と等しいことをみることはとても大変です。
+（そのような証明検証は元の計算をするよりも計算時間が長くなります）
+その代わりに、我々は Q(x) が Z(x) の倍数多項式であることを証明するのに、間接的な（つまり確率的な）アプローチを使います。
+さて、どのような方法なのでしょうか。もちろん、 $D(x) = \frac{Q(x)}{Z(x)}$ を提供し、FRI を使って、それが実際に余りなしで割り切れる商であることを証明すればよいのです。
+
+$Z(x) = \frac{x^{steps} - 1}{x - (g_1)^{steps-1}}$ として表現できるため、
+$Z(x)$ で割る操作はとても簡単なものになります。
 
 ~~~py
 # Compute D(x) = Q(x) / Z(x)
@@ -487,32 +501,68 @@ z_den_evaluations = [xs[i] - last_step_position for i in range(precision)]
 d_evaluations = [cp * zd * zni % modulus for cp, zd, zni in zip(c_of_p_evaluations, z_den_evaluations, z_num_inv)]
 print('Computed D polynomial')
 ~~~
-Notice that we compute the numerator and denominator of Z directly in “evaluation form”, and then use the batch modular inversion to turn dividing by Z into a multiplication ( ⋅ z d ⋅ z n i ), and then pointwise multiply the evaluations of Q ( x ) by these inverses of Z ( x ) . Note that at the powers of the lower-order root of unity except the last (ie. along the portion of the low-degree extension that is part of the original computational trace), Z ( x ) = 0 , so this computation involving its inverse will break. This is unfortunate, though we will plug the hole by simply modifying the random checks and FRI algorithm to not sample at those points, so the fact that we calculated them wrong will never matter.
 
-Because Z ( x ) can be expressed so compactly, we get another benefit: the verifier can compute Z ( x ) for any specific x extremely quickly, without needing any precomputation. It's okay for the prover to have to deal with polynomials whose size equals the number of steps, but we don't want to ask the verifier to do the same, as we want verification to be succinct (ie. ultra-fast, with proofs as small as possible).
+ポイントとしては、多項式 $Z$ の分母分子を直接先に評価計算をしており、
+`multi_inv` を使用し、まとめて逆数を効率よく計算しているというところです。
+その後各点毎に $Q(x)$ を掛けて $D(x)$ を求めています。
 
-Probabilistically checking D ( x ) ⋅ Z ( x ) = Q ( x ) at a few randomly selected points allows us to verify the transition constraints - that each computational step is a valid consequence of the previous step. But we also want to verify the boundary constraints - that the input and the output of the computation is what the prover says they are. Just asking the prover to provide evaluations of P ( 1 ) , D ( 1 ) , P ( l a s t _ s t e p ) and D ( l a s t _ s t e p ) (where l a s t _ s t e p (or g s t e p s − 1 ) is the coordinate corresponding to the last step in the computation) is too fragile; there's no proof that those values are on the same polynomial as the rest of the data. So instead we use a similar kind of polynomial division trick:
+元の計算トレースの一部分である、低次元拡張の部分に沿った部分においては、 $Z(x) = 0$ であることに注意してください。
+つまり、逆数をとると、計算が壊れてしまいます。
+これはあまり嬉しくない事項ですが、
+単に我々が、これらの穴を乱数による検証サンプルとして選ばないように、FRI アルゴリズムを改良すればよいだけです。
+ですので、決してこのことが問題となることはありません。
+
+$Z(x)$ の表現がとてもコンパクトであるので、我々は更なる恩恵を受けます。
+検証者はどのような $x$ に対しても前処理などもなく素早く $Z(x)$ を計算できます。
+証明者がステップ数のサイズの多項式を扱うのは、まあそれは仕方のないことでしょうが、
+しかし検証者に対して同じことを強いるのはよくありません。検証者の仕事は、本質をつきかつ簡素なものでなくてはなりません。
+（高速に処理する必要があります）
+
+ある少しの選ばれた点の上で、$D(x) \cdot Z(x) = Q(x)$ を確率的に検証することで、『遷移条件』を検証することができます。
+遷移条件とは、つまり、各計算ステップが、直前の計算ステップの有効な結果のものであるという制約です。
+しかし、それだけでなく、『境界条件』もまた満たす必要があります。
+境界条件とは、つまり、入力と出力が証明者の主張するものと一致しているかということです。
+
+証明者に対して、計算トレースの最初と最後の値 $P(1), D(1), P(g^{steps-1}), D(g^{steps-1})$ だけを要求するだけでは、
+検証はあまりにも、脆いものとなってしまいます。その他の点で、データが多項式上に乗っているということを示す証拠がどこにもありません。
+ですので、多項式の割り算のトリックと似た種類のテクニックを使い、これを解決します。
+
 
 ~~~py
 # Compute interpolant of ((1, input), (x_atlast_step, output))
-interpolant = f.lagrange_interp_2([1, last_step_position], [inp, output])
-i_evaluations = [f.eval_poly_at(interpolant, x) for x in xs]
+interpolant         = f.lagrange_interp_2([1, last_step_position], [inp, output])
+i_evaluations       = [f.eval_poly_at(interpolant, x) for x in xs]
 
-zeropoly2 = f.mul_polys([-1, 1], [-last_step_position, 1])
-inv_z2_evaluations = f.multi_inv([f.eval_poly_at(quotient, x) for x in xs])
+zeropoly2           = f.mul_polys([-1, 1], [-last_step_position, 1])
+inv_z2_evaluations  = f.multi_inv([f.eval_poly_at(quotient, x) for x in xs])
 
 # B = (P - I) / Z2
-b_evaluations = [((p - i) * invq) % modulus for p, i, invq in zip(p_evaluations, i_evaluations, inv_z2_evaluations)]
+b_evaluations       = [((p - i) * invq) % modulus for p, i, invq in zip(p_evaluations, i_evaluations, inv_z2_evaluations)]
 print('Computed B polynomial')
 ~~~
 
-The argument is as follows. The prover wants to prove P ( 1 ) = i n p u t and P ( l a s t _ s t e p ) = o u t p u t . If we take I ( x ) as the interpolant - the line that crosses the two points ( 1 , i n p u t ) and ( l a s t _ s t e p , o u t p u t ) , then P ( x ) − I ( x ) would be equal to zero at those two points. Thus, it suffices to prove that P ( x ) − I ( x ) is a multiple of ( x − 1 ) ⋅ ( x − l a s t _ s t e p ) , and we do that by... providing the quotient!
+ここでの議論はつぎの通りです。
+証明者は $P(1) = input$ であることと、 $P(g^{-1}) = output$ であることを証明したいわけです。
+$I(x)$ をこれら二点を補間することで得られる多項式とします。つまりは、$(1,input)$ と $(steps-1, output)$ の2点を通る直線です。
+そうすると $P(x) - I(x)$ は、これら2点上では $0$ となることでしょう。
+つまり、$P(x) - I(x)$ は $Z_2(x) := (x-1)(x-(steps-1))$ の倍数多項式となっているはずです。
+つまり、その商 $\frac{P(x) - I(x)}{(x-1)(x-(steps-1))}$　を与えれば良いのです！
 
-Purple: computational trace polynomial (P). Green: interpolant (I) (notice how the interpolant is constructed to equal the input (which should be the first step of the computational trace) at x=1 and the output (which should be the last step of the computational trace) at x = g s t e p s − 1 . Red: P − I . Yellow: the minimal polynomial that equals 0 at x = 1 and x = g s t e p s − 1 (that is, Z 2 ). Pink: P − I Z 2 .
+![紫: 多項式 $P(x)$ . 緑: $I(x)$. 赤: $P(x)-I(x)$ . 黄: $Z_2(x)$ . 桃: $\frac{P(x) - I(x)}{Z_2(x)}$  ](/image/vb/stark3_7.png)
 
-Challenge Suppose you wanted to also prove that the value in the computational trace after the 703rd computational step is equal to 8018284612598740. How would you modify the above algorithm to do that? Mouseover below for answer Set I ( x ) to be the interpolant of ( 1 , i n p u t ) , ( g 703 , 8018284612598740 ) , ( l a s t _ s t e p , o u t p u t ) , and make a proof by providing the quotient $B ( x ) = P ( x ) − I ( x ) ( x − 1 ) ⋅ ( x − g 703 ) ⋅ ( x − l a s t _ s t e p )$
+~~~
+課題
+Suppose you wanted to also prove that
+the value in the computational trace after the 703rd computational step is equal to 8018284612598740.
+How would you modify the above algorithm to do that?
+Mouseover below for answer Set I ( x ) to be the interpolant of
+(1, input) , (g^703, 8018284612598740), (last_step, output),
+and make a proof by providing the quotient
+B(x) = (P(x) − I(x)) / ((x − 1)⋅(x − g^703)⋅(x − last_step))
+~~~
 
-Now, we commit to the Merkle root of P , D and B combined together.
+
+それでは $P$ , $D$ , $B$ をつなげあわせて、マークルルートを作成しましょう。
 
 ~~~py
 # Compute their Merkle roots
@@ -523,7 +573,11 @@ mtree = merkelize([pval.to_bytes(32, 'big') +
 print('Computed hash root')
 ~~~
 
-Now, we need to prove that P , D and B are all actually polynomials, and of the right max-degree. But FRI proofs are big and expensive, and we don't want to have three FRI proofs. So instead, we compute a pseudorandom linear combination of P , D and B (using the Merkle root of P , D and B as a seed), and do an FRI proof on that:
+今、我々は $P$ , $D$ , $B$ が実際に正しい最大次数を持つ多項式であるかどうか証明する必要があります。
+しかし、FRI の証明はとても大きくかつ高価であるため使用したくありません。
+代わりに、疑似乱数による $P$ , $D$ , $B$ の線形結合を計算します。
+（乱数のシードとして $P$ , $D$ , $B$ のマークルルートを使用します）
+そしてこれを行った上で FRI 証明に移ります。
 
 
 ~~~py
@@ -545,12 +599,18 @@ l_evaluations = [(d_evaluations[i] +
                   for i in range(precision)]
 ~~~
 
+これらすべての多項式が正しい低次数を持っていない限りは、
+ランダムに選択された線形結合が正しい値を返すということはほぼ不可能であり、
+そのためこれで十分となります。
 
-Unless all three of the polynomials have the right low degree, it's almost impossible that a randomly selected linear combination of them will (you have to get extremely lucky for the terms to cancel), so this is sufficient.
+我々は、多項式 $D$ の次数が $2 \cdot steps$ 未満であることと、
+多項式 $P$ と $D$ の次数が $steps$ 未満であることを証明したい状況であり、
+実際、 $P \cdot x^{steps}$, $B$ , $B^{steps}$ と $D$ のランダムな線型結合 をつくり、
+この結合の次数が $2 \cdot steps$ 未満であることを検査します。
 
-We want to prove that the degree of D is less than 2 ⋅ s t e p s , and that of P and B are less than s t e p s , so we actually make a random linear combination of P , P ⋅ x s t e p s , B , B s t e p s and D , and check that the degree of this combination is less than 2 ⋅ s t e p s .
 
-Now, we do some spot checks of all of the polynomials. We generate some random indices, and provide the Merkle branches of the polynomial evaluated at those indices:
+さて、全ての多項式に対して、スポット検査を行います。
+いくつかランダムにインデックスを生成し、これらのインデックスの上での多項式評価であるマークルブランチを提供します。
 
 
 ~~~py
@@ -567,10 +627,13 @@ for pos in positions:
 print('Computed %d spot checks' % samples)
 ~~~
 
+`get_pseudorandom_indices` 関数は `[0 ... precision-1]` の間の乱数を返し、
+パラメータ `exclude_multiples_of` は、ある与えられたパラメータ(ここでは `extension_factor`)の倍数ではないという制約を乱数に与えます。
+これにより、もとの計算トレース上からサンプルしていないということを確約することができます。
+元の計算トレース上では、間違った答えを得る可能性が高くなります。
 
-The get_pseudorandom_indices function returns some random indices in the range [0...precision-1], and the exclude_multiples_of parameter tells it to not give values that are multiples of the given parameter (here, extension_factor). This ensures that we do not sample along the original computational trace, where we are likely to get wrong answers.
+おより、~250-500 キロバイトからなる証明は、マークルルートの集合と、スポット検査のブランチと、ランダムな線型結合からなる低次数証明ひとつ、の3点で構成されます。
 
-The proof (~250-500 kilobytes altogether) consists of a set of Merkle roots, the spot-checked branches, and a low-degree proof of the random linear combination:
 
 ~~~py
 o = [mtree[1],
@@ -579,7 +642,8 @@ o = [mtree[1],
      prove_low_degree(l_evaluations, root_of_unity, steps * 2, modulus, exclude_multiples_of=extension_factor)]
 ~~~
 
-The largest parts of the proof in practice are the Merkle branches, and the FRI proof, which consists of even more branches. And here's the "meat" of the verifier:
+証明の大部分は、実践的には、マークルブランチと、FRI 証明であり、とてもたくさんのブランチから構成されています。
+そして最終的に、検証者がおいしくいただくことができる『お肉』にあたる検証コードは次の通りです。
 
 ~~~py
 for i, pos in enumerate(positions):
@@ -612,6 +676,29 @@ for i, pos in enumerate(positions):
             k3 * b_of_x - k4 * b_of_x * x_to_the_steps) % modulus == 0
 ~~~
 
-At every one of the positions that the prover provides a Merkle proof for, the verifier checks the Merkle proof, and checks that C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) = Z ( x ) ⋅ D ( x ) and B ( x ) ⋅ Z 2 ( x ) + I ( x ) = P ( x ) (reminder: for x that are not along the original computation trace, Z ( x ) will not be zero, and so C ( P ( x ) , P ( g 1 ⋅ x ) , K ( x ) ) likely will not evaluate to zero). The verifier also checks that the linear combination is correct, and calls verify_low_degree_proof(l_root, root_of_unity, fri_proof, steps * 2, modulus, exclude_multiples_of=extension_factor) to verify the FRI proof. And we're done!
+証明者が提供したマークル木の証明の位置 $x$ に対して、
+検証者は、 マークル木の証明であることをまず検査し、
+次に $C(P(x), P(g_1 ⋅ x), K(x)) = Z(x) ⋅ D(x)$ と
+$B(x) ⋅ Z_2(x) + I(x) = P(x)$ を検査します。
+（リマインダ : 元の計算トレース上にない $x$ に対しては、Z(x) は零ではなく、
+$C(P(x), P(g_1 ⋅ x), K(x))$ が零となるような可能性はほぼありません。）
+検証者は線型結合の正しさも検査し、
+FRI 証明の検証をするために `verify_low_degree_proof(l_root, root_of_unity, fri_proof, steps * 2, modulus, exclude_multiples_of=extension_factor)` を呼びます。
+これで全てです！
 
-Well, not really; soundness analysis to prove how many spot-checks for the cross-polynomial checking and for the FRI are necessary is really tricky. But that's all there is to the code, at least if you don't care about making even crazier optimizations. When I run the code above, we get a STARK proving “overhead” of about 300-400x (eg. a MIMC computation that takes 0.2 seconds to calculate takes 60 second to prove), suggesting that with a 4-core machine computing the STARK of the MIMC computation in the forward direction could actually be faster than computing MIMC in the backward direction. That said, these are both relatively inefficient implementations in python, and the proving to running time ratio for properly optimized implementations may be different. Also, it's worth pointing out that the STARK proving overhead for MIMC is remarkably low, because MIMC is almost perfectly “arithmetizable” - it's mathematical form is very simple. For “average” computations, which contain less arithmetically clean operations (eg. checking if a number is greater or less than another number), the overhead is likely much higher, possibly around 10000-50000x.
+
+
+余談として、
+FRI 証明の検査や クロス多項式のスポット検査がどれほど必要であるかについてを証明する健全性解析は、実に技巧的です。
+少なくともあなたが、より頭のおかしい最適化を行わない限りにおいては、ここにコードとして全て示してあります。
+このコードを私が走らせたとき、300-400x 倍の証明のオーバーヘッドがかかりました。
+（例えば、計算するのに 0.2 秒かかる MIMC の計算は、その証明を計算するのに 60 秒かかります）
+これが示すように、4-core のノートパソコンで前方方向への MIMC 計算の STARK 計算は、
+後方方向への MIMC 計算と比べて実際に非常に早いということがわかります。
+また、これらはどちらも python による相対的に見て不十分な実装であり、最適化された場合の比率は異なる可能性はあります。
+MIMC 上の STARK 証明のオーバーヘッドは、特筆すべきほど小さいということも指摘しておくべきでしょう。
+というのは、MIMC はほぼ完璧に『算術化可能』だからです。
+その数学的な形式というのはとてもシンプルです。
+平均的な計算でありば、より算術的に複雑な操作（例えば大小関係）をもち、
+オーバーヘッドは非常に高くなる可能性があります。
+10000-50000x くらいにはなるでしょうか。
