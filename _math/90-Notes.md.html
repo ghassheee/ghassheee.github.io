@@ -10,6 +10,89 @@ These pages are unorganized infomation which is a mere copy paste.
 
 
 
+# ファジィ集合
+
+ファジィ集合：fuzzy set
+
+若い、年寄りなど抽象的な概念の集合を数値化し、演算の対象とするために導入された。
+
+
+
+ファジィ集合    $$\ A,B,C$$
+
+メンバシップ関数    $$\mu_A(x),\mu_B(x),\mu_C(x)$$
+
+
+</br>
+</br>
+</br>
+</br>
+
+# ベジエ曲線
+
+[img0]:http://imgur.com/RQBeiBD.png
+[img1]:http://imgur.com/jh5LUd5.png
+![](http://imgur.com/RQBeiBD.png =100x)
+
+
+
+
+
+ベジエ曲線
+
+
+
+$$P^n_b(t)=
+\sum^n_{i=0}
+R_i
+B_i^n(t)
+$$
+
+
+
+
+バースタイン基底関数
+$$
+\begin{eqnarray}
+	{B}_i^n(t)	=
+	\left(
+	\begin{array}{c}
+	n
+	\\
+	i
+	\end{array}
+	\right)
+	t^i(i-t)^{n-i}
+\end{eqnarray}
+$$
+
+
+
+</br>
+</br>
+</br>
+tで微分
+
+$$
+\begin{eqnarray}
+{P}^n_b(t) &=& \sum^n_{i=0}R_i
+B_i^{n-1}(t)
+&=& \frac{n!}{(n-1)!i!}
+\end{eqnarray}
+$$
+
+$$
+\begin{eqnarray}
+B_i^n(t)B_i(t)    &= \frac{n!}{(n-i)!i!}
+             \left(it^{i-1}(1-t)^{n-i}-(n-i)t^i(1-t)^{n-i-1}\right)\\
+          &= -\frac{n!}{(n-1-i)!i!}t^i(i-t)^{n-1-i}\\
+          &= i \cdot n \cdot B^{n-1}_i(t) - (n-i)B^{n-1}_{i-1}(t)
+\end{eqnarray}
+$$
+
+</body>
+
+
 
 # Kuroki - Ajoint
 
