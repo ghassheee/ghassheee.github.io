@@ -24,6 +24,17 @@ The Syntax of MSO Logic is given by;
 
 
 
+Note that it's decidable and the law of excluded middle (LEM) holds.
+Since LEM holds, the conversion which is true in classical logic is true.
+
+E.g.
+
+* $\forall x. \varphi == \lnot\exists x. \lnot \varphi$
+* $\varphi_1 \lor \varphi_2 == \lnot(\lnot\varphi_1\land\lnot\varphi_2)$
+* $\varphi_1 \Rightarrow \varphi_2 == \lnot \varphi_1 \lor \varphi_2$ 
+
+
+
 ## Semantics
 
 
@@ -182,7 +193,7 @@ e.g. see this site: http://www.cs.um.edu.mt/gordon.pace/Research/Software/Relic/
 The noting point of automata theory is, given a nondeterministic finite automata, we can always create a deterministic finite automata from it. The construction from NFA to DFA is called "subset construction", an important terminology in automata theory.
 Other important ones are "trim", "(co)accessible", and so on.
 
-Here we will explain in the next time, and just give topics. 
+Here we will explain in the next time, and just give topics.
 
 ## DFA
 
