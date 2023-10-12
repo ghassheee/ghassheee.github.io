@@ -1,0 +1,171 @@
+---
+title: MSO Logic & Automata
+layout: journal
+---
+
+
+# MSO Logic over words
+
+## Syntax
+
+
+The Syntax of MSO Logic
+
+~~~
+    𝛗 ::= Lab(a,x)
+        | Suc(x,y)
+        | x ∈ X
+        | False
+        | ¬ 𝛗
+        | 𝛗 ⩓ 𝛗
+        | ∃x. 𝛗
+        | ∃X. 𝛗
+~~~
+
+
+
+## Semantics
+
+
+Given a word $w$, and variable assignments $v$ ,
+( i.e.
+$ w = a_1 a_2 a_3 \cdots a_n $ and,
+$ v $ is a fuction from variables $ \{ x,y,z, ... \} $ to the location in the word $ \{1,2,3, .., n \} $ )
+the semantics of MSO Logic is defined as follows;
+
+~~~
+   w,v  ⊧  Lab(a,x)   ( w[v(x)] = 'a'         )
+   w,v  ⊧  Suc(x,y)   ( v(x) + 1 = v(y)       )
+   w,v  ⊧  x ∈ X      ( v(x) ∈ v(X)           )
+   w,v  ⊧  ¬ 𝛗        ( w,v  ⊧  𝛗   is false  )
+   w,v  ⊧  𝛗1 ⩓ 𝛗2    ( Both w,v  ⊧  𝛗1  and  w,v  ⊧  𝛗2 is true )
+   w,v  ⊧  ∃x. 𝛗      ( There exists i ∈ {1,..,n} ,  w, v[x↦i] ⊧ 𝛗 holds )
+   w,v  ⊧  ∃X. 𝛗      ( There exists S ⊆ {1,..,n} ,  w, v[X↦S] ⊧ 𝛗 holds )
+~~~
+
+
+
+
+
+
+# MSO to Word Automata Conversion
+
+The domain of the conversion is MSO Logic formalae $\varphi$ and the codomain is an Automaton $A=(Q,Σ×2^{|fv(\varphi)|},Δ,i,T)$ where $fv(\varphi)$ is free variable occuring in $\varphi$.
+
+## $lab_a(x)$
+
+the converted automata of $lab_a(x)$ is given as follows;
+( the alphabet (a,1) means that a ∈ Σ and the position of the variable $x$ in $2^{|fv(\varphi)|$ is 1.   )
+
+**********************************************************
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*        *                *                              *
+*      .---.            .---.                            *
+*     +     +          +     +                           *
+*      \   /            \   /                            *
+*       \ v              \ v                             *
+*       .--.   (a,1)     .--.                            *
+*   -->|    +---------->|    |-->                        *
+*       '--'             '--'                            *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+**********************************************************
+
+
+## suc(x,y)
+
+the converted automata of $suc(x,y)$ is given as follows;
+( the alphabet (*,1,0) means that any alphabe in $Sigma$ is OK. and the position of the variable $x$ in $2^{|fv(\varphi)|$ is 1 and the position of $y$ is 0 . )
+
+**********************************************************
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*        *                *                *             *
+*      .---.            .---.            .---.           *
+*     +     +          +     +          +     +          *
+*      \   /            \   /            \   /           *
+*       \ v              \ v              \ v            *
+*       .--.  (*,1,0)    .--.  (*,0,1)    .--.           *
+*   -->|    +---------->|    +---------->|    +-->       *
+*       '--'             '--'             '--'           *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+**********************************************************
+
+
+
+## x ∈ X
+
+**********************************************************
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*        *                *                              *
+*      .---.            .---.                            *
+*     +     +          +     +                           *
+*      \   /            \   /                            *
+*       \ v              \ v                             *
+*       .--.  (*,1,1)    .--.                            *
+*   -->|    +---------->|    |-->                        *
+*       '--'             '--'                            *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+*                                                        *
+**********************************************************
+
+## 𝛗1 ⩓ 𝛗2
+
+Given 2 converted automata $A_1$ and $A_2$ from $\varphi_1$ and $\varphi_2$,
+the the automaton of $\varphi_1 \land \varphi_2$ is given by the "intersection" of the two automata.
+
+## ¬ 𝛗
+
+Given the converted automata $A$ of $\varphi$, the automaton of $\lnot\varphi$ is given by the "complement" of $A$.
+
+## ∃x. 𝛗
+
+
+Given the converted automata $A$ of $\varphi$, the automaton of $∃x. \varphi$ is given by,
+1. checking the free variable $x$ part of $A$, in order to assure that the part is '1' only once. In order to do that, we take intersection of $A$ and the following automata.
+2. And then, eleminating the free variable $x$ part of the alphabet because $x$ is no longer free variable in $∃x. \varphi$ .
+
+   **********************************************************
+   *                                                        *
+   *                                                        *
+   *        *                *                              *
+   *      .---.            .---.                            *
+   *     +     +          +     +                           *
+   *      \   /            \   /                            *
+   *       \ v              \ v                             *
+   *       .--.   (*,1)     .--.                            *
+   *   -->|    +---------->|    |-->                        *
+   *       '--'             '--'                            *
+   *                                                        *
+   *                                                        *
+   **********************************************************
+
+
+##  ∃X. 𝛗
+
+Given the converted automata $A$ of $\varphi$, the automaton of $∃x. \varphi$ is given by,
+eleminating the free variable $x$ part of the alphabet because $x$ is no longer free variable in $∃x. \varphi$ .
